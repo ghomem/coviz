@@ -1,0 +1,49 @@
+{% extends base %}
+
+{% block title %}Coviz{% endblock %}
+
+{% block postamble %}
+  <style>
+    {% include 'assets/css/main.css' %}
+  </style>
+{% endblock %}
+
+{% block contents %}
+  <div id="wrapper" class="divided">
+  	<section class="banner style2 orient-center content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right" id="section1">
+                <div class="content">
+			<header>
+	                        <h2>Coviz</h2>
+				<p>Vizualizing Covid19 data for Portugal</p>
+			</header>
+			<div class="content2" id="plot1">{{ embed(roots.section1) }}</div>
+			<ul class="actions small">
+                                <li><a href="#section2" class="button smooth-scroll small primary">Next &darr;</a></li>
+                       </ul>
+		</div>
+                <div class="image">
+                        <!-- <img src="images/banner.jpg" alt="" /> -->
+                </div>
+        </section>
+  	<section class="banner style2 orient-center content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right" id="section2">
+                <div class="content-credits">
+			<header>
+	                        <h2>Coviz</h2>
+				<p>Vizualizing Covid19 data for Portugal</p>
+			</header>
+			<div class="content2">{{ embed(roots.section2) }}</div>
+			<ul class="actions small">
+                                <li><a href="#section1" class="button smooth-scroll small primary">Previous &uarr;</a></li>
+                       </ul>
+			<p class="minor"><strong>Credits</strong></br>
+				Template was adapted from <a href="https://html5up.net/story">HTML5UP</a>.<br/>
+				Plots are made with <a href="https://bokeh.org">Bokeh</a>.<br/>
+				Data is obtained daily from the <a href="https://github.com/dssg-pt/">DSSG-PT</a> repositories.</p>
+		</div>
+                <div class="image">
+                        <!-- <img src="images/banner.jpg" alt="" /> -->
+                </div>
+        </section>
+
+  </div>
+{% endblock %}
