@@ -25,7 +25,7 @@ PLOT_Y_LABEL  = 'Count'
 PLOT_Y_LABEL2 = 'Value'
 
 PLOT_LINE_COLOR  = 'gray'
-PLOT_LINE_COLOR2 = 'red'
+PLOT_LINE_COLOR2 = 'orange'
 
 PLOT1_TITLE  ='14 Day incidence'
 PLOT2_TITLE  ='PCR Positivity'
@@ -65,7 +65,7 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL ):
 
 curdoc().title = PAGE_TITLE
 
-data_new, data_hosp, data_hosp_uci, data_deaths, data_incidence = process_data()
+data_new, data_hosp, data_hosp_uci, data_deaths, data_incidence, data_cfr = process_data()
 
 days=len(data_new)
 
@@ -94,10 +94,11 @@ source2_plot3 = ColumnDataSource(data=dict(x=x, y=data_hosp_uci))
 plot3.line('x', 'y', source=source1_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 plot3.line('x', 'y', source=source2_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR2, )
 
-plot4 = make_plot ('plot4', PLOT4_TITLE, days)
+source_plot4 = ColumnDataSource(data=dict(x=x, y=data_cfr))
+plot4 = make_plot ('cfr', PLOT4_TITLE, days)
 set_plot_details(plot4, 'Days', '%')
 
-plot4.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+plot4.line('x', 'y', source=source_plot4, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 
 plot5 = make_plot ('new', PLOT5_TITLE, days)
 set_plot_details(plot5)

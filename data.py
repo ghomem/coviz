@@ -104,7 +104,7 @@ def get_differential_series ( data ):
     diff_data = [ 0 ]
 
     for i, element in enumerate(data):
-        if i > 1:
+        if i >= 1:
             diff_data.append( element - data[i-1])
 
     return diff_data
@@ -112,14 +112,42 @@ def get_differential_series ( data ):
 def get_incidence_T ( data, period, factor ):
 
     # the first T days have 0 value
-    inc_data = list(np.full( period, 0))
+    inc_data = list(np.full( period-1, 0))
 
     for i, element in enumerate(data):
-        if i > period:
-            interval = data [(i-period-1):i]
+        if i >= period-1:
+            interval = data [(i-period+1):i]
             inc_data.append( sum(interval) / factor )
 
     return inc_data
+
+# go back period days in time to calculate the cases
+def get_cfr ( deaths, new, period, ignore_interval ):
+
+    # the first T days have 0 value
+    cfr_data = list(np.full( period-1 + ignore_interval, 0))
+
+    for i, element in enumerate(deaths):
+        if i >= period-1 + ignore_interval:
+            delta = (period - 1)
+            # we smooth the new cases over 7 days around the date
+            new_value = st.mean(new[i-delta-3:i-delta+4])
+            if new_value > 0:
+                ratio = element / new_value
+            else:
+                ratio = 0
+            print(i,element,new_value, ratio * 100)
+            cfr_data.append( ratio * 100 )
+
+    # let's smooth now
+    window_size = 7
+    series = pd.Series(cfr_data)
+    windows = series.rolling(window_size)
+    padding = list(np.full( window_size-1, 0))
+    smooth_list = windows.mean().tolist()[window_size - 1:]
+    result = padding + smooth_list
+
+    return result
 
 def process_data():
 
@@ -130,9 +158,8 @@ def process_data():
     hosp_uci  = data['internados_uci'].tolist()
     deaths    = get_differential_series(data['obitos'].tolist())
     incidence = get_incidence_T(new, 14, 102.8)
+    cfr       = get_cfr( deaths, new, 14, 30 ) # ignore extra days
 
-    return new, hosp, hosp_uci, deaths, incidence
+    print(len(new), len(hosp), len(hosp_uci), len(deaths))
+    return new, hosp, hosp_uci, deaths, incidence, cfr
 
-# this part is only used for CLI testing
-
-print(process_data())
