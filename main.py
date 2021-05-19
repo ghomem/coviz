@@ -6,11 +6,13 @@ from bokeh.models import Button, CategoricalColorMapper, ColumnDataSource, Hover
 from bokeh.palettes import Spectral6
 from bokeh.plotting import figure
 
+from .data import process_data
+
 PAGE_TITLE = 'Coviz'
 
 PLOT_TOOLS    ='save,reset,pan,wheel_zoom,box_zoom'
 
-PLOT_HEIGHT   = 250
+PLOT_HEIGHT   = 300
 PLOT_WIDTH    = 500
 TEXT_WIDTH    = 300
 LMARGIN_WIDTH = 20
@@ -22,23 +24,22 @@ PLOT_X_LABEL  = 'Days'
 PLOT_Y_LABEL  = 'Count'
 PLOT_Y_LABEL2 = 'Value'
 
-PLOT_LINE_COLOR = 'gray'
+PLOT_LINE_COLOR  = 'gray'
+PLOT_LINE_COLOR2 = 'red'
 
 PLOT1_TITLE  ='14 Day incidence'
 PLOT2_TITLE  ='PCR Positivity'
 PLOT3_TITLE  ='Hospitalized, UCI'
 PLOT4_TITLE  ='Case fatality rate'
 PLOT5_TITLE  ='New cases'
-PLOT6_TITLE  ='New cases by age group'
+PLOT6_TITLE  ='Covid deaths'
 PLOT7_TITLE  ='Mortality (Covid, 5y avg, total)'
 PLOT8_TITLE  ='Rt'
-PLOT9_TITLE  ='New cases por per group'
-PLOT10_TITLE ='Not sure either'
+PLOT9_TITLE  ='New cases by age group'
+PLOT10_TITLE ='Risk diagram'
 
-DAYS=720
-
-def make_plot( name, title ):
-    return figure(plot_height=PLOT_HEIGHT, plot_width=PLOT_WIDTH, title=title, tools=PLOT_TOOLS, x_range=[0, DAYS], name=name)
+def make_plot( name, title, range ):
+    return figure(plot_height=PLOT_HEIGHT, plot_width=PLOT_WIDTH, title=title, tools=PLOT_TOOLS, x_range=[0, range], name=name)
 
 # set properties common to all the plots
 def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL ):
@@ -64,52 +65,71 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL ):
 
 curdoc().title = PAGE_TITLE
 
+data_new, data_hosp, data_hosp_uci, data_deaths, data_incidence = process_data()
+
+days=len(data_new)
+
 # FIXME get real data for this
 R0=2
-x = np.linspace(1, DAYS, DAYS)
-source_plot = ColumnDataSource(data=dict(x=x, y=np.full( DAYS, R0)))
+x = np.linspace(1, days, days)
+source_plot = ColumnDataSource(data=dict(x=x, y=np.full( days, R0)))
 ####
 
-plot1 = make_plot ('plot1', PLOT1_TITLE)
-plot1.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+plot1 = make_plot ('plot1', PLOT1_TITLE, days)
 set_plot_details(plot1)
 
-plot2 = make_plot ('plot2', PLOT2_TITLE)
-plot2.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+source_plot1 = ColumnDataSource(data=dict(x=x, y=data_incidence))
+plot1.line('x', 'y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+
+plot2 = make_plot ('plot2', PLOT2_TITLE, days)
 set_plot_details(plot2, 'Days', '%')
 
-plot3 = make_plot ('plot3', PLOT3_TITLE)
-plot3.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+plot2.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+
+plot3 = make_plot ('hosp', PLOT3_TITLE, days)
 set_plot_details(plot3)
 
-plot4 = make_plot ('plot4', PLOT4_TITLE)
-plot4.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+source1_plot3 = ColumnDataSource(data=dict(x=x, y=data_hosp))
+source2_plot3 = ColumnDataSource(data=dict(x=x, y=data_hosp_uci))
+plot3.line('x', 'y', source=source1_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+plot3.line('x', 'y', source=source2_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR2, )
+
+plot4 = make_plot ('plot4', PLOT4_TITLE, days)
 set_plot_details(plot4, 'Days', '%')
 
-plot5 = make_plot ('plot5', PLOT5_TITLE)
-plot5.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+plot4.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+
+plot5 = make_plot ('new', PLOT5_TITLE, days)
 set_plot_details(plot5)
 
-plot6 = make_plot ('plot6', PLOT6_TITLE)
-plot6.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
+source_plot5 = ColumnDataSource(data=dict(x=x, y=data_new))
+plot5.line('x', 'y', source=source_plot5, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+
+source_plot6 = ColumnDataSource(data=dict(x=x, y=data_deaths))
+plot6 = make_plot ('deaths', PLOT6_TITLE, days)
 set_plot_details(plot6)
 
-plot7 = make_plot ('plot7', PLOT7_TITLE)
-plot7.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+plot6.line('x', 'y', source=source_plot6, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
+
+plot7 = make_plot ('plot7', PLOT7_TITLE, days)
 set_plot_details(plot7)
 
-plot8 = make_plot ('plot8', PLOT8_TITLE)
-plot8.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
+plot7.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+
+plot8 = make_plot ('plot8', PLOT8_TITLE, days)
 set_plot_details(plot8, 'Days', 'Value')
 
-plot9 = make_plot ('plot9', PLOT9_TITLE)
-plot9.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
+plot8.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
+
+plot9 = make_plot ('plot9', PLOT9_TITLE, days)
 set_plot_details(plot9)
 
-plot10 = make_plot ('plot10', PLOT10_TITLE)
-plot10.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
+plot9.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
+
+plot10 = make_plot ('plot10', PLOT10_TITLE, days)
 set_plot_details(plot10)
 
+plot10.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
 
 # the layout name is added here then invoked from the HTML template
 # all roots added here must be invoked on the GRML
