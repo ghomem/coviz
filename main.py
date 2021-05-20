@@ -12,7 +12,7 @@ PAGE_TITLE = 'Coviz'
 
 PLOT_TOOLS    ='save,reset,pan,wheel_zoom,box_zoom'
 
-PLOT_HEIGHT   = 300
+PLOT_HEIGHT   = 350
 PLOT_WIDTH    = 500
 TEXT_WIDTH    = 300
 LMARGIN_WIDTH = 20
@@ -24,16 +24,17 @@ PLOT_X_LABEL  = 'Days'
 PLOT_Y_LABEL  = 'Count'
 PLOT_Y_LABEL2 = 'Value'
 
-PLOT_LINE_COLOR  = 'gray'
-PLOT_LINE_COLOR2 = 'orange'
+PLOT_LINE_COLOR           = 'gray'
+PLOT_LINE_COLOR_HIGHLIGHT = 'orange'
+PLOT_LINE_COLOR_REFERENCE = 'black'
 
 PLOT1_TITLE  ='14 Day incidence'
 PLOT2_TITLE  ='PCR Positivity'
-PLOT3_TITLE  ='Hospitalized, UCI'
+PLOT3_TITLE  ='Hospitalized'
 PLOT4_TITLE  ='Case fatality rate'
 PLOT5_TITLE  ='New cases'
 PLOT6_TITLE  ='Covid deaths'
-PLOT7_TITLE  ='Mortality (Covid, 5y avg, total)'
+PLOT7_TITLE  ='Mortality'
 PLOT8_TITLE  ='Rt'
 PLOT9_TITLE  ='New cases by age group'
 PLOT10_TITLE ='Risk diagram'
@@ -42,13 +43,13 @@ def make_plot( name, title, range ):
     return figure(plot_height=PLOT_HEIGHT, plot_width=PLOT_WIDTH, title=title, tools=PLOT_TOOLS, x_range=[0, range], name=name)
 
 # set properties common to all the plots
-def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL ):
+def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='vline' ):
     aplot.toolbar.active_drag    = None
     aplot.toolbar.active_scroll  = None
     aplot.toolbar.active_tap     = None
 
     # add the hover tool
-    ahover = HoverTool(tooltips=[ (xlabel, "@x{0}"), (ylabel, "@y{0}")], mode="mouse" )
+    ahover = HoverTool(tooltips=[ (xlabel, xtooltip_format), (ylabel, ytooltip_format)], mode=tooltip_mode)
     ahover.point_policy='snap_to_data'
     ahover.line_policy='nearest'
     aplot.add_tools(ahover)
@@ -65,7 +66,7 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL ):
 
 curdoc().title = PAGE_TITLE
 
-data_new, data_hosp, data_hosp_uci, data_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos = process_data()
+data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths = process_data()
 
 days=len(data_new)
 
@@ -83,7 +84,7 @@ plot1.line('x', 'y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha
 
 source_plot2 = ColumnDataSource(data=dict(x=x, y=data_pcr_pos))
 plot2 = make_plot ('pcr_pos', PLOT2_TITLE, days)
-set_plot_details(plot2, 'Days', '%')
+set_plot_details(plot2, 'Days', '%', "@x{0}", "@y{0.00}")
 
 plot2.line('x', 'y', source=source_plot2, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 
@@ -92,12 +93,13 @@ set_plot_details(plot3)
 
 source1_plot3 = ColumnDataSource(data=dict(x=x, y=data_hosp))
 source2_plot3 = ColumnDataSource(data=dict(x=x, y=data_hosp_uci))
-plot3.line('x', 'y', source=source1_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
-plot3.line('x', 'y', source=source2_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR2, )
+plot3.line('x', 'y', source=source1_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
+plot3.line('x', 'y', source=source2_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='UCI' )
+plot3.legend.location = 'top_left'
 
 source_plot4 = ColumnDataSource(data=dict(x=x, y=data_cfr))
 plot4 = make_plot ('cfr', PLOT4_TITLE, days)
-set_plot_details(plot4, 'Days', '%')
+set_plot_details(plot4, 'Days', '%', "@x{0}", "@y{0.00}")
 
 plot4.line('x', 'y', source=source_plot4, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 
@@ -107,20 +109,26 @@ set_plot_details(plot5)
 source_plot5 = ColumnDataSource(data=dict(x=x, y=data_new))
 plot5.line('x', 'y', source=source_plot5, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 
-source_plot6 = ColumnDataSource(data=dict(x=x, y=data_deaths))
+source_plot6 = ColumnDataSource(data=dict(x=x, y=data_cv19_deaths))
 plot6 = make_plot ('deaths', PLOT6_TITLE, days)
 set_plot_details(plot6)
 
 plot6.line('x', 'y', source=source_plot6, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
 
-plot7 = make_plot ('plot7', PLOT7_TITLE, days)
-set_plot_details(plot7)
+source1_plot7 = ColumnDataSource(data=dict(x=x, y=data_total_deaths))
+source2_plot7 = ColumnDataSource(data=dict(x=x, y=data_avg_deaths))
+source3_plot7 = ColumnDataSource(data=dict(x=x, y=data_cv19_deaths))
+plot7 = make_plot ('total deaths', PLOT7_TITLE, days)
+set_plot_details(plot7, 'Days', 'Count', "@x{0}", "@y{0}", "mouse")
 
-plot7.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+plot7.line('x', 'y', source=source1_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
+plot7.line('x', 'y', source=source2_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='5y average' )
+plot7.line('x', 'y', source=source3_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Covid19')
+plot7.legend.location = 'top_left'
 
 source_plot8 = ColumnDataSource(data=dict(x=x, y=data_rt))
 plot8 = make_plot ('rt', PLOT8_TITLE, days)
-set_plot_details(plot8, 'Days', 'Value')
+set_plot_details(plot8, 'Days', 'Value',  "@x{0}", "@y{0.00}")
 
 plot8.line('x', 'y', source=source_plot8, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
 
@@ -140,7 +148,7 @@ plot10.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha
 # section 1
 
 layout1 = layout([ [plot1, plot3, plot5, plot7],
-                  [plot2, plot4, plot6, plot8] ], 
+                   [plot2, plot4, plot6, plot8] ],
                    sizing_mode='scale_width', name='section1')
 
 curdoc().add_root(layout1)

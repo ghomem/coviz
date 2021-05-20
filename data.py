@@ -174,7 +174,6 @@ def get_pcr_positivity ( pcr_tests, new, period, ignore_interval ):
     pcr_pos_data =  list(np.full( period + ignore_interval, None))
 
     for i, element in enumerate(pcr_tests):
-        print(i)
         if i > period + ignore_interval - 1:
             pcr_pos_data.append ( ( new[i] / pcr_tests[i-period] )*100 )
 
@@ -183,29 +182,62 @@ def get_pcr_positivity ( pcr_tests, new, period, ignore_interval ):
 
     return result
 
+def get_avg_deaths ( total_deaths, span, years ):
+
+    avg_data = []
+
+    data_length=len(total_deaths)
+    for d in range(0,span):
+        daily_sum = 0
+        for i in range(1, years + 1 ):
+            base_index = data_length-1-span
+            index = base_index-i*365+d
+            print (d,i, index, index > data_length)
+            daily_sum = daily_sum + total_deaths[ index ]
+        avg_data.append(daily_sum / years )
+
+    return avg_data
+
 def process_data():
 
+    # get the latest of each file type
     files1 = glob.glob('/home/deployment/data/data-*.csv')
     files2 = glob.glob('/home/deployment/data/amostras-*.csv')
+    files3 = glob.glob('/home/deployment/data/mortalidade-*.csv')
 
     main_file  = max(files1, key=os.path.getctime)
     tests_file = max(files2, key=os.path.getctime)
+    mort_file  = max(files3, key=os.path.getctime)
 
     main_data  = pd.read_csv(main_file)
     tests_data = pd.read_csv(tests_file)
+    mort_data  = pd.read_csv(mort_file)
 
-    new       = main_data['confirmados_novos'].tolist()
-    hosp      = main_data['internados'].tolist()
-    hosp_uci  = main_data['internados_uci'].tolist()
-    deaths    = get_differential_series(main_data['obitos'].tolist())
-    incidence = get_incidence_T(new, 14, 102.8)
-    cfr       = get_cfr( deaths, new, 14, 30 ) # ignore extra days
-    rt        = get_rt(new, 4, 4) # ignore extra days
-    pcr_tests = tests_data['amostras_pcr_novas'].tolist()
-    pcr_pos   = get_pcr_positivity( pcr_tests, new, 2, 0 )
+    new          = main_data['confirmados_novos'].tolist()
+
+    # the amount of Covid data days that we have
+    days         = len(new)
+
+    hosp         = main_data['internados'].tolist()
+    hosp_uci     = main_data['internados_uci'].tolist()
+    cv19_deaths  = get_differential_series(main_data['obitos'].tolist())
+    incidence    = get_incidence_T(new, 14, 102.8)
+    cfr          = get_cfr(cv19_deaths, new, 14, 30 ) # ignore extra days
+    rt           = get_rt(new, 4, 4) # ignore extra days
+    pcr_tests    = tests_data['amostras_pcr_novas'].tolist()
+    pcr_pos      = get_pcr_positivity( pcr_tests, new, 2, 0 )
+
+    # this is a multi year series starting in 01/01/2009
+    total_deaths = mort_data['geral_pais'].tolist()
+    avg_deaths   = get_avg_deaths(total_deaths, days, 5)
 
     # TODO a analise das amostras tem dois dias de atraso
     print(len(cfr), len(rt), len(pcr_tests), len(pcr_pos))
-    return new, hosp, hosp_uci, deaths, incidence, cfr, rt, pcr_pos
+
+    s_new = get_smooth_list (new, 7)
+    s_cv19_deaths = get_smooth_list (cv19_deaths, 7)
+    s_total_deaths = get_smooth_list ( total_deaths[-days:], 7 )
+
+    return s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths
 
 #process_data()
