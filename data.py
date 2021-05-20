@@ -156,7 +156,7 @@ def get_cfr ( deaths, new, period, ignore_interval ):
 
 def get_rt ( new, period, ignore_interval ):
 
-    r_data = list(np.full( period, None))
+    r_data = list(np.full( period + ignore_interval, None))
 
     for i, element in enumerate(new):
         if i > period + ignore_interval - 1:
@@ -169,21 +169,43 @@ def get_rt ( new, period, ignore_interval ):
 
     return result
 
+def get_pcr_positivity ( pcr_tests, new, period, ignore_interval ):
+
+    pcr_pos_data =  list(np.full( period + ignore_interval, None))
+
+    for i, element in enumerate(pcr_tests):
+        print(i)
+        if i > period + ignore_interval - 1:
+            pcr_pos_data.append ( ( new[i] / pcr_tests[i-period] )*100 )
+
+    # let's smooth now
+    result = get_smooth_list(pcr_pos_data, 7)
+
+    return result
+
 def process_data():
 
-    files = glob.glob('/home/deployment/data/data-*.csv')
-    main_data = max(files, key=os.path.getctime)
+    files1 = glob.glob('/home/deployment/data/data-*.csv')
+    files2 = glob.glob('/home/deployment/data/amostras-*.csv')
 
-    data = pd.read_csv(main_data)
+    main_file  = max(files1, key=os.path.getctime)
+    tests_file = max(files2, key=os.path.getctime)
 
-    new       = data['confirmados_novos'].tolist()
-    hosp      = data['internados'].tolist()
-    hosp_uci  = data['internados_uci'].tolist()
-    deaths    = get_differential_series(data['obitos'].tolist())
+    main_data  = pd.read_csv(main_file)
+    tests_data = pd.read_csv(tests_file)
+
+    new       = main_data['confirmados_novos'].tolist()
+    hosp      = main_data['internados'].tolist()
+    hosp_uci  = main_data['internados_uci'].tolist()
+    deaths    = get_differential_series(main_data['obitos'].tolist())
     incidence = get_incidence_T(new, 14, 102.8)
-    cfr       = get_cfr( deaths, new, 14, 30 ) # ignore extra 30 days
-    rt        = get_rt(new, 4, 10) # ignore extra 10 days
+    cfr       = get_cfr( deaths, new, 14, 30 ) # ignore extra days
+    rt        = get_rt(new, 4, 4) # ignore extra days
+    pcr_tests = tests_data['amostras_pcr_novas'].tolist()
+    pcr_pos   = get_pcr_positivity( pcr_tests, new, 2, 0 )
 
-    return new, hosp, hosp_uci, deaths, incidence, cfr, rt
+    # TODO a analise das amostras tem dois dias de atraso
+    print(len(cfr), len(rt), len(pcr_tests), len(pcr_pos))
+    return new, hosp, hosp_uci, deaths, incidence, cfr, rt, pcr_pos
 
 #process_data()

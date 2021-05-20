@@ -65,7 +65,7 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL ):
 
 curdoc().title = PAGE_TITLE
 
-data_new, data_hosp, data_hosp_uci, data_deaths, data_incidence, data_cfr, data_rt = process_data()
+data_new, data_hosp, data_hosp_uci, data_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos = process_data()
 
 days=len(data_new)
 
@@ -75,16 +75,17 @@ x = np.linspace(1, days, days)
 source_plot = ColumnDataSource(data=dict(x=x, y=np.full( days, R0)))
 ####
 
-plot1 = make_plot ('plot1', PLOT1_TITLE, days)
+plot1 = make_plot ('incidence', PLOT1_TITLE, days)
 set_plot_details(plot1)
 
 source_plot1 = ColumnDataSource(data=dict(x=x, y=data_incidence))
 plot1.line('x', 'y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 
-plot2 = make_plot ('plot2', PLOT2_TITLE, days)
+source_plot2 = ColumnDataSource(data=dict(x=x, y=data_pcr_pos))
+plot2 = make_plot ('pcr_pos', PLOT2_TITLE, days)
 set_plot_details(plot2, 'Days', '%')
 
-plot2.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+plot2.line('x', 'y', source=source_plot2, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 
 plot3 = make_plot ('hosp', PLOT3_TITLE, days)
 set_plot_details(plot3)
