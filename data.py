@@ -189,16 +189,22 @@ def get_avg_deaths ( total_deaths, span, years ):
     data_length=len(total_deaths)
     for d in range(0,span):
         daily_sum = 0
-        for i in range(1, years + 1 ):
+        # we go back 2 years so this is always considering 2015-2019 (pre-Covid)
+        for i in range(2, years + 2):
             base_index = data_length-1-span
-            index = base_index-i*365+d
-            print (d,i, index, index > data_length)
+            # we never let the day index go beyound 365
+            day_index = d-365*int(d/365)
+            index = base_index-i*365+day_index
+            print (d,i, day_index, index,)
             daily_sum = daily_sum + total_deaths[ index ]
         avg_data.append(daily_sum / years )
 
     return avg_data
 
 def process_data():
+
+    rt_period = 4   # infections activity period considered for RT
+    cfr_delta = 14  # average time to die for CFR calculation
 
     # get the latest of each file type
     files1 = glob.glob('/home/deployment/data/data-*.csv')
@@ -222,21 +228,21 @@ def process_data():
     hosp_uci     = main_data['internados_uci'].tolist()
     cv19_deaths  = get_differential_series(main_data['obitos'].tolist())
     incidence    = get_incidence_T(new, 14, 102.8)
-    cfr          = get_cfr(cv19_deaths, new, 14, 30 ) # ignore extra days
-    rt           = get_rt(new, 4, 4) # ignore extra days
+    cfr          = get_cfr(cv19_deaths, new, cfr_delta, 30) # ignoring early days
+    rt           = get_rt(new, rt_period, 4) # ignoring early days
     pcr_tests    = tests_data['amostras_pcr_novas'].tolist()
-    pcr_pos      = get_pcr_positivity( pcr_tests, new, 2, 0 )
+    pcr_pos      = get_pcr_positivity( pcr_tests, new, 2, 0)
 
     # this is a multi year series starting in 01/01/2009
     total_deaths = mort_data['geral_pais'].tolist()
     avg_deaths   = get_avg_deaths(total_deaths, days, 5)
 
-    # TODO a analise das amostras tem dois dias de atraso
-    print(len(cfr), len(rt), len(pcr_tests), len(pcr_pos))
+    # NOTE the tests series has 2 days of delay it seems - checked on 20/05/2021
+    #print(len(cfr), len(rt), len(pcr_tests), len(pcr_pos))
 
     s_new = get_smooth_list (new, 7)
     s_cv19_deaths = get_smooth_list (cv19_deaths, 7)
-    s_total_deaths = get_smooth_list ( total_deaths[-days:], 7 )
+    s_total_deaths = get_smooth_list ( total_deaths[-days:], 7)
 
     return s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths
 

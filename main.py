@@ -12,7 +12,7 @@ PAGE_TITLE = 'Coviz'
 
 PLOT_TOOLS    ='save,reset,pan,wheel_zoom,box_zoom'
 
-PLOT_HEIGHT   = 350
+PLOT_HEIGHT   = 300
 PLOT_WIDTH    = 500
 TEXT_WIDTH    = 300
 LMARGIN_WIDTH = 20
@@ -89,7 +89,7 @@ set_plot_details(plot2, 'Days', '%', "@x{0}", "@y{0.00}")
 plot2.line('x', 'y', source=source_plot2, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 
 plot3 = make_plot ('hosp', PLOT3_TITLE, days)
-set_plot_details(plot3)
+set_plot_details(plot3, 'Days', 'Count', "@x{0}", "@y{0}", "mouse")
 
 source1_plot3 = ColumnDataSource(data=dict(x=x, y=data_hosp))
 source2_plot3 = ColumnDataSource(data=dict(x=x, y=data_hosp_uci))
@@ -99,7 +99,7 @@ plot3.legend.location = 'top_left'
 
 source_plot4 = ColumnDataSource(data=dict(x=x, y=data_cfr))
 plot4 = make_plot ('cfr', PLOT4_TITLE, days)
-set_plot_details(plot4, 'Days', '%', "@x{0}", "@y{0.00}")
+set_plot_details(plot4, 'Days', '%', "@x{0}", "@y{0.00}",)
 
 plot4.line('x', 'y', source=source_plot4, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 
@@ -109,26 +109,26 @@ set_plot_details(plot5)
 source_plot5 = ColumnDataSource(data=dict(x=x, y=data_new))
 plot5.line('x', 'y', source=source_plot5, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 
-source_plot6 = ColumnDataSource(data=dict(x=x, y=data_cv19_deaths))
-plot6 = make_plot ('deaths', PLOT6_TITLE, days)
-set_plot_details(plot6)
+source_plot6 = ColumnDataSource(data=dict(x=x, y=data_rt))
+plot6 = make_plot ('rt', PLOT8_TITLE, days)
+set_plot_details(plot6, 'Days', 'Value',  "@x{0}", "@y{0.00}")
 
 plot6.line('x', 'y', source=source_plot6, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
-
 source1_plot7 = ColumnDataSource(data=dict(x=x, y=data_total_deaths))
 source2_plot7 = ColumnDataSource(data=dict(x=x, y=data_avg_deaths))
 source3_plot7 = ColumnDataSource(data=dict(x=x, y=data_cv19_deaths))
+
 plot7 = make_plot ('total deaths', PLOT7_TITLE, days)
 set_plot_details(plot7, 'Days', 'Count', "@x{0}", "@y{0}", "mouse")
 
 plot7.line('x', 'y', source=source1_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
-plot7.line('x', 'y', source=source2_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='5y average' )
-plot7.line('x', 'y', source=source3_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Covid19')
+plot7.line('x', 'y', source=source2_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='Average 2015-2019' )
+#plot7.line('x', 'y', source=source3_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Covid19')
 plot7.legend.location = 'top_left'
 
-source_plot8 = ColumnDataSource(data=dict(x=x, y=data_rt))
-plot8 = make_plot ('rt', PLOT8_TITLE, days)
-set_plot_details(plot8, 'Days', 'Value',  "@x{0}", "@y{0.00}")
+source_plot8 = ColumnDataSource(data=dict(x=x, y=data_cv19_deaths))
+plot8 = make_plot ('deaths', PLOT6_TITLE, days)
+set_plot_details(plot8)
 
 plot8.line('x', 'y', source=source_plot8, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
 
