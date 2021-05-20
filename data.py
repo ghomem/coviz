@@ -4,99 +4,7 @@ import pandas as pd
 import glob
 import os
 import csv
-
-#data_dados
-#confirmados
-#confirmados_arsnorte
-#confirmados_arscentro
-#confirmados_arslvt
-#confirmados_arsalentejo
-#confirmados_arsalgarve
-#confirmados_acores
-#confirmados_madeira
-#confirmados_estrangeiro
-#confirmados_novos
-#recuperados
-#obitos
-#internados
-#internados_uci
-#lab
-#suspeitos
-#vigilancia
-#n_confirmados
-#cadeias_transmissao
-#transmissao_importada
-#confirmados_0_9_f
-#confirmados_0_9_m
-#confirmados_10_19_f
-#confirmados_10_19_m
-#confirmados_20_29_f
-#confirmados_20_29_m
-#confirmados_30_39_f
-#confirmados_30_39_m
-#confirmados_40_49_f
-#confirmados_40_49_m
-#confirmados_50_59_f
-#confirmados_50_59_m
-#confirmados_60_69_f
-#confirmados_60_69_m
-#confirmados_70_79_f
-#confirmados_70_79_m
-#confirmados_80_plus_f
-#confirmados_80_plus_m
-#sintomas_tosse
-#sintomas_febre
-#sintomas_dificuldade_respiratoria
-#sintomas_cefaleia
-#sintomas_dores_musculares
-#sintomas_fraqueza_generalizada
-#confirmados_f
-#confirmados_m
-#obitos_arsnorte
-#obitos_arscentro
-#obitos_arslvt
-#obitos_arsalentejo
-#obitos_arsalgarve
-#obitos_acores
-#obitos_madeira
-#obitos_estrangeiro
-#recuperados_arsnorte
-#recuperados_arscentro
-#recuperados_arslvt
-#recuperados_arsalentejo
-#recuperados_arsalgarve
-#recuperados_acores
-#recuperados_madeira
-#recuperados_estrangeiro
-#obitos_0_9_f
-#obitos_0_9_m
-#obitos_10_19_f
-#obitos_10_19_m
-#obitos_20_29_f
-#obitos_20_29_m
-#obitos_30_39_f
-#obitos_30_39_m
-#obitos_40_49_f
-#obitos_40_49_m
-#obitos_50_59_f
-#obitos_50_59_m
-#obitos_60_69_f
-#obitos_60_69_m
-#obitos_70_79_f
-#obitos_70_79_m
-#obitos_80_plus_f
-#obitos_80_plus_m
-#obitos_f
-#obitos_m
-#confirmados_desconhecidos_m
-#confirmados_desconhecidos_f
-#ativos
-#internados_enfermaria
-#confirmados_desconhecidos
-#incidencia_nacional
-#incidencia_continente
-#rt_nacional
-#rt_continente
+from datetime import datetime
 
 def get_smooth_list ( data, window_size ):
 
@@ -125,7 +33,8 @@ def get_incidence_T ( data, period, factor ):
     for i, element in enumerate(data):
         if i >= period-1:
             interval = data [(i-period+1):i]
-            inc_data.append( sum(interval) / factor )
+            value = sum (interval) / factor
+            inc_data.append(value)
 
     return inc_data
 
@@ -195,11 +104,18 @@ def get_avg_deaths ( total_deaths, span, years ):
             # we never let the day index go beyound 365
             day_index = d-365*int(d/365)
             index = base_index-i*365+day_index
-            print (d,i, day_index, index,)
             daily_sum = daily_sum + total_deaths[ index ]
         avg_data.append(daily_sum / years )
 
     return avg_data
+
+def get_dates( date_strings ):
+
+    dates = []
+    for d in date_strings:
+        dates.append(datetime.strptime(d,'%d-%m-%Y').date())
+
+    return dates
 
 def process_data():
 
@@ -221,6 +137,9 @@ def process_data():
 
     new          = main_data['confirmados_novos'].tolist()
 
+    # converting the dd-mm-yyyy strings to date objects
+    dates        = get_dates(main_data['data'].tolist())
+
     # the amount of Covid data days that we have
     days         = len(new)
 
@@ -240,10 +159,10 @@ def process_data():
     # NOTE the tests series has 2 days of delay it seems - checked on 20/05/2021
     #print(len(cfr), len(rt), len(pcr_tests), len(pcr_pos))
 
-    s_new = get_smooth_list (new, 7)
-    s_cv19_deaths = get_smooth_list (cv19_deaths, 7)
+    s_new          = get_smooth_list (new, 7)
+    s_cv19_deaths  = get_smooth_list (cv19_deaths, 7)
     s_total_deaths = get_smooth_list ( total_deaths[-days:], 7)
 
-    return s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths
+    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths
 
 #process_data()
