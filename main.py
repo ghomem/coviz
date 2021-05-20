@@ -65,11 +65,11 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL ):
 
 curdoc().title = PAGE_TITLE
 
-data_new, data_hosp, data_hosp_uci, data_deaths, data_incidence, data_cfr = process_data()
+data_new, data_hosp, data_hosp_uci, data_deaths, data_incidence, data_cfr, data_rt = process_data()
 
 days=len(data_new)
 
-# FIXME get real data for this
+# FIXME get rid of this once we have the complete data
 R0=2
 x = np.linspace(1, days, days)
 source_plot = ColumnDataSource(data=dict(x=x, y=np.full( days, R0)))
@@ -117,10 +117,11 @@ set_plot_details(plot7)
 
 plot7.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 
-plot8 = make_plot ('plot8', PLOT8_TITLE, days)
+source_plot8 = ColumnDataSource(data=dict(x=x, y=data_rt))
+plot8 = make_plot ('rt', PLOT8_TITLE, days)
 set_plot_details(plot8, 'Days', 'Value')
 
-plot8.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
+plot8.line('x', 'y', source=source_plot8, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
 
 plot9 = make_plot ('plot9', PLOT9_TITLE, days)
 set_plot_details(plot9)

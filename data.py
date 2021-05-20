@@ -1,9 +1,9 @@
 import statistics as st
 import numpy as np
 import pandas as pd
+import glob
+import os
 import csv
-
-MAIN_DATA='/home/deployment/data/data-2021-05-18.csv'
 
 #data_dados
 #confirmados
@@ -98,6 +98,14 @@ MAIN_DATA='/home/deployment/data/data-2021-05-18.csv'
 #rt_nacional
 #rt_continente
 
+def get_smooth_list ( data, window_size ):
+
+    series  = pd.Series(data)
+    windows = series.rolling(window_size)
+
+    # the first window_size-1 results are nan, but that's OK
+    return windows.mean().tolist()
+
 # obtains the new entries from the acumulated entries
 def get_differential_series ( data ):
 
@@ -111,8 +119,8 @@ def get_differential_series ( data ):
 
 def get_incidence_T ( data, period, factor ):
 
-    # the first T days have 0 value
-    inc_data = list(np.full( period-1, 0))
+    # the first T days have None
+    inc_data = list(np.full( period-1, None))
 
     for i, element in enumerate(data):
         if i >= period-1:
@@ -124,42 +132,58 @@ def get_incidence_T ( data, period, factor ):
 # go back period days in time to calculate the cases
 def get_cfr ( deaths, new, period, ignore_interval ):
 
-    # the first T days have 0 value
-    cfr_data = list(np.full( period-1 + ignore_interval, 0))
+    # the first T days have None value because the numbers are not accurate
+    # then we have the user defined interval to ignore and extra rewind days
+    # used for averaging the new cases
+    fwd = 4
+    rew = 3
+    cfr_data = list(np.full( period + ignore_interval + rew, None))
 
     for i, element in enumerate(deaths):
-        if i >= period-1 + ignore_interval:
-            delta = (period - 1)
+        if i > period + ignore_interval + rew - 1:
             # we smooth the new cases over 7 days around the date
-            new_value = st.mean(new[i-delta-3:i-delta+4])
+            new_value = st.mean(new[i-period-rew:i-period+fwd])
             if new_value > 0:
                 ratio = element / new_value
             else:
                 ratio = 0
-            print(i,element,new_value, ratio * 100)
             cfr_data.append( ratio * 100 )
 
     # let's smooth now
-    window_size = 7
-    series = pd.Series(cfr_data)
-    windows = series.rolling(window_size)
-    padding = list(np.full( window_size-1, 0))
-    smooth_list = windows.mean().tolist()[window_size - 1:]
-    result = padding + smooth_list
+    result = get_smooth_list(cfr_data, 7)
+
+    return result
+
+def get_rt ( new, period, ignore_interval ):
+
+    r_data = list(np.full( period, None))
+
+    for i, element in enumerate(new):
+        if i > period + ignore_interval - 1:
+            slice = new[i-period:i]
+            total = sum(slice)
+            r_data.append( new[i] / (total/period) )
+
+    # let's smooth now
+    result = get_smooth_list(r_data, 7)
 
     return result
 
 def process_data():
 
-    data = pd.read_csv(MAIN_DATA)
+    files = glob.glob('/home/deployment/data/data-*.csv')
+    main_data = max(files, key=os.path.getctime)
+
+    data = pd.read_csv(main_data)
 
     new       = data['confirmados_novos'].tolist()
     hosp      = data['internados'].tolist()
     hosp_uci  = data['internados_uci'].tolist()
     deaths    = get_differential_series(data['obitos'].tolist())
     incidence = get_incidence_T(new, 14, 102.8)
-    cfr       = get_cfr( deaths, new, 14, 30 ) # ignore extra days
+    cfr       = get_cfr( deaths, new, 14, 30 ) # ignore extra 30 days
+    rt        = get_rt(new, 4, 10) # ignore extra 10 days
 
-    print(len(new), len(hosp), len(hosp_uci), len(deaths))
-    return new, hosp, hosp_uci, deaths, incidence, cfr
+    return new, hosp, hosp_uci, deaths, incidence, cfr, rt
 
+#process_data()
