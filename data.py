@@ -119,7 +119,7 @@ def get_dates( date_strings ):
 
 def process_data():
 
-    rt_period = 4   # infections activity period considered for RT
+    rt_period = 7   # infections activity period considered for RT
     cfr_delta = 14  # average time to die for CFR calculation
 
     # get the latest of each file type

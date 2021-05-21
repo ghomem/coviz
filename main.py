@@ -143,7 +143,7 @@ set_plot_details(plot5)
 source_plot6 = ColumnDataSource(data=dict(x=x, y=data_rt))
 plot6 = make_plot ('rt', PLOT8_TITLE, days)
 plot6.line('x', 'y', source=source_plot6, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
-set_plot_details(plot6, 'Days', 'Value',  "@x{0}", "@y{0.00}")
+set_plot_details(plot6, 'Days', 'Value',  "@x{0}", "@y{0.0000}")
 
 # seven
 
