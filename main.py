@@ -44,7 +44,8 @@ PLOT9_TITLE  ='New cases by age group'
 PLOT10_TITLE ='Risk diagram'
 
 CLINES_LABEL = 'Show limits'
-CLINES_SWITCH_WIDTH = 130
+CLINES_SWITCH_WIDTH = 140
+CLINES_SWITCH_HEIGHT = 30
 
 # epidemic management red lines
 
@@ -57,7 +58,7 @@ def make_plot( name, title, range ):
     return figure(plot_height=PLOT_HEIGHT, plot_width=PLOT_WIDTH, title=title, tools=PLOT_TOOLS, x_range=[0, range], name=name, )
 
 # set properties common to all the plots
-def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='mouse' ):
+def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='mouse', show_y_label = False ):
     aplot.toolbar.active_drag    = None
     aplot.toolbar.active_scroll  = None
     aplot.toolbar.active_tap     = None
@@ -74,15 +75,16 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
 
     # labels
     aplot.xaxis.axis_label = xlabel
-    aplot.yaxis.axis_label = ylabel
+    if show_y_label:
+        aplot.yaxis.axis_label = ylabel
 
 # for the toggle button action
 def update_state(new):
 
-    cline1.visible = cline_switch.active
-    cline2.visible = cline_switch.active
-    cline3.visible = cline_switch.active
-    cline4.visible = cline_switch.active
+    cline1.visible = clines_switch.active
+    cline2.visible = clines_switch.active
+    cline3.visible = clines_switch.active
+    cline4.visible = clines_switch.active
 
 
 # main
@@ -100,46 +102,48 @@ x = np.linspace(1, days, days)
 
 source_plot1 = ColumnDataSource(data=dict(x=x, y=data_incidence))
 plot1 = make_plot ('incidence', PLOT1_TITLE, days)
-set_plot_details(plot1)
 plot1.line('x', 'y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+set_plot_details(plot1)
 
 # two
 
 source_plot2 = ColumnDataSource(data=dict(x=x, y=data_pcr_pos))
 plot2 = make_plot ('pcr_pos', PLOT2_TITLE, days)
-set_plot_details(plot2, 'Days', '%', "@x{0}", "@y{0.00}")
 plot2.line('x', 'y', source=source_plot2, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+set_plot_details(plot2, 'Days', '%', "@x{0}", "@y{0.00}")
 
 # three
 
 plot3 = make_plot ('hosp', PLOT3_TITLE, days)
-set_plot_details(plot3, 'Days', 'Count', "@x{0}", "@y{0}", "mouse")
 source1_plot3 = ColumnDataSource(data=dict(x=x, y=data_hosp))
 source2_plot3 = ColumnDataSource(data=dict(x=x, y=data_hosp_uci))
 plot3.line('x', 'y', source=source1_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
 plot3.line('x', 'y', source=source2_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='UCI' )
 plot3.legend.location = 'top_left'
+set_plot_details(plot3, 'Days', 'Count', "@x{0}", "@y{0}", "mouse")
+
+plot3.legend.label_text_font_size = "12px"
 
 # four
 
 source_plot4 = ColumnDataSource(data=dict(x=x, y=data_cfr))
 plot4 = make_plot ('cfr', PLOT4_TITLE, days)
-set_plot_details(plot4, 'Days', '%', "@x{0}", "@y{0.00}",)
 plot4.line('x', 'y', source=source_plot4, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+set_plot_details(plot4, 'Days', '%', "@x{0}", "@y{0.00}",)
 
 # five
 
 source_plot5 = ColumnDataSource(data=dict(x=x, y=data_new))
 plot5 = make_plot ('new', PLOT5_TITLE, days)
-set_plot_details(plot5)
 plot5.line('x', 'y', source=source_plot5, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+set_plot_details(plot5)
 
 # six
 
 source_plot6 = ColumnDataSource(data=dict(x=x, y=data_rt))
 plot6 = make_plot ('rt', PLOT8_TITLE, days)
-set_plot_details(plot6, 'Days', 'Value',  "@x{0}", "@y{0.00}")
 plot6.line('x', 'y', source=source_plot6, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
+set_plot_details(plot6, 'Days', 'Value',  "@x{0}", "@y{0.00}")
 
 # seven
 
@@ -147,23 +151,25 @@ source1_plot7 = ColumnDataSource(data=dict(x=x, y=data_total_deaths))
 source2_plot7 = ColumnDataSource(data=dict(x=x, y=data_avg_deaths))
 source3_plot7 = ColumnDataSource(data=dict(x=x, y=data_cv19_deaths))
 plot7 = make_plot ('total deaths', PLOT7_TITLE, days)
-set_plot_details(plot7, 'Days', 'Count', "@x{0}", "@y{0}", "mouse")
 plot7.line('x', 'y', source=source1_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
-plot7.line('x', 'y', source=source2_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='Average 2015-2019' )
+plot7.line('x', 'y', source=source2_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='2015-2019' )
 #plot7.line('x', 'y', source=source3_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Covid19')
 plot7.legend.location = 'top_left'
+set_plot_details(plot7, 'Days', 'Count', "@x{0}", "@y{0}", "mouse")
+
+plot7.legend.label_text_font_size = "12px"
 
 # eight
 
 source_plot8 = ColumnDataSource(data=dict(x=x, y=data_cv19_deaths))
 plot8 = make_plot ('deaths', PLOT6_TITLE, days)
-set_plot_details(plot8)
 plot8.line('x', 'y', source=source_plot8, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
+set_plot_details(plot8)
 
 # Critical lines
 # default, primary, success, warning, danger, light
-cline_switch = Toggle(label=CLINES_LABEL, button_type='default', align='end', width=CLINES_SWITCH_WIDTH)
-cline_switch.on_click(update_state)
+clines_switch = Toggle(label=CLINES_LABEL, button_type='default', align='end', width=CLINES_SWITCH_WIDTH, height=CLINES_SWITCH_HEIGHT, name = 'section1_button')
+clines_switch.on_click(update_state)
 
 source_plot1_critical = ColumnDataSource(data=dict(x=x, y=np.full( days, INCIDENCE_LIMIT )))
 source_plot2_critical = ColumnDataSource(data=dict(x=x, y=np.full( days, POSITIVITY_LIMIT )))
@@ -204,13 +210,14 @@ plot10.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha
 
 # section 1
 
-grid = gridplot([ [ None,  None,  None,  cline_switch ],
+curdoc().add_root(clines_switch)
+
+grid = gridplot([ 
                   [ plot1, plot3, plot5, plot7 ],
                   [ plot2, plot4, plot6, plot8 ] ],
-                  plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT, toolbar_location=None )
+                  plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT, toolbar_location=None, sizing_mode='scale_width')
 
-# TODO scaling issues? sizing_mode = 'scale_width' ?
-layout1 = layout(grid, name='section1')
+layout1 = layout( grid, name='section1', sizing_mode='scale_width')
 
 curdoc().add_root(layout1)
 
