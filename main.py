@@ -61,21 +61,35 @@ def make_plot( name, title, range ):
 def make_data_source ( datax, datay ):
     return ColumnDataSource(data=dict(x=datax, y=datay))
 
+def make_data_source2 ( datax, datay, datay2 ):
+    return ColumnDataSource(data=dict(x=datax, y=datay, y2=datay2))
+
 # set properties common to all the plots
-def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='mouse', show_y_label = False ):
+def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='vline', show_y_label = False, ylabel2 = PLOT_Y_LABEL, ytooltip_format2 = None, tooltip_line = None ):
     aplot.toolbar.active_drag    = None
     aplot.toolbar.active_scroll  = None
     aplot.toolbar.active_tap     = None
 
     # add the hover tool
-    ahover = HoverTool(tooltips=[ (xlabel, xtooltip_format), (ylabel, ytooltip_format)], mode=tooltip_mode)
+    tooltip_list = [ (ylabel, ytooltip_format), (xlabel, xtooltip_format) ]
+
+    # check if we have a second line for tooltips
+    if ytooltip_format2:
+        tooltip_list.insert( 1, (ylabel2, ytooltip_format2) )
+
+    # we pass a single render to anchor the tooltip to a specific line
+    if tooltip_line:
+        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical', renderers = [ tooltip_line ])
+    else:
+        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical' )
+
     ahover.point_policy='snap_to_data'
     ahover.line_policy='nearest'
     aplot.add_tools(ahover)
     aplot.toolbar.active_inspect = ahover
 
     # control placement / visibility of toolbar
-    aplot.toolbar_location       = None
+    aplot.toolbar_location = None
 
     # labels
     aplot.xaxis.axis_label = xlabel
@@ -119,12 +133,12 @@ set_plot_details(plot2, 'Days', '%', "@x{0}", "@y{0.00}")
 # three
 
 plot3 = make_plot ('hosp', PLOT3_TITLE, days)
-source1_plot3 = make_data_source(x, data_hosp)
-source2_plot3 = make_data_source(x, data_hosp_uci)
-plot3.line('x', 'y', source=source1_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
-plot3.line('x', 'y', source=source2_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='UCI' )
+source_plot3 = make_data_source2(x, data_hosp, data_hosp_uci)
+l31 = plot3.line('x', 'y',  source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
+l32 = plot3.line('x', 'y2', source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='UCI' )
+
 plot3.legend.location = 'top_left'
-set_plot_details(plot3, 'Days', 'Count', "@x{0}", "@y{0}", "mouse")
+set_plot_details(plot3, 'Days', 'Total', "@x{0}", "@y{0}", "vline", False,'UCI', "@y2{0}", l31)
 
 plot3.legend.label_text_font_size = "12px"
 
@@ -147,17 +161,16 @@ set_plot_details(plot5)
 source_plot6 = make_data_source(x, data_rt)
 plot6 = make_plot ('rt', PLOT8_TITLE, days)
 plot6.line('x', 'y', source=source_plot6, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
-set_plot_details(plot6, 'Days', 'Value',  "@x{0}", "@y{0.0000}")
+set_plot_details(plot6, 'Days', 'Value',  "@x{0}", "@y{0.00}")
 
 # seven
 
-source1_plot7 = make_data_source(x, data_total_deaths)
-source2_plot7 = make_data_source(x, data_avg_deaths)
+source_plot7 = make_data_source2(x, data_total_deaths, data_avg_deaths)
 plot7 = make_plot ('total deaths', PLOT7_TITLE, days)
-plot7.line('x', 'y', source=source1_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
-plot7.line('x', 'y', source=source2_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='2015-2019' )
+l71 = plot7.line('x', 'y',  source=source_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Current' )
+l72 = plot7.line('x', 'y2', source=source_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='2015-2019' )
 plot7.legend.location = 'top_left'
-set_plot_details(plot7, 'Days', 'Count', "@x{0}", "@y{0}", "mouse")
+set_plot_details(plot7, 'Days', 'Current', "@x{0}", "@y{0}", "vline", False,'2015-2019', "@y2{0}", l71)
 
 plot7.legend.label_text_font_size = "12px"
 
