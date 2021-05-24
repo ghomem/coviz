@@ -3,7 +3,7 @@ import pandas as pd
 
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer
 from bokeh.palettes import Spectral6
 from bokeh.plotting import figure
 
@@ -81,7 +81,13 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
     if tooltip_line:
         ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical', renderers = [ tooltip_line ])
     else:
-        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical' )
+        rlist  = aplot.select(dict(type=GlyphRenderer))
+        if len(rlist) > 0:
+            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical', renderers = [ rlist[0] ])
+        else:
+            # this only happens if we have a plot that has not lines yet, but it is here to prevent a crash
+            print('This is probably a plot with no line')
+            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical', )
 
     ahover.point_policy='snap_to_data'
     ahover.line_policy='nearest'
@@ -120,7 +126,7 @@ x = np.linspace(1, days, days)
 
 source_plot1 = make_data_source(x, data_incidence)
 plot1 = make_plot ('incidence', PLOT1_TITLE, days)
-plot1.line('x', 'y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+l11 = plot1.line('x', 'y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot1)
 
 # two
