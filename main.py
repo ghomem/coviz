@@ -57,6 +57,10 @@ RT_LIMIT         = 1
 def make_plot( name, title, range ):
     return figure(plot_height=PLOT_HEIGHT, plot_width=PLOT_WIDTH, title=title, tools=PLOT_TOOLS, x_range=[0, range], name=name, )
 
+# because there are several ways to achieve this, let's encapsulate
+def make_data_source ( datax, datay ):
+    return ColumnDataSource(data=dict(x=datax, y=datay))
+
 # set properties common to all the plots
 def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='mouse', show_y_label = False ):
     aplot.toolbar.active_drag    = None
@@ -100,14 +104,14 @@ x = np.linspace(1, days, days)
 
 # one
 
-source_plot1 = ColumnDataSource(data=dict(x=x, y=data_incidence))
+source_plot1 = make_data_source(x, data_incidence)
 plot1 = make_plot ('incidence', PLOT1_TITLE, days)
 plot1.line('x', 'y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot1)
 
 # two
 
-source_plot2 = ColumnDataSource(data=dict(x=x, y=data_pcr_pos))
+source_plot2 = make_data_source(x, data_pcr_pos)
 plot2 = make_plot ('pcr_pos', PLOT2_TITLE, days)
 plot2.line('x', 'y', source=source_plot2, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot2, 'Days', '%', "@x{0}", "@y{0.00}")
@@ -115,8 +119,8 @@ set_plot_details(plot2, 'Days', '%', "@x{0}", "@y{0.00}")
 # three
 
 plot3 = make_plot ('hosp', PLOT3_TITLE, days)
-source1_plot3 = ColumnDataSource(data=dict(x=x, y=data_hosp))
-source2_plot3 = ColumnDataSource(data=dict(x=x, y=data_hosp_uci))
+source1_plot3 = make_data_source(x, data_hosp)
+source2_plot3 = make_data_source(x, data_hosp_uci)
 plot3.line('x', 'y', source=source1_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
 plot3.line('x', 'y', source=source2_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='UCI' )
 plot3.legend.location = 'top_left'
@@ -126,34 +130,32 @@ plot3.legend.label_text_font_size = "12px"
 
 # four
 
-source_plot4 = ColumnDataSource(data=dict(x=x, y=data_cfr))
+source_plot4 = make_data_source(x, data_cfr)
 plot4 = make_plot ('cfr', PLOT4_TITLE, days)
 plot4.line('x', 'y', source=source_plot4, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot4, 'Days', '%', "@x{0}", "@y{0.00}",)
 
 # five
 
-source_plot5 = ColumnDataSource(data=dict(x=x, y=data_new))
+source_plot5 = make_data_source(x, data_new)
 plot5 = make_plot ('new', PLOT5_TITLE, days)
 plot5.line('x', 'y', source=source_plot5, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot5)
 
 # six
 
-source_plot6 = ColumnDataSource(data=dict(x=x, y=data_rt))
+source_plot6 = make_data_source(x, data_rt)
 plot6 = make_plot ('rt', PLOT8_TITLE, days)
 plot6.line('x', 'y', source=source_plot6, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
 set_plot_details(plot6, 'Days', 'Value',  "@x{0}", "@y{0.0000}")
 
 # seven
 
-source1_plot7 = ColumnDataSource(data=dict(x=x, y=data_total_deaths))
-source2_plot7 = ColumnDataSource(data=dict(x=x, y=data_avg_deaths))
-source3_plot7 = ColumnDataSource(data=dict(x=x, y=data_cv19_deaths))
+source1_plot7 = make_data_source(x, data_total_deaths)
+source2_plot7 = make_data_source(x, data_avg_deaths)
 plot7 = make_plot ('total deaths', PLOT7_TITLE, days)
 plot7.line('x', 'y', source=source1_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
 plot7.line('x', 'y', source=source2_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='2015-2019' )
-#plot7.line('x', 'y', source=source3_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Covid19')
 plot7.legend.location = 'top_left'
 set_plot_details(plot7, 'Days', 'Count', "@x{0}", "@y{0}", "mouse")
 
@@ -161,7 +163,7 @@ plot7.legend.label_text_font_size = "12px"
 
 # eight
 
-source_plot8 = ColumnDataSource(data=dict(x=x, y=data_cv19_deaths))
+source_plot8 = make_data_source(x, data_cv19_deaths)
 plot8 = make_plot ('deaths', PLOT6_TITLE, days)
 plot8.line('x', 'y', source=source_plot8, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
 set_plot_details(plot8)
@@ -171,10 +173,10 @@ set_plot_details(plot8)
 clines_switch = Toggle(label=CLINES_LABEL, button_type='default', align='end', width=CLINES_SWITCH_WIDTH, height=CLINES_SWITCH_HEIGHT, name = 'section1_button')
 clines_switch.on_click(update_state)
 
-source_plot1_critical = ColumnDataSource(data=dict(x=x, y=np.full( days, INCIDENCE_LIMIT )))
-source_plot2_critical = ColumnDataSource(data=dict(x=x, y=np.full( days, POSITIVITY_LIMIT )))
-source_plot3_critical = ColumnDataSource(data=dict(x=x, y=np.full( days, UCI_LIMIT )))
-source_plot6_critical = ColumnDataSource(data=dict(x=x, y=np.full( days, RT_LIMIT )))
+source_plot1_critical = make_data_source(x, np.full( days, INCIDENCE_LIMIT ))
+source_plot2_critical = make_data_source(x, np.full( days, POSITIVITY_LIMIT ))
+source_plot3_critical = make_data_source(x, np.full( days, UCI_LIMIT ))
+source_plot6_critical = make_data_source(x, np.full( days, RT_LIMIT ))
 
 # critical lines
 cline1 = plot1.line('x', 'y', source=source_plot3_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
