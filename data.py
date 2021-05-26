@@ -183,14 +183,17 @@ def process_data():
     files1 = glob.glob('/home/deployment/data/data-*.csv')
     files2 = glob.glob('/home/deployment/data/amostras-*.csv')
     files3 = glob.glob('/home/deployment/data/mortalidade-*.csv')
+    files4 = glob.glob('/home/deployment/data/vacinas-*.csv')
 
     main_file  = max(files1, key=os.path.getctime)
     tests_file = max(files2, key=os.path.getctime)
     mort_file  = max(files3, key=os.path.getctime)
+    vacc_file  = max(files4, key=os.path.getctime)
 
     main_data  = pd.read_csv(main_file)
     tests_data = pd.read_csv(tests_file)
     mort_data  = pd.read_csv(mort_file)
+    vacc_data  = pd.read_csv(vacc_file)
 
     new          = main_data['confirmados_novos'].tolist()
 
@@ -208,6 +211,8 @@ def process_data():
     rt           = get_rt(new, rt_period, rt_ignore)
     pcr_tests    = tests_data['amostras_pcr_novas'].tolist()
     pcr_pos      = get_pcr_positivity( pcr_tests, new, 2, 0)
+    vacc_1d      = vacc_data['doses1'].tolist()
+    vacc_2d      = vacc_data['doses2'].tolist()
 
     # this is a multi year series starting in 01/01/2009
     total_deaths = mort_data['geral_pais'].tolist()
@@ -227,6 +232,6 @@ def process_data():
 
     strat_cfr = get_stratified_cfr ( main_data, cfr_delta, cfr_ignore )
 
-    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr
+    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_1d, vacc_2d
 
 #process_data()

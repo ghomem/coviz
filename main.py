@@ -14,8 +14,9 @@ PAGE_TITLE = 'Coviz'
 
 PLOT_TOOLS    ='save,reset,pan,wheel_zoom,box_zoom'
 
-PLOT_HEIGHT   = 250
+PLOT_HEIGHT   = 250 # first section, but the actual height is constrained by the width
 PLOT_WIDTH    = 400
+PLOT_HEIGHT2  = 160 # for the second section
 TEXT_WIDTH    = 300
 LMARGIN_WIDTH = 20
 
@@ -101,6 +102,7 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
 
     # add the hover tool
     tooltip_list = [ (ylabel, ytooltip_format), (xlabel, xtooltip_format) ]
+    tooltip_attachment = 'vertical'
 
     # check if we have a second line for tooltips
     if ytooltip_format2:
@@ -108,15 +110,15 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
 
     # we pass a single render to anchor the tooltip to a specific line
     if tooltip_line:
-        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical', renderers = [ tooltip_line ])
+        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, renderers = [ tooltip_line ])
     else:
         rlist  = aplot.select(dict(type=GlyphRenderer))
         if len(rlist) > 0:
-            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical', renderers = [ rlist[0] ])
+            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, renderers = [ rlist[0] ])
         else:
             # this only happens if we have a plot that has not lines yet, but it is here to prevent a crash
             print('This is probably a plot with no line')
-            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical', )
+            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, )
 
     ahover.point_policy='snap_to_data'
     ahover.line_policy='nearest'
@@ -186,7 +188,7 @@ def update_state(new):
 
 curdoc().title = PAGE_TITLE
 
-data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_strat_new, data_strat_cv19_deaths, data_strat_cfr = process_data()
+data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_1d, data_vacc_2d = process_data()
 
 days=len(data_new)
 
@@ -326,12 +328,12 @@ set_plot_details_multi(plot11, 'Days', labels, "@x{0}", "vline", lines[nr_series
 
 # twelve
 
-source_plot12 = make_data_source2(x, data_total_deaths, data_avg_deaths)
+source_plot12 = make_data_source2(x, data_vacc_1d, data_vacc_2d)
 plot12 = make_plot ('vaccination', PLOT12_TITLE, days)
-l121 = plot12.line('x', 'y',  source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Current' )
-l122 = plot12.line('x', 'y2', source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='2015-2019' )
+l121 = plot12.line('x', 'y',  source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Partial' )
+l122 = plot12.line('x', 'y2', source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Complete' )
 plot12.legend.location = 'top_left'
-set_plot_details(plot12, 'Days', 'Current', "@x{0}", "@y{0}", "vline", False,'2015-2019', "@y2{0}", l121)
+set_plot_details(plot12, 'Days', 'Partial', "@x{0}", "@y{0}", "vline", False,'Complete', "@y2{0}", l121)
 
 plot12.legend.label_text_font_size = "12px"
 
@@ -355,11 +357,10 @@ curdoc().add_root(layout1)
 
 # section 2
 
-# TODO constants for plot sizes
 grid2 = gridplot ([
                    [plot9,  plot11],
                    [plot10, plot12] ], 
-                   plot_width=PLOT_WIDTH, plot_height=160, toolbar_location=None, sizing_mode='scale_width')
+                   plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT2, toolbar_location=None, sizing_mode='scale_width')
 
 layout2 = layout( grid2, name='section2', sizing_mode='scale_width')
 
