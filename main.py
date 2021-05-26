@@ -1,10 +1,11 @@
+import math
 import numpy as np
 import pandas as pd
 
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
 from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer
-from bokeh.palettes import Spectral6
+from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256
 from bokeh.plotting import figure
 
 from .data import process_data
@@ -32,6 +33,8 @@ PLOT_LINE_COLOR_HIGHLIGHT = 'orange'
 PLOT_LINE_COLOR_REFERENCE = 'black'
 PLOT_LINE_COLOR_CRITICAL  = 'red'
 
+PLOT_LINE_COLOR_PALETTE = Plasma256
+
 PLOT1_TITLE  ='14 Day incidence'
 PLOT2_TITLE  ='PCR Positivity'
 PLOT3_TITLE  ='Hospitalized'
@@ -41,7 +44,7 @@ PLOT6_TITLE  ='Covid deaths'
 PLOT7_TITLE  ='Mortality'
 PLOT8_TITLE  ='Rt'
 PLOT9_TITLE  ='New cases by age group'
-PLOT10_TITLE ='Risk diagram'
+PLOT10_TITLE ='Covid deaths by age group'
 
 CLINES_LABEL = 'Show limits'
 CLINES_SWITCH_WIDTH = 140
@@ -54,6 +57,17 @@ POSITIVITY_LIMIT = 4
 UCI_LIMIT        = 245
 RT_LIMIT         = 1
 
+def make_age_labels ( nr_labels ):
+
+    labels = []
+    for j in range(0, nr_labels):
+        if j == len(data_strat_new) - 1:
+            labels.append('>= ' + str(j*10))
+        else:
+            labels.append(str(j*10) + '-' + str((j+1)*10-1))
+
+    return labels
+
 def make_plot( name, title, range ):
     return figure(plot_height=PLOT_HEIGHT, plot_width=PLOT_WIDTH, title=title, tools=PLOT_TOOLS, x_range=[0, range], name=name, )
 
@@ -63,6 +77,18 @@ def make_data_source ( datax, datay ):
 
 def make_data_source2 ( datax, datay, datay2 ):
     return ColumnDataSource(data=dict(x=datax, y=datay, y2=datay2))
+
+# receives a list of lists on for y0, y1, y2, ....
+def make_data_source_multi ( datax, datay_list ):
+
+    length = len(datay_list)
+    data_dict = {}
+    data_dict['x'] = datax
+    for j in range(0, length):
+        key = 'y' + str(j)
+        data_dict[key] = datay_list[j]
+
+    return data_dict
 
 # set properties common to all the plots
 def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='vline', show_y_label = False, ylabel2 = PLOT_Y_LABEL, ytooltip_format2 = None, tooltip_line = None ):
@@ -102,6 +128,45 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
     if show_y_label:
         aplot.yaxis.axis_label = ylabel
 
+def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtooltip_format = "@x{0}", tooltip_mode ='vline', tooltip_line = None ):
+    aplot.toolbar.active_drag    = None
+    aplot.toolbar.active_scroll  = None
+    aplot.toolbar.active_tap     = None
+
+    # add the hover tool
+    tooltip_list = [ (xlabel, xtooltip_format) ]
+
+    nr_series = len(ylabels)
+    j = 0
+    for label in ylabels:
+        ytooltip_format = "@y"+str(j)+"{0}"
+        j = j + 1
+        tooltip_list.insert( 1, (label, ytooltip_format ))
+
+    # we pass a single render to anchor the tooltip to a specific line
+    if tooltip_line:
+        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical', renderers = [ tooltip_line ])
+    else:
+        rlist  = aplot.select(dict(type=GlyphRenderer))
+        if len(rlist) > 0:
+            print('aaaaa')
+            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical', renderers = [ rlist[0] ])
+        else:
+            # this only happens if we have a plot that has not lines yet, but it is here to prevent a crash
+            print('This is probably a plot with no line')
+            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical', )
+
+    ahover.point_policy='snap_to_data'
+    ahover.line_policy='nearest'
+    aplot.add_tools(ahover)
+    aplot.toolbar.active_inspect = ahover
+
+    # control placement / visibility of toolbar
+    aplot.toolbar_location = None
+
+    # labels
+    aplot.xaxis.axis_label = xlabel
+
 # for the toggle button action
 def update_state(new):
 
@@ -115,7 +180,7 @@ def update_state(new):
 
 curdoc().title = PAGE_TITLE
 
-data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths = process_data()
+data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_strat_new, data_strat_cv19_deaths = process_data()
 
 days=len(data_new)
 
@@ -208,21 +273,34 @@ cline2.visible = False
 cline3.visible = False
 cline4.visible = False
 
-############## TBD #################
+# second page
 
-# FIXME get rid of this once we have the complete data
-dummy=2
-source_plot = ColumnDataSource(data=dict(x=x, y=np.full(days, dummy)))
+nr_series = len(data_strat_new)
+labels = make_age_labels(nr_series)
+palette = PLOT_LINE_COLOR_PALETTE
 
+# spacing the color as much as possible
+color_multiplier = math.floor(256 / nr_series + 1)
+
+# nine
+
+source_plot9 = make_data_source_multi (x, data_strat_new)
 plot9 = make_plot ('plot9', PLOT9_TITLE, days)
-set_plot_details(plot9)
 
-plot9.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+for j in range(0, nr_series ):
+    line = plot9.line('x', 'y'+str(j), source=source_plot9, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], legend_label=labels[j] )
 
+set_plot_details_multi(plot9, 'Days', labels, "@x{0}", "vline", line)
+
+# ten
+
+source_plot10 = make_data_source_multi (x, data_strat_cv19_deaths)
 plot10 = make_plot ('plot10', PLOT10_TITLE, days)
-set_plot_details(plot10)
 
-plot10.line('x', 'y', source=source_plot, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+for j in range(0, nr_series ):
+    line = plot10.line('x', 'y'+str(j), source=source_plot10, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], legend_label=labels[j] )
+
+set_plot_details_multi(plot10, 'Days', labels, "@x{0}", "vline", line)
 
 ############## TBD #################
 

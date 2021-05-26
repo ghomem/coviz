@@ -117,6 +117,49 @@ def get_dates( date_strings ):
 
     return dates
 
+
+def get_stratified_data ( data, base_str, smoothen, period ):
+
+    data_0_9_f     = data[ base_str + '_0_9_f'    ]
+    data_0_9_m     = data[ base_str + '_0_9_m'    ]
+    data_10_19_f   = data[ base_str + '_10_19_f'  ]
+    data_10_19_m   = data[ base_str + '_10_19_m'  ]
+    data_20_29_f   = data[ base_str + '_20_29_f'  ]
+    data_20_29_m   = data[ base_str + '_20_29_m'  ]
+    data_30_39_f   = data[ base_str + '_30_39_f'  ]
+    data_30_39_m   = data[ base_str + '_30_39_m'  ]
+    data_40_49_f   = data[ base_str + '_40_49_f'  ]
+    data_40_49_m   = data[ base_str + '_40_49_m'  ]
+    data_50_59_f   = data[ base_str + '_50_59_f'  ]
+    data_50_59_m   = data[ base_str + '_50_59_m'  ]
+    data_60_69_f   = data[ base_str + '_60_69_f'  ]
+    data_60_69_m   = data[ base_str + '_60_69_m'  ]
+    data_70_79_f   = data[ base_str + '_70_79_f'  ]
+    data_70_79_m   = data[ base_str + '_70_79_m'  ]
+    data_80_plus_f = data[ base_str + '_80_plus_f']
+    data_80_plus_m = data[ base_str + '_80_plus_m']
+
+    data_0_9_total     = get_differential_series( ( data_0_9_f     + data_0_9_m     ).tolist())
+    data_10_19_total   = get_differential_series( ( data_10_19_f   + data_10_19_m   ).tolist())
+    data_20_29_total   = get_differential_series( ( data_20_29_f   + data_20_29_m   ).tolist())
+    data_30_39_total   = get_differential_series( ( data_30_39_f   + data_30_39_m   ).tolist())
+    data_40_49_total   = get_differential_series( ( data_40_49_f   + data_40_49_m   ).tolist())
+    data_50_59_total   = get_differential_series( ( data_50_59_f   + data_50_59_m   ).tolist())
+    data_60_69_total   = get_differential_series( ( data_60_69_f   + data_60_69_m   ).tolist())
+    data_70_79_total   = get_differential_series( ( data_70_79_f   + data_70_79_m   ).tolist())
+    data_80_plus_total = get_differential_series( ( data_80_plus_f + data_80_plus_m ).tolist())
+
+    tmp_list = [ data_0_9_total, data_10_19_total, data_20_29_total, data_30_39_total, data_40_49_total, data_50_59_total, data_60_69_total, data_70_79_total, data_80_plus_total ]
+
+    data_list = []
+    if smoothen:
+        for l in tmp_list:
+            data_list.append ( get_smooth_list(l, period) )
+    else:
+        data_list = tmp_list
+
+    return data_list
+
 def process_data():
 
     rt_period = 4   # infections activity period considered for RT
@@ -159,10 +202,15 @@ def process_data():
     # NOTE the tests series has 2 days of delay it seems - checked on 20/05/2021
     #print(len(cfr), len(rt), len(pcr_tests), len(pcr_pos))
 
+    # smooth data before presenting
     s_new          = get_smooth_list (new, 7)
     s_cv19_deaths  = get_smooth_list (cv19_deaths, 7)
     s_total_deaths = get_smooth_list ( total_deaths[-days:], 7)
 
-    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths
+    # these lists are already smoothed # TODO
+    s_strat_cv19_new    = get_stratified_data ( main_data, 'confirmados', True, 7 )
+    s_strat_cv19_deaths = get_stratified_data ( main_data, 'obitos', True, 7 )
+
+    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths, s_strat_cv19_new, s_strat_cv19_deaths
 
 #process_data()
