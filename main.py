@@ -22,7 +22,8 @@ LMARGIN_WIDTH = 20
 PLOT_LINE_WIDTH          = 3
 PLOT_LINE_WIDTH_CRITICAL = 2
 
-PLOT_LINE_ALPHA = 0.6
+PLOT_LINE_ALPHA       = 0.6
+PLOT_LINE_ALPHA_MUTED = 0.1
 
 PLOT_X_LABEL  = 'Days'
 PLOT_Y_LABEL  = 'Count'
@@ -43,8 +44,8 @@ PLOT5_TITLE  ='New cases'
 PLOT6_TITLE  ='Covid deaths'
 PLOT7_TITLE  ='Mortality'
 PLOT8_TITLE  ='Rt'
-PLOT9_TITLE  ='New cases by age group'
-PLOT10_TITLE ='Covid deaths by age group'
+PLOT9_TITLE  ='New cases by age group (click on the legend to hide/show series)'
+PLOT10_TITLE ='Covid deaths by age group (click on the legend to hide/show series)'
 
 CLINES_LABEL = 'Show limits'
 CLINES_SWITCH_WIDTH = 140
@@ -128,7 +129,7 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
     if show_y_label:
         aplot.yaxis.axis_label = ylabel
 
-def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtooltip_format = "@x{0}", tooltip_mode ='vline', tooltip_line = None ):
+def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtooltip_format = "@x{0}", tooltip_mode ='vline', tooltip_line = None, tooltip_attachment = 'horizontal' ):
     aplot.toolbar.active_drag    = None
     aplot.toolbar.active_scroll  = None
     aplot.toolbar.active_tap     = None
@@ -145,16 +146,16 @@ def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtoolti
 
     # we pass a single render to anchor the tooltip to a specific line
     if tooltip_line:
-        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical', renderers = [ tooltip_line ])
+        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, renderers = [ tooltip_line ])
     else:
         rlist  = aplot.select(dict(type=GlyphRenderer))
         if len(rlist) > 0:
             print('aaaaa')
-            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical', renderers = [ rlist[0] ])
+            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, renderers = [ rlist[0] ])
         else:
             # this only happens if we have a plot that has not lines yet, but it is here to prevent a crash
             print('This is probably a plot with no line')
-            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment='vertical', )
+            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, )
 
     ahover.point_policy='snap_to_data'
     ahover.line_policy='nearest'
@@ -166,6 +167,8 @@ def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtoolti
 
     # labels
     aplot.xaxis.axis_label = xlabel
+
+    aplot.legend.click_policy = 'mute'
 
 # for the toggle button action
 def update_state(new):
@@ -287,20 +290,24 @@ color_multiplier = math.floor(256 / nr_series + 1)
 source_plot9 = make_data_source_multi (x, data_strat_new)
 plot9 = make_plot ('plot9', PLOT9_TITLE, days)
 
+lines = []
 for j in range(0, nr_series ):
-    line = plot9.line('x', 'y'+str(j), source=source_plot9, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], legend_label=labels[j] )
+    lines.append( plot9.line('x', 'y'+str(j), source=source_plot9, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
-set_plot_details_multi(plot9, 'Days', labels, "@x{0}", "vline", line)
+# we know by inspection that line representing 40-49 is on top
+set_plot_details_multi(plot9, 'Days', labels, "@x{0}", "vline", lines[4])
 
 # ten
 
 source_plot10 = make_data_source_multi (x, data_strat_cv19_deaths)
 plot10 = make_plot ('plot10', PLOT10_TITLE, days)
 
+lines = []
 for j in range(0, nr_series ):
-    line = plot10.line('x', 'y'+str(j), source=source_plot10, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], legend_label=labels[j] )
+    lines.append( plot10.line('x', 'y'+str(j), source=source_plot10, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
-set_plot_details_multi(plot10, 'Days', labels, "@x{0}", "vline", line)
+# the line for >= 80 is on top for this case
+set_plot_details_multi(plot10, 'Days', labels, "@x{0}", "vline", lines[nr_series -1 ])
 
 ############## TBD #################
 

@@ -207,9 +207,11 @@ def process_data():
     s_cv19_deaths  = get_smooth_list (cv19_deaths, 7)
     s_total_deaths = get_smooth_list ( total_deaths[-days:], 7)
 
-    # these lists are already smoothed # TODO
+    # these lists are already smoothed
     s_strat_cv19_new    = get_stratified_data ( main_data, 'confirmados', True, 7 )
     s_strat_cv19_deaths = get_stratified_data ( main_data, 'obitos', True, 7 )
+
+    #TODO stratified CFR
 
     return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths, s_strat_cv19_new, s_strat_cv19_deaths
 
