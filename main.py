@@ -46,6 +46,8 @@ PLOT7_TITLE  ='Mortality'
 PLOT8_TITLE  ='Rt'
 PLOT9_TITLE  ='New cases by age group (click on the legend to hide/show series)'
 PLOT10_TITLE ='Covid deaths by age group (click on the legend to hide/show series)'
+PLOT11_TITLE ='CFR by age group (click on the legend to hide/show series)'
+PLOT12_TITLE ='Vaccination'
 
 CLINES_LABEL = 'Show limits'
 CLINES_SWITCH_WIDTH = 140
@@ -166,8 +168,9 @@ def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtoolti
     aplot.toolbar_location = None
 
     # labels
-    aplot.xaxis.axis_label = xlabel
+    #aplot.xaxis.axis_label = xlabel
 
+    aplot.legend.location = 'top_left'
     aplot.legend.click_policy = 'mute'
 
 # for the toggle button action
@@ -183,7 +186,7 @@ def update_state(new):
 
 curdoc().title = PAGE_TITLE
 
-data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_strat_new, data_strat_cv19_deaths = process_data()
+data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_strat_new, data_strat_cv19_deaths, data_strat_cfr = process_data()
 
 days=len(data_new)
 
@@ -309,7 +312,30 @@ for j in range(0, nr_series ):
 # the line for >= 80 is on top for this case
 set_plot_details_multi(plot10, 'Days', labels, "@x{0}", "vline", lines[nr_series -1 ])
 
-############## TBD #################
+# eleven
+
+source_plot11 = make_data_source_multi (x, data_strat_cfr)
+plot11 = make_plot ('plot11', PLOT11_TITLE, days)
+
+lines = []
+for j in range(0, nr_series ):
+    lines.append( plot11.line('x', 'y'+str(j), source=source_plot11, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
+
+# the line for >= 80 is on top for this case
+set_plot_details_multi(plot11, 'Days', labels, "@x{0}", "vline", lines[nr_series -1 ])
+
+# twelve
+
+source_plot12 = make_data_source2(x, data_total_deaths, data_avg_deaths)
+plot12 = make_plot ('vaccination', PLOT12_TITLE, days)
+l121 = plot12.line('x', 'y',  source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Current' )
+l122 = plot12.line('x', 'y2', source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='2015-2019' )
+plot12.legend.location = 'top_left'
+set_plot_details(plot12, 'Days', 'Current', "@x{0}", "@y{0}", "vline", False,'2015-2019', "@y2{0}", l121)
+
+plot12.legend.label_text_font_size = "12px"
+
+#### Plot layout section ###
 
 # the layout name is added here then invoked from the HTML template
 # all roots added here must be invoked on the GRML
@@ -329,8 +355,12 @@ curdoc().add_root(layout1)
 
 # section 2
 
-layout2 = layout([ [plot9, plot10],
-                   ], 
-                   sizing_mode='scale_width', name='section2')
+# TODO constants for plot sizes
+grid2 = gridplot ([
+                   [plot9,  plot11],
+                   [plot10, plot12] ], 
+                   plot_width=PLOT_WIDTH, plot_height=160, toolbar_location=None, sizing_mode='scale_width')
+
+layout2 = layout( grid2, name='section2', sizing_mode='scale_width')
 
 curdoc().add_root(layout2)

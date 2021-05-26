@@ -10,6 +10,7 @@
 
 {% block contents %}
   <div id="wrapper" class="divided">
+
   	<section class="banner style2 orient-center content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right" id="section1">
                 <div class="content">
 			<header>
@@ -28,20 +29,45 @@
                         <!-- <img src="images/banner.jpg" alt="" /> -->
                 </div>
         </section>
+
   	<section class="banner style2 orient-center content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right" id="section2">
-                <div class="content-credits">
+                <div class="content-custom">
 			<header>
 	                        <h2>Coviz</h2>
 				<p>Visualizing the Covid19 data for Portugal</p>
 			</header>
 			<div class="content2">{{ embed(roots.section2) }}</div>
 			<ul class="actions small">
+                                <li><a href="#section3" class="button smooth-scroll small primary">Next &darr;</a></li>
                                 <li><a href="#section1" class="button smooth-scroll small primary">Previous &uarr;</a></li>
                        </ul>
-			<p class="minor"><strong>Credits</strong></br>
-				Template was adapted from <a href="https://html5up.net/story">HTML5UP</a>.<br/>
-				Plots are made with <a href="https://bokeh.org">Bokeh</a>.<br/>
-				Data is obtained daily from the <a href="https://github.com/dssg-pt/">DSSG-PT</a> repositories.</p>
+		</div>
+                <div class="image">
+                        <!-- <img src="images/banner.jpg" alt="" /> -->
+                </div>
+        </section>
+
+	<section class="banner style2 orient-center content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right" id="section3">
+                <div class="content">
+			<header>
+	                        <h2>Coviz</h2>
+				<p>Visualizing the Covid19 data for Portugal</p>
+			</header>
+                        <p>
+			    <br/>
+			    <strong>Disclaimer</strong></br>
+		            This website is not an official source of information.
+                        </p>
+
+			<p><strong>Credits</strong></br>
+			The template for this website was adapted from <a href="https://html5up.net/story">HTML5UP</a>.<br/>
+			Plots are made with <a href="https://bokeh.org">Bokeh</a>.<br/>
+			Data is fetched daily from the <a href="https://github.com/dssg-pt/">DSSG-PT</a> repositories.<br/>
+			The source code can be found here <a href="https://github.com/ghomem/coviz/">here</a> repositories.<br/>
+                        </p>
+			<ul class="actions small">
+                                <li><a href="#section2" class="button smooth-scroll small primary">Previous &uarr;</a></li>
+                       </ul>
 		</div>
                 <div class="image">
                         <!-- <img src="images/banner.jpg" alt="" /> -->

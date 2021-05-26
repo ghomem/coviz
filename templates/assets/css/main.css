@@ -2147,9 +2147,9 @@ input, select, textarea {
 		button.small,
 		.button.small {
 			font-size: 0.6rem;
-			height: 3.325em;
-			line-height: 3.325em;
-			border-radius: 3.325em;
+			height: 2.325em;
+			line-height: 2.325em;
+			border-radius: 2.325em;
 			padding: 0 2em;
 		}
 
@@ -2903,7 +2903,7 @@ input, select, textarea {
 
 	header p {
 		position: relative;
-		margin: -0.65rem 0 1.5rem 0;
+		margin: -0.65rem 0 0.1rem 0;
 		font-style: italic;
 	}
 
@@ -3647,7 +3647,7 @@ input, select, textarea {
 /* Banner (style2) */
 
 	.banner.style2 {
-		padding: 2.25rem 2.25rem 2.25rem 2.25rem ;
+		padding: 1.25rem 1.25rem 1.25rem 1.25rem ;
 		-moz-align-items: center;
 		-webkit-align-items: center;
 		-ms-align-items: center;
@@ -3678,7 +3678,7 @@ input, select, textarea {
 		}
 
 		/* with less padding at the bottom */
-		.banner.style2 .content-credits {
+		.banner.style2 .content-custom {
 			padding: 2.25rem 2.25rem 0.25rem 3.25rem ;
 			position: relative;
 			width: 85rem;
@@ -3738,7 +3738,7 @@ input, select, textarea {
 		@media screen and (max-width: 1680px) {
 
 			.banner.style2 {
-				padding: 2.25rem 1.25rem 2.25rem 1.25rem;
+				padding: 1.25rem 1.25rem 2.25rem 1.25rem;
 			}
 
 				.banner.style2 .content {
@@ -3750,7 +3750,7 @@ input, select, textarea {
                 @media screen and (max-width: 1440px) {
 
                         .banner.style2 {
-                                padding: 2.25rem 0.25rem 0.25rem 1.25rem;
+                                padding: 1.25rem 0.25rem 0.25rem 1.25rem;
                         }
 
                                 .banner.style2 .content {
@@ -3762,7 +3762,7 @@ input, select, textarea {
 		@media screen and (max-width: 1280px) {
 
 			.banner.style2 {
-				padding: 2.25rem 0.25rem 2.25rem 0.25rem;
+				padding: 1.25rem 0.25rem 2.25rem 0.25rem;
 			}
 
 				.banner.style2 .content {
@@ -3774,7 +3774,7 @@ input, select, textarea {
 		@media screen and (max-width: 980px) {
 
 			.banner.style2 {
-				padding: 2.25rem 0.25rem 2.25rem 0.25rem;
+				padding: 1.25rem 0.25rem 2.25rem 0.25rem;
 			}
 
 				.banner.style2 .content {
@@ -3786,7 +3786,7 @@ input, select, textarea {
 		@media screen and (max-width: 736px) {
 
 			.banner.style2 {
-				padding: 2.25rem 0.25rem 0.25rem 1.25rem;
+				padding: 1.25rem 0.25rem 0.25rem 1.25rem;
 			}
 
 				.banner.style2 .content {

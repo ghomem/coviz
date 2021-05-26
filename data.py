@@ -117,7 +117,6 @@ def get_dates( date_strings ):
 
     return dates
 
-
 def get_stratified_data ( data, base_str, smoothen, period ):
 
     data_0_9_f     = data[ base_str + '_0_9_f'    ]
@@ -160,10 +159,25 @@ def get_stratified_data ( data, base_str, smoothen, period ):
 
     return data_list
 
+def get_stratified_cfr ( data, cfr_delta, cfr_ignore ):
+
+    strat_cv19_new    = get_stratified_data ( data, 'confirmados', False, -1 )
+    strat_cv19_deaths = get_stratified_data ( data, 'obitos', False, -1 )
+
+    strat_cfr = []
+    for j in range(0, len(strat_cv19_new) ):
+        strat_cfr.append( get_cfr(strat_cv19_deaths[j], strat_cv19_new[j], cfr_delta, cfr_ignore) )
+
+    return strat_cfr
+
 def process_data():
 
+    # TODO GLOBALIZE
     rt_period = 4   # infections activity period considered for RT
-    cfr_delta = 14  # average time to die for CFR calculation
+    rt_ignore = 3   # ignore early days
+
+    cfr_delta  = 14  # average time to die for CFR calculation
+    cfr_ignore = 30  # ignore early days
 
     # get the latest of each file type
     files1 = glob.glob('/home/deployment/data/data-*.csv')
@@ -190,8 +204,8 @@ def process_data():
     hosp_uci     = main_data['internados_uci'].tolist()
     cv19_deaths  = get_differential_series(main_data['obitos'].tolist())
     incidence    = get_incidence_T(new, 14, 102.8)
-    cfr          = get_cfr(cv19_deaths, new, cfr_delta, 30) # ignoring early days
-    rt           = get_rt(new, rt_period, 4) # ignoring early days
+    cfr          = get_cfr(cv19_deaths, new, cfr_delta, cfr_ignore)
+    rt           = get_rt(new, rt_period, rt_ignore)
     pcr_tests    = tests_data['amostras_pcr_novas'].tolist()
     pcr_pos      = get_pcr_positivity( pcr_tests, new, 2, 0)
 
@@ -211,8 +225,8 @@ def process_data():
     s_strat_cv19_new    = get_stratified_data ( main_data, 'confirmados', True, 7 )
     s_strat_cv19_deaths = get_stratified_data ( main_data, 'obitos', True, 7 )
 
-    #TODO stratified CFR
+    strat_cfr = get_stratified_cfr ( main_data, cfr_delta, cfr_ignore )
 
-    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths, s_strat_cv19_new, s_strat_cv19_deaths
+    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr
 
 #process_data()
