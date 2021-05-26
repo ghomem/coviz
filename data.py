@@ -4,6 +4,7 @@ import pandas as pd
 import glob
 import os
 import csv
+import math
 from datetime import datetime
 
 RT_PERIOD = 4   # infections activity period considered for RT
@@ -12,9 +13,31 @@ RT_IGNORE = 3   # ignore early days
 CFR_DELTA  = 14  # average time to die for CFR calculation
 CFR_IGNORE = 30  # ignore early days
 
-def get_smooth_list ( data, window_size ):
+# we tolerate isolated one-day or two day holes and make an average of adjacent days
+def get_patched_data ( data ):
 
-    series  = pd.Series(data)
+    # skip to the first non None or Nan element
+    k = 0
+    for value in data:
+        if data[k] == None or math.isnan(data[k]):
+            k = k + 1
+        else:
+            break
+
+    for j in range (k, len(data)):
+        if math.isnan(data[j]):
+            data[j] = ( ( data[j-2] + data[j+2] ) / 2 )
+
+    return data
+
+def get_smooth_list ( data, window_size, patch = False ):
+
+    if patch:
+        p_data = get_patched_data (data)
+    else:
+        p_data = data
+
+    series  = pd.Series(p_data)
     windows = series.rolling(window_size)
 
     # the first window_size-1 results are nan, but that's OK
@@ -159,7 +182,8 @@ def get_stratified_data ( data, base_str, smoothen, period ):
     data_list = []
     if smoothen:
         for l in tmp_list:
-            data_list.append ( get_smooth_list(l, period) )
+            # if we set patching to true it will patch the hole
+            data_list.append ( get_smooth_list(l, period, False) )
     else:
         data_list = tmp_list
 
