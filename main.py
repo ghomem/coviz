@@ -38,6 +38,8 @@ PLOT_LINE_COLOR_CRITICAL  = 'red'
 
 PLOT_LINE_COLOR_PALETTE = Plasma256
 
+PLOT_LEGEND_FONT_SIZE = '12px'
+
 PLOT1_TITLE  ='14 Day incidence'
 PLOT2_TITLE  ='PCR Positivity'
 PLOT3_TITLE  ='Hospitalized'
@@ -83,8 +85,13 @@ def make_data_source ( datax, datay ):
 def make_data_source2 ( datax, datay, datay2 ):
     return ColumnDataSource(data=dict(x=datax, y=datay, y2=datay2))
 
-def make_data_source_dates ( dates, datay ):
-    df = pd.DataFrame(data=datay, index=dates, columns=['y'])
+def make_data_source_dates ( dates, datay, datay2 = None ):
+
+    if datay2:
+        df = pd.DataFrame(data={ 'y': datay, 'y2': datay2 }, index=dates, columns=['y', 'y2'])
+    else:
+        df = pd.DataFrame(data=datay, index=dates, columns=['y'])
+
     return ColumnDataSource(df)
 
 # receives a list of lists on for y0, y1, y2, ....
@@ -217,7 +224,7 @@ x = np.linspace(1, days, days)
 
 # one
 
-source_plot1 = make_data_source_dates( data_dates, data_incidence)
+source_plot1 = make_data_source_dates(data_dates, data_incidence)
 plot1 = make_plot ('incidence', PLOT1_TITLE, days, 'datetime')
 l11 = plot1.line('index','y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot1, 'Date', 'Count', '@index{%F}', '@y{0.00}', 'vline', False, False)
@@ -225,61 +232,73 @@ set_plot_date_details(plot1)
 
 # two
 
-source_plot2 = make_data_source(x, data_pcr_pos)
-plot2 = make_plot ('pcr_pos', PLOT2_TITLE, days)
-plot2.line('x', 'y', source=source_plot2, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
-set_plot_details(plot2, 'Days', '%', "@x{0}", "@y{0.00}")
+# TODO pad series for missing data
+data_pcr_pos.append(None)
+data_pcr_pos.append(None)
+
+source_plot2 = make_data_source_dates(data_dates, data_pcr_pos)
+plot2 = make_plot ('pcr_pos', PLOT2_TITLE, days, 'datetime')
+l21 = plot2.line('index', 'y', source=source_plot2, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+set_plot_details(plot2, 'Date', '%', '@index{%F}', '@y{0.00}', 'vline', False, False)
+set_plot_date_details(plot2)
 
 # three
 
-plot3 = make_plot ('hosp', PLOT3_TITLE, days)
-source_plot3 = make_data_source2(x, data_hosp, data_hosp_uci)
-l31 = plot3.line('x', 'y',  source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
-l32 = plot3.line('x', 'y2', source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='UCI' )
+source_plot3 = make_data_source_dates(data_dates, data_hosp, data_hosp_uci)
+plot3 = make_plot ('hosp', PLOT3_TITLE, days, 'datetime')
+l31 = plot3.line('index', 'y',  source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
+l32 = plot3.line('index', 'y2', source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='UCI' )
 
 plot3.legend.location = 'top_left'
-set_plot_details(plot3, 'Days', 'Total', "@x{0}", "@y{0}", "vline", True, False,'UCI', "@y2{0}", l31)
+set_plot_details(plot3, 'Days', 'Total', '@index{%F}', '@y{0}', 'vline', False, False,'UCI', "@y2{0}", l31)
+set_plot_date_details(plot3)
 
-plot3.legend.label_text_font_size = "12px"
+plot3.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
 
 # four
 
-source_plot4 = make_data_source(x, data_cfr)
-plot4 = make_plot ('cfr', PLOT4_TITLE, days)
-plot4.line('x', 'y', source=source_plot4, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
-set_plot_details(plot4, 'Days', '%', "@x{0}", "@y{0.00}",)
+source_plot4 = make_data_source_dates(data_dates, data_cfr)
+plot4 = make_plot ('cfr', PLOT4_TITLE, days, 'datetime')
+plot4.line('index', 'y', source=source_plot4, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+set_plot_details(plot4, 'Date', '%', '@index{%F}', '@y{0.00}', 'vline', False, False)
+set_plot_date_details(plot4)
 
 # five
 
-source_plot5 = make_data_source(x, data_new)
-plot5 = make_plot ('new', PLOT5_TITLE, days)
-plot5.line('x', 'y', source=source_plot5, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
-set_plot_details(plot5)
+source_plot5 = make_data_source_dates(data_dates, data_new)
+plot5 = make_plot ('new', PLOT5_TITLE, days, 'datetime')
+plot5.line('index', 'y', source=source_plot5, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+set_plot_details(plot5, 'Date', 'Count', '@index{%F}', '@y{0}', 'vline', False, False)
+set_plot_date_details(plot5)
 
 # six
 
-source_plot6 = make_data_source(x, data_rt)
-plot6 = make_plot ('rt', PLOT8_TITLE, days)
-plot6.line('x', 'y', source=source_plot6, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
-set_plot_details(plot6, 'Days', 'Value',  "@x{0}", "@y{0.00}")
+source_plot6 = make_data_source_dates(data_dates, data_rt)
+plot6 = make_plot ('rt', PLOT8_TITLE, days, 'datetime')
+plot6.line('index', 'y', source=source_plot6, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
+set_plot_details(plot6, 'Date', 'Value', '@index{%F}', '@y{0.00}', 'vline', False, False)
+set_plot_date_details(plot6)
 
 # seven
 
-source_plot7 = make_data_source2(x, data_total_deaths, data_avg_deaths)
-plot7 = make_plot ('total deaths', PLOT7_TITLE, days)
-l71 = plot7.line('x', 'y',  source=source_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Current' )
-l72 = plot7.line('x', 'y2', source=source_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='2015-2019' )
-plot7.legend.location = 'top_left'
-set_plot_details(plot7, 'Days', 'Current', "@x{0}", "@y{0}", "vline", True, False,'2015-2019', "@y2{0}", l71)
+source_plot7 = make_data_source_dates(data_dates, data_total_deaths, data_avg_deaths)
+plot7 = make_plot ('total deaths', PLOT7_TITLE, days, 'datetime')
+l71 = plot7.line('index', 'y',  source=source_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Current' )
+l72 = plot7.line('index', 'y2', source=source_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='2015-2019' )
 
-plot7.legend.label_text_font_size = "12px"
+plot7.legend.location = 'top_left'
+set_plot_details(plot7, 'Date', 'Current', '@index{%F}', '@y{0}', 'vline', False, False,'2015-2019', "@y2{0}", l71)
+set_plot_date_details(plot7)
+
+plot7.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
 
 # eight
 
-source_plot8 = make_data_source(x, data_cv19_deaths)
-plot8 = make_plot ('deaths', PLOT6_TITLE, days)
-plot8.line('x', 'y', source=source_plot8, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
-set_plot_details(plot8)
+source_plot8 = make_data_source_dates(data_dates, data_cv19_deaths)
+plot8 = make_plot ('deaths', PLOT6_TITLE, days, 'datetime')
+plot8.line('index', 'y', source=source_plot8, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
+set_plot_details(plot8, 'Date', 'Count', '@index{%F}', '@y{0}', 'vline', False, False)
+set_plot_date_details(plot8)
 
 # Critical lines
 # default, primary, success, warning, danger, light
@@ -287,15 +306,15 @@ clines_switch = Toggle(label=CLINES_LABEL, button_type='default', align='end', w
 clines_switch.on_click(update_state)
 
 source_plot1_critical = make_data_source_dates(data_dates, np.full( days, INCIDENCE_LIMIT ))
-source_plot2_critical = make_data_source(x, np.full( days, POSITIVITY_LIMIT ))
-source_plot3_critical = make_data_source(x, np.full( days, UCI_LIMIT ))
-source_plot6_critical = make_data_source(x, np.full( days, RT_LIMIT ))
+source_plot2_critical = make_data_source_dates(data_dates, np.full( days, POSITIVITY_LIMIT ))
+source_plot3_critical = make_data_source_dates(data_dates, np.full( days, UCI_LIMIT ))
+source_plot6_critical = make_data_source_dates(data_dates, np.full( days, RT_LIMIT ))
 
 # critical lines
 cline1 = plot1.line('index', 'y', source=source_plot1_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
-cline2 = plot2.line('x', 'y', source=source_plot2_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
-cline3 = plot3.line('x', 'y', source=source_plot3_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
-cline4 = plot6.line('x', 'y', source=source_plot6_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
+cline2 = plot2.line('index', 'y', source=source_plot2_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
+cline3 = plot3.line('index', 'y', source=source_plot3_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
+cline4 = plot6.line('index', 'y', source=source_plot6_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
 
 cline1.visible = False
 cline2.visible = False
@@ -356,7 +375,7 @@ l122 = plot12.line('x', 'y2', source=source_plot12, line_width=PLOT_LINE_WIDTH, 
 plot12.legend.location = 'top_left'
 set_plot_details(plot12, 'Days', 'Partial', "@x{0}", "@y{0}", "vline", False, False,'Complete', "@y2{0}", l121)
 
-plot12.legend.label_text_font_size = "12px"
+plot12.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
 
 #### Plot layout section ###
 
