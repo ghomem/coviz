@@ -13,6 +13,9 @@ RT_IGNORE = 3   # ignore early days
 CFR_DELTA  = 14  # average time to die for CFR calculation
 CFR_IGNORE = 30  # ignore early days
 
+INC_PERIOD  = 14    # period for incidence calculations
+INC_DIVIDER = 102.8 # to get incidence per 100k people
+
 # we tolerate isolated one-day or two day holes and make an average of adjacent days
 def get_patched_data ( data, delta ):
 
@@ -196,6 +199,16 @@ def get_stratified_cfr ( data, CFR_DELTA, CFR_IGNORE ):
 
     return strat_cfr
 
+def pad_data ( data, target_size, element, left = True ):
+
+    for j in range( target_size - len(data) ):
+        if left:
+            data.insert(0, element)
+        else:
+            data.append(element)
+
+    return data
+
 def process_data():
 
     # get the latest of each file type
@@ -225,24 +238,26 @@ def process_data():
     hosp         = main_data['internados'].tolist()
     hosp_uci     = main_data['internados_uci'].tolist()
     cv19_deaths  = get_differential_series(main_data['obitos'].tolist())
-    incidence    = get_incidence_T(new, 14, 102.8)
+    incidence    = get_incidence_T(new, INC_PERIOD, INC_DIVIDER)
     cfr          = get_cfr(cv19_deaths, new, CFR_DELTA, CFR_IGNORE)
     rt           = get_rt(new, RT_PERIOD, RT_IGNORE)
-    pcr_tests    = tests_data['amostras_pcr_novas'].tolist()
+
+    # padding the pcr_tests series because it has 2 days of delay it seems - checked on 20/05/2021
+    pcr_tests    = pad_data( tests_data['amostras_pcr_novas'].tolist(), days, None, False)
     pcr_pos      = get_pcr_positivity( pcr_tests, new, 2, 0)
+
     tmp_vacc_1d  = vacc_data['doses1'].tolist()
     tmp_vacc_2d  = vacc_data['doses2'].tolist()
 
     # vaccination started later, so we must pad the data
-    vacc_1d = list(np.full(days - len(tmp_vacc_1d), 0)) + tmp_vacc_1d
-    vacc_2d = list(np.full(days - len(tmp_vacc_2d), 0)) + tmp_vacc_2d
+    vacc_1d = pad_data(tmp_vacc_1d, days, 0, True)
+    vacc_2d = pad_data(tmp_vacc_2d, days, 0, True)
 
     # this is a multi year series starting in 01/01/2009
     total_deaths = mort_data['geral_pais'].tolist()
     avg_deaths   = get_avg_deaths(total_deaths, days, 5)
 
-    # NOTE the tests series has 2 days of delay it seems - checked on 20/05/2021
-    #print(len(cfr), len(rt), len(pcr_tests), len(pcr_pos))
+    print(len(cfr), len(rt), len(pcr_tests), len(pcr_pos))
 
     # smooth data before presenting
     s_new          = get_smooth_list (new, 7)

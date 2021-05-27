@@ -250,10 +250,6 @@ set_plot_date_details(plot1)
 
 # two
 
-# TODO pad series for missing data
-data_pcr_pos.append(None)
-data_pcr_pos.append(None)
-
 source_plot2 = make_data_source_dates(data_dates, data_pcr_pos)
 plot2 = make_plot ('pcr_pos', PLOT2_TITLE, days, 'datetime')
 l21 = plot2.line('x', 'y', source=source_plot2, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
