@@ -95,14 +95,14 @@ def make_data_source_multi ( datax, datay_list ):
     return data_dict
 
 # set properties common to all the plots
-def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='vline', show_y_label = False, ylabel2 = PLOT_Y_LABEL, ytooltip_format2 = None, tooltip_line = None ):
+def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='vline', show_x_label = True, show_y_label = False, ylabel2 = PLOT_Y_LABEL, ytooltip_format2 = None, tooltip_line = None ):
     aplot.toolbar.active_drag    = None
     aplot.toolbar.active_scroll  = None
     aplot.toolbar.active_tap     = None
 
     # add the hover tool
-    tooltip_list = [ (ylabel, ytooltip_format), (xlabel, xtooltip_format) ]
     tooltip_attachment = 'vertical'
+    tooltip_list = [ (ylabel, ytooltip_format), (xlabel, xtooltip_format) ]
 
     # check if we have a second line for tooltips
     if ytooltip_format2:
@@ -129,22 +129,27 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
     aplot.toolbar_location = None
 
     # labels
-    aplot.xaxis.axis_label = xlabel
+    if show_x_label:
+        aplot.xaxis.axis_label = xlabel
     if show_y_label:
         aplot.yaxis.axis_label = ylabel
 
-def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtooltip_format = "@x{0}", tooltip_mode ='vline', tooltip_line = None, tooltip_attachment = 'horizontal' ):
+def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtooltip_format = "@x{0}", tooltip_mode ='vline', tooltip_line = None, extra_precision = False ):
     aplot.toolbar.active_drag    = None
     aplot.toolbar.active_scroll  = None
     aplot.toolbar.active_tap     = None
 
     # add the hover tool
+    tooltip_attachment = 'horizontal'
     tooltip_list = [ (xlabel, xtooltip_format) ]
 
     nr_series = len(ylabels)
     j = 0
     for label in ylabels:
-        ytooltip_format = "@y"+str(j)+"{0}"
+        if extra_precision:
+            ytooltip_format = "@y"+str(j)+"{0.00}"
+        else:
+            ytooltip_format = "@y"+str(j)+"{0}"
         j = j + 1
         tooltip_list.insert( 1, (label, ytooltip_format ))
 
@@ -217,7 +222,7 @@ l31 = plot3.line('x', 'y',  source=source_plot3, line_width=PLOT_LINE_WIDTH, lin
 l32 = plot3.line('x', 'y2', source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='UCI' )
 
 plot3.legend.location = 'top_left'
-set_plot_details(plot3, 'Days', 'Total', "@x{0}", "@y{0}", "vline", False,'UCI', "@y2{0}", l31)
+set_plot_details(plot3, 'Days', 'Total', "@x{0}", "@y{0}", "vline", True, False,'UCI', "@y2{0}", l31)
 
 plot3.legend.label_text_font_size = "12px"
 
@@ -249,7 +254,7 @@ plot7 = make_plot ('total deaths', PLOT7_TITLE, days)
 l71 = plot7.line('x', 'y',  source=source_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Current' )
 l72 = plot7.line('x', 'y2', source=source_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='2015-2019' )
 plot7.legend.location = 'top_left'
-set_plot_details(plot7, 'Days', 'Current', "@x{0}", "@y{0}", "vline", False,'2015-2019', "@y2{0}", l71)
+set_plot_details(plot7, 'Days', 'Current', "@x{0}", "@y{0}", "vline", True, False,'2015-2019', "@y2{0}", l71)
 
 plot7.legend.label_text_font_size = "12px"
 
@@ -324,7 +329,7 @@ for j in range(0, nr_series ):
     lines.append( plot11.line('x', 'y'+str(j), source=source_plot11, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
 # the line for >= 80 is on top for this case
-set_plot_details_multi(plot11, 'Days', labels, "@x{0}", "vline", lines[nr_series -1 ])
+set_plot_details_multi(plot11, 'Days', labels, "@x{0}", "vline", lines[nr_series -1 ], True)
 
 # twelve
 
@@ -333,7 +338,7 @@ plot12 = make_plot ('vaccination', PLOT12_TITLE, days)
 l121 = plot12.line('x', 'y',  source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Partial' )
 l122 = plot12.line('x', 'y2', source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Complete' )
 plot12.legend.location = 'top_left'
-set_plot_details(plot12, 'Days', 'Partial', "@x{0}", "@y{0}", "vline", False,'Complete', "@y2{0}", l121)
+set_plot_details(plot12, 'Days', 'Partial', "@x{0}", "@y{0}", "vline", False, False,'Complete', "@y2{0}", l121)
 
 plot12.legend.label_text_font_size = "12px"
 
