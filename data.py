@@ -262,7 +262,7 @@ def process_data():
     # smooth data before presenting
     s_new          = get_smooth_list (new, 7)
     s_cv19_deaths  = get_smooth_list (cv19_deaths, 7)
-    s_total_deaths = get_smooth_list ( total_deaths[-days:], 7)
+    s_total_deaths = get_smooth_list (total_deaths[-days:], 7)
 
     # these lists are already smoothed
     s_strat_cv19_new    = get_stratified_data ( main_data, 'confirmados', True, 7 )
