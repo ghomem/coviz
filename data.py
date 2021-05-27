@@ -14,7 +14,7 @@ CFR_DELTA  = 14  # average time to die for CFR calculation
 CFR_IGNORE = 30  # ignore early days
 
 # we tolerate isolated one-day or two day holes and make an average of adjacent days
-def get_patched_data ( data ):
+def get_patched_data ( data, delta ):
 
     # skip to the first non None or Nan element
     k = 0
@@ -26,18 +26,13 @@ def get_patched_data ( data ):
 
     for j in range (k, len(data)):
         if math.isnan(data[j]):
-            data[j] = ( ( data[j-2] + data[j+2] ) / 2 )
+            data[j] = ( ( data[j-delta] + data[j+delta] ) / 2 )
 
     return data
 
-def get_smooth_list ( data, window_size, patch = False ):
+def get_smooth_list ( data, window_size ):
 
-    if patch:
-        p_data = get_patched_data (data)
-    else:
-        p_data = data
-
-    series  = pd.Series(p_data)
+    series  = pd.Series(data)
     windows = series.rolling(window_size)
 
     # the first window_size-1 results are nan, but that's OK
@@ -167,23 +162,23 @@ def get_stratified_data ( data, base_str, smoothen, period ):
     data_80_plus_f = data[ base_str + '_80_plus_f']
     data_80_plus_m = data[ base_str + '_80_plus_m']
 
-    data_0_9_total     = get_differential_series( ( data_0_9_f     + data_0_9_m     ).tolist())
-    data_10_19_total   = get_differential_series( ( data_10_19_f   + data_10_19_m   ).tolist())
-    data_20_29_total   = get_differential_series( ( data_20_29_f   + data_20_29_m   ).tolist())
-    data_30_39_total   = get_differential_series( ( data_30_39_f   + data_30_39_m   ).tolist())
-    data_40_49_total   = get_differential_series( ( data_40_49_f   + data_40_49_m   ).tolist())
-    data_50_59_total   = get_differential_series( ( data_50_59_f   + data_50_59_m   ).tolist())
-    data_60_69_total   = get_differential_series( ( data_60_69_f   + data_60_69_m   ).tolist())
-    data_70_79_total   = get_differential_series( ( data_70_79_f   + data_70_79_m   ).tolist())
-    data_80_plus_total = get_differential_series( ( data_80_plus_f + data_80_plus_m ).tolist())
+    # we are patching some report holes in the cumulative series using the average value for adjacent days
+    data_0_9_total     = get_differential_series( get_patched_data ( (data_0_9_f     + data_0_9_m     ).tolist(), 1 ) )
+    data_10_19_total   = get_differential_series( get_patched_data ( (data_10_19_f   + data_10_19_m   ).tolist(), 1 ) )
+    data_20_29_total   = get_differential_series( get_patched_data ( (data_20_29_f   + data_20_29_m   ).tolist(), 1 ) )
+    data_30_39_total   = get_differential_series( get_patched_data ( (data_30_39_f   + data_30_39_m   ).tolist(), 1 ) )
+    data_40_49_total   = get_differential_series( get_patched_data ( (data_40_49_f   + data_40_49_m   ).tolist(), 1 ) )
+    data_50_59_total   = get_differential_series( get_patched_data ( (data_50_59_f   + data_50_59_m   ).tolist(), 1 ) )
+    data_60_69_total   = get_differential_series( get_patched_data ( (data_60_69_f   + data_60_69_m   ).tolist(), 1 ) )
+    data_70_79_total   = get_differential_series( get_patched_data ( (data_70_79_f   + data_70_79_m   ).tolist(), 1 ) )
+    data_80_plus_total = get_differential_series( get_patched_data ( (data_80_plus_f + data_80_plus_m ).tolist(), 1 ) )
 
     tmp_list = [ data_0_9_total, data_10_19_total, data_20_29_total, data_30_39_total, data_40_49_total, data_50_59_total, data_60_69_total, data_70_79_total, data_80_plus_total ]
 
     data_list = []
     if smoothen:
         for l in tmp_list:
-            # if we set patching to true it will patch the hole
-            data_list.append ( get_smooth_list(l, period, False) )
+            data_list.append ( get_smooth_list(l, period) )
     else:
         data_list = tmp_list
 
