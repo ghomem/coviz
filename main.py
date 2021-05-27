@@ -2,9 +2,10 @@ import math
 import numpy as np
 import pandas as pd
 
+from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256
 from bokeh.plotting import figure
 
@@ -72,8 +73,8 @@ def make_age_labels ( nr_labels ):
 
     return labels
 
-def make_plot( name, title, range ):
-    return figure(plot_height=PLOT_HEIGHT, plot_width=PLOT_WIDTH, title=title, tools=PLOT_TOOLS, x_range=[0, range], name=name, )
+def make_plot( name, title, range, x_axis_type = 'auto' ):
+    return figure(plot_height=PLOT_HEIGHT, plot_width=PLOT_WIDTH, title=title, tools=PLOT_TOOLS, x_range=[0, range], name=name, x_axis_type = x_axis_type)
 
 # because there are several ways to achieve this, let's encapsulate
 def make_data_source ( datax, datay ):
@@ -81,6 +82,10 @@ def make_data_source ( datax, datay ):
 
 def make_data_source2 ( datax, datay, datay2 ):
     return ColumnDataSource(data=dict(x=datax, y=datay, y2=datay2))
+
+def make_data_source_dates ( dates, datay ):
+    df = pd.DataFrame(data=datay, index=dates, columns=['y'])
+    return ColumnDataSource(df)
 
 # receives a list of lists on for y0, y1, y2, ....
 def make_data_source_multi ( datax, datay_list ):
@@ -94,7 +99,7 @@ def make_data_source_multi ( datax, datay_list ):
 
     return data_dict
 
-# set properties common to all the plots
+# set properties common to all the plots based on linear xaxis
 def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='vline', show_x_label = True, show_y_label = False, ylabel2 = PLOT_Y_LABEL, ytooltip_format2 = None, tooltip_line = None ):
     aplot.toolbar.active_drag    = None
     aplot.toolbar.active_scroll  = None
@@ -103,6 +108,7 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
     # add the hover tool
     tooltip_attachment = 'vertical'
     tooltip_list = [ (ylabel, ytooltip_format), (xlabel, xtooltip_format) ]
+    tooltip_formatters = {'@index': 'datetime'}
 
     # check if we have a second line for tooltips
     if ytooltip_format2:
@@ -110,11 +116,11 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
 
     # we pass a single render to anchor the tooltip to a specific line
     if tooltip_line:
-        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, renderers = [ tooltip_line ])
+        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, formatters=tooltip_formatters, renderers = [ tooltip_line ])
     else:
         rlist  = aplot.select(dict(type=GlyphRenderer))
         if len(rlist) > 0:
-            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, renderers = [ rlist[0] ])
+            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, formatters=tooltip_formatters, renderers = [ rlist[0] ])
         else:
             # this only happens if we have a plot that has not lines yet, but it is here to prevent a crash
             print('This is probably a plot with no line')
@@ -134,6 +140,7 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
     if show_y_label:
         aplot.yaxis.axis_label = ylabel
 
+# set properties common to all the plots with multiple lines
 def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtooltip_format = "@x{0}", tooltip_mode ='vline', tooltip_line = None, extra_precision = False ):
     aplot.toolbar.active_drag    = None
     aplot.toolbar.active_scroll  = None
@@ -159,7 +166,6 @@ def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtoolti
     else:
         rlist  = aplot.select(dict(type=GlyphRenderer))
         if len(rlist) > 0:
-            print('aaaaa')
             ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, renderers = [ rlist[0] ])
         else:
             # this only happens if we have a plot that has not lines yet, but it is here to prevent a crash
@@ -179,6 +185,15 @@ def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtoolti
 
     aplot.legend.location = 'top_left'
     aplot.legend.click_policy = 'mute'
+
+def set_plot_date_details( aplot ):
+
+    aplot.xaxis.formatter = DatetimeTickFormatter( months=["%b %Y"], years =["%b %Y"], )
+
+    aplot.x_range.start = data_dates[0] - datetime(1970, 1, 1).date()
+    aplot.x_range.end   = data_dates[days-1] - datetime(1970, 1, 1).date()
+
+    aplot.xaxis.major_label_orientation = math.pi/4
 
 # for the toggle button action
 def update_state(new):
@@ -202,10 +217,11 @@ x = np.linspace(1, days, days)
 
 # one
 
-source_plot1 = make_data_source(x, data_incidence)
-plot1 = make_plot ('incidence', PLOT1_TITLE, days)
-l11 = plot1.line('x', 'y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
-set_plot_details(plot1)
+source_plot1 = make_data_source_dates( data_dates, data_incidence)
+plot1 = make_plot ('incidence', PLOT1_TITLE, days, 'datetime')
+l11 = plot1.line('index','y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+set_plot_details(plot1, 'Date', 'Count', '@index{%F}', '@y{0.00}', 'vline', False, False)
+set_plot_date_details(plot1)
 
 # two
 
@@ -270,13 +286,13 @@ set_plot_details(plot8)
 clines_switch = Toggle(label=CLINES_LABEL, button_type='default', align='end', width=CLINES_SWITCH_WIDTH, height=CLINES_SWITCH_HEIGHT, name = 'section1_button')
 clines_switch.on_click(update_state)
 
-source_plot1_critical = make_data_source(x, np.full( days, INCIDENCE_LIMIT ))
+source_plot1_critical = make_data_source_dates(data_dates, np.full( days, INCIDENCE_LIMIT ))
 source_plot2_critical = make_data_source(x, np.full( days, POSITIVITY_LIMIT ))
 source_plot3_critical = make_data_source(x, np.full( days, UCI_LIMIT ))
 source_plot6_critical = make_data_source(x, np.full( days, RT_LIMIT ))
 
 # critical lines
-cline1 = plot1.line('x', 'y', source=source_plot3_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
+cline1 = plot1.line('index', 'y', source=source_plot1_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
 cline2 = plot2.line('x', 'y', source=source_plot2_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
 cline3 = plot3.line('x', 'y', source=source_plot3_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
 cline4 = plot6.line('x', 'y', source=source_plot6_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
