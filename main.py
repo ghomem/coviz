@@ -107,18 +107,21 @@ def make_data_source_dates ( dates, datay, datay2 = None ):
     return ColumnDataSource(df)
 
 # receives a list of lists on for y0, y1, y2, ....
-def make_data_source_multi ( datax, datay_list ):
+def make_data_source_multi_dates ( datax, datay_list ):
 
     length = len(datay_list)
+    columns = []
     data_dict = {}
     data_dict['x'] = datax
+    columns.append('x')
     for j in range(0, length):
         key = 'y' + str(j)
         data_dict[key] = datay_list[j]
+        columns.append(key)
 
-    return data_dict
+    df = pd.DataFrame(data=data_dict, columns=columns)
 
-
+    return ColumnDataSource(df)
 
 # set properties common to all the plots based on linear xaxis
 def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='vline', show_x_label = True, show_y_label = False, ylabel2 = PLOT_Y_LABEL, ytooltip_format2 = None, tooltip_line = None ):
@@ -127,13 +130,13 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
     aplot.toolbar.active_tap     = None
 
     # add the hover tool
-    tooltip_attachment = 'vertical'
-    tooltip_list = [ (ylabel, ytooltip_format), (xlabel, xtooltip_format) ]
+    tooltip_attachment = 'left'
+    tooltip_list = [ (xlabel, xtooltip_format), (ylabel, ytooltip_format), ]
     tooltip_formatters = {'@x': 'datetime'}
 
     # check if we have a second line for tooltips
     if ytooltip_format2:
-        tooltip_list.insert( 1, (ylabel2, ytooltip_format2) )
+        tooltip_list.append( (ylabel2, ytooltip_format2) )
 
     # we pass a single render to anchor the tooltip to a specific line
     if tooltip_line:
@@ -168,8 +171,9 @@ def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtoolti
     aplot.toolbar.active_tap     = None
 
     # add the hover tool
-    tooltip_attachment = 'horizontal'
+    tooltip_attachment = 'left'
     tooltip_list = [ (xlabel, xtooltip_format) ]
+    tooltip_formatters = {'@x': 'datetime'}
 
     nr_series = len(ylabels)
     j = 0
@@ -179,15 +183,15 @@ def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtoolti
         else:
             ytooltip_format = "@y"+str(j)+"{0}"
         j = j + 1
-        tooltip_list.insert( 1, (label, ytooltip_format ))
+        tooltip_list.append( (label, ytooltip_format ) )
 
     # we pass a single render to anchor the tooltip to a specific line
     if tooltip_line:
-        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, renderers = [ tooltip_line ])
+        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, formatters=tooltip_formatters, renderers = [ tooltip_line ])
     else:
         rlist  = aplot.select(dict(type=GlyphRenderer))
         if len(rlist) > 0:
-            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, renderers = [ rlist[0] ])
+            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, formatters=tooltip_formatters, renderers = [ rlist[0] ])
         else:
             # this only happens if we have a plot that has not lines yet, but it is here to prevent a crash
             print('This is probably a plot with no line')
@@ -264,7 +268,7 @@ l31 = plot3.line('x', 'y',  source=source_plot3, line_width=PLOT_LINE_WIDTH, lin
 l32 = plot3.line('x', 'y2', source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='UCI' )
 
 plot3.legend.location = 'top_left'
-set_plot_details(plot3, 'Days', 'Total', '@x{%F}', '@y{0}', 'vline', False, False,'UCI', "@y2{0}", l31)
+set_plot_details(plot3, 'Date', 'Total', '@x{%F}', '@y{0}', 'vline', False, False,'UCI', "@y2{0}", l31)
 set_plot_date_details(plot3)
 
 plot3.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
@@ -346,48 +350,52 @@ color_multiplier = math.floor(256 / nr_series + 1)
 
 # nine
 
-source_plot9 = make_data_source_multi (x, data_strat_new)
-plot9 = make_plot ('plot9', PLOT9_TITLE, days)
+source_plot9 = make_data_source_multi_dates (data_dates, data_strat_new)
+plot9 = make_plot ('plot9', PLOT9_TITLE, days, 'datetime')
 
 lines = []
 for j in range(0, nr_series ):
     lines.append( plot9.line('x', 'y'+str(j), source=source_plot9, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
 # we know by inspection that line representing 40-49 is on top
-set_plot_details_multi(plot9, 'Days', labels, "@x{0}", "vline", lines[4])
+set_plot_details_multi(plot9, 'Date', labels, '@x{%F}', 'vline', lines[4], False)
+set_plot_date_details(plot9)
 
 # ten
 
-source_plot10 = make_data_source_multi (x, data_strat_cv19_deaths)
-plot10 = make_plot ('plot10', PLOT10_TITLE, days)
+source_plot10 = make_data_source_multi_dates (data_dates, data_strat_cv19_deaths)
+plot10 = make_plot ('plot10', PLOT10_TITLE, days, 'datetime')
 
 lines = []
 for j in range(0, nr_series ):
     lines.append( plot10.line('x', 'y'+str(j), source=source_plot10, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
 # the line for >= 80 is on top for this case
-set_plot_details_multi(plot10, 'Days', labels, "@x{0}", "vline", lines[nr_series -1 ])
+set_plot_details_multi(plot10, 'Date', labels, '@x{%F}', 'vline', lines[nr_series -1 ], False)
+set_plot_date_details(plot10)
 
 # eleven
 
-source_plot11 = make_data_source_multi (x, data_strat_cfr)
-plot11 = make_plot ('plot11', PLOT11_TITLE, days)
+source_plot11 = make_data_source_multi_dates (data_dates, data_strat_cfr)
+plot11 = make_plot ('plot11', PLOT11_TITLE, days, 'datetime')
 
 lines = []
 for j in range(0, nr_series ):
     lines.append( plot11.line('x', 'y'+str(j), source=source_plot11, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
 # the line for >= 80 is on top for this case
-set_plot_details_multi(plot11, 'Days', labels, "@x{0}", "vline", lines[nr_series -1 ], True)
+set_plot_details_multi(plot11, 'Days', labels, '@x{%F}', 'vline', lines[nr_series -1 ], True)
+set_plot_date_details(plot11)
 
 # twelve
 
-source_plot12 = make_data_source2(x, data_vacc_1d, data_vacc_2d)
-plot12 = make_plot ('vaccination', PLOT12_TITLE, days)
+source_plot12 = make_data_source_dates(data_dates, data_vacc_1d, data_vacc_2d)
+plot12 = make_plot ('vaccination', PLOT12_TITLE, days, 'datetime')
 l121 = plot12.line('x', 'y',  source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Partial' )
 l122 = plot12.line('x', 'y2', source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Complete' )
 plot12.legend.location = 'top_left'
-set_plot_details(plot12, 'Days', 'Partial', "@x{0}", "@y{0}", "vline", False, False,'Complete', "@y2{0}", l121)
+set_plot_details(plot12, 'Date', 'Partial', '@x{%F}', '@y{0}', 'vline', False, False,'Complete', "@y2{0}", l121)
+set_plot_date_details(plot12)
 
 plot12.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
 

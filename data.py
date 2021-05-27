@@ -24,8 +24,9 @@ def get_patched_data ( data, delta ):
         else:
             break
 
+    length = len(data)
     for j in range (k, len(data)):
-        if math.isnan(data[j]):
+        if math.isnan(data[j]) and j+delta < length:
             data[j] = ( ( data[j-delta] + data[j+delta] ) / 2 )
 
     return data
