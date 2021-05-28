@@ -403,7 +403,7 @@ set_plot_date_details(plot12)
 #### Plot layout section ###
 
 # the layout name is added here then invoked from the HTML template
-# all roots added here must be invoked on the GRML
+# all roots added here must be invoked on the HTML
 
 # section 1
 
