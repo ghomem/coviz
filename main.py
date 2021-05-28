@@ -38,7 +38,10 @@ PLOT_LINE_COLOR_CRITICAL  = 'red'
 
 PLOT_LINE_COLOR_PALETTE = Plasma256
 
-PLOT_LEGEND_FONT_SIZE = '12px'
+PLOT_LEGEND_FONT_SIZE  = '12px'
+PLOT_LEGEND_FONT_SIZE2 = '12px'
+
+PLOT_LEGEND_SPACING = 0
 
 PLOT1_TITLE  ='14 Day incidence'
 PLOT2_TITLE  ='PCR Positivity'
@@ -165,7 +168,7 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
         aplot.yaxis.axis_label = ylabel
 
 # set properties common to all the plots with multiple lines
-def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtooltip_format = "@x{0}", tooltip_mode ='vline', tooltip_line = None, extra_precision = False ):
+def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtooltip_format = "@x{0}", tooltip_mode ='vline', tooltip_line = None, extra_precision = False, show_x_axis = False ):
     aplot.toolbar.active_drag    = None
     aplot.toolbar.active_scroll  = None
     aplot.toolbar.active_tap     = None
@@ -207,9 +210,13 @@ def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtoolti
 
     # labels
     #aplot.xaxis.axis_label = xlabel
+    aplot.xaxis.visible = show_x_axis
 
     aplot.legend.location = 'top_left'
     aplot.legend.click_policy = 'mute'
+
+    aplot.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE2
+    aplot.legend.spacing = PLOT_LEGEND_SPACING
 
 def set_plot_date_details( aplot ):
 
@@ -354,7 +361,7 @@ for j in range(0, nr_series ):
     lines.append( plot9.line('x', 'y'+str(j), source=source_plot9, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
 # we know by inspection that line representing 40-49 is on top
-set_plot_details_multi(plot9, 'Date', labels, '@x{%F}', 'vline', lines[4], False)
+set_plot_details_multi(plot9, 'Date', labels, '@x{%F}', 'vline', lines[4], False, False)
 set_plot_date_details(plot9)
 
 # ten
@@ -367,7 +374,7 @@ for j in range(0, nr_series ):
     lines.append( plot10.line('x', 'y'+str(j), source=source_plot10, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
 # the line for >= 80 is on top for this case
-set_plot_details_multi(plot10, 'Date', labels, '@x{%F}', 'vline', lines[nr_series -1 ], False)
+set_plot_details_multi(plot10, 'Date', labels, '@x{%F}', 'vline', lines[nr_series -1 ], False, True)
 set_plot_date_details(plot10)
 
 # eleven
@@ -380,7 +387,7 @@ for j in range(0, nr_series ):
     lines.append( plot11.line('x', 'y'+str(j), source=source_plot11, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
 # the line for >= 80 is on top for this case
-set_plot_details_multi(plot11, 'Days', labels, '@x{%F}', 'vline', lines[nr_series -1 ], True)
+set_plot_details_multi(plot11, 'Days', labels, '@x{%F}', 'vline', lines[nr_series -1 ], True, False)
 set_plot_date_details(plot11)
 
 # twelve
@@ -392,8 +399,6 @@ l122 = plot12.line('x', 'y2', source=source_plot12, line_width=PLOT_LINE_WIDTH, 
 plot12.legend.location = 'top_left'
 set_plot_details(plot12, 'Date', 'Partial', '@x{%F}', '@y{0}', 'vline', False, False,'Complete', "@y2{0}", l121)
 set_plot_date_details(plot12)
-
-plot12.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
 
 #### Plot layout section ###
 

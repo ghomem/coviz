@@ -17,12 +17,14 @@ INC_PERIOD  = 14    # period for incidence calculations
 INC_DIVIDER = 102.8 # to get incidence per 100k people
 
 # we tolerate isolated one-day or two day holes and make an average of adjacent days
-def get_patched_data ( data, delta ):
+def get_patched_data ( data, delta, fill_initial = False ):
 
     # skip to the first non None or Nan element
     k = 0
     for value in data:
         if data[k] == None or math.isnan(data[k]):
+            if fill_initial:
+                data[k] = 0
             k = k + 1
         else:
             break
@@ -167,15 +169,15 @@ def get_stratified_data ( data, base_str, smoothen, period ):
     data_80_plus_m = data[ base_str + '_80_plus_m']
 
     # we are patching some report holes in the cumulative series using the average value for adjacent days
-    data_0_9_total     = get_differential_series( get_patched_data ( (data_0_9_f     + data_0_9_m     ).tolist(), 1 ) )
-    data_10_19_total   = get_differential_series( get_patched_data ( (data_10_19_f   + data_10_19_m   ).tolist(), 1 ) )
-    data_20_29_total   = get_differential_series( get_patched_data ( (data_20_29_f   + data_20_29_m   ).tolist(), 1 ) )
-    data_30_39_total   = get_differential_series( get_patched_data ( (data_30_39_f   + data_30_39_m   ).tolist(), 1 ) )
-    data_40_49_total   = get_differential_series( get_patched_data ( (data_40_49_f   + data_40_49_m   ).tolist(), 1 ) )
-    data_50_59_total   = get_differential_series( get_patched_data ( (data_50_59_f   + data_50_59_m   ).tolist(), 1 ) )
-    data_60_69_total   = get_differential_series( get_patched_data ( (data_60_69_f   + data_60_69_m   ).tolist(), 1 ) )
-    data_70_79_total   = get_differential_series( get_patched_data ( (data_70_79_f   + data_70_79_m   ).tolist(), 1 ) )
-    data_80_plus_total = get_differential_series( get_patched_data ( (data_80_plus_f + data_80_plus_m ).tolist(), 1 ) )
+    data_0_9_total     = get_differential_series( get_patched_data ( (data_0_9_f     + data_0_9_m     ).tolist(), 1, True ) )
+    data_10_19_total   = get_differential_series( get_patched_data ( (data_10_19_f   + data_10_19_m   ).tolist(), 1, True ) )
+    data_20_29_total   = get_differential_series( get_patched_data ( (data_20_29_f   + data_20_29_m   ).tolist(), 1, True ) )
+    data_30_39_total   = get_differential_series( get_patched_data ( (data_30_39_f   + data_30_39_m   ).tolist(), 1, True ) )
+    data_40_49_total   = get_differential_series( get_patched_data ( (data_40_49_f   + data_40_49_m   ).tolist(), 1, True ) )
+    data_50_59_total   = get_differential_series( get_patched_data ( (data_50_59_f   + data_50_59_m   ).tolist(), 1, True ) )
+    data_60_69_total   = get_differential_series( get_patched_data ( (data_60_69_f   + data_60_69_m   ).tolist(), 1, True ) )
+    data_70_79_total   = get_differential_series( get_patched_data ( (data_70_79_f   + data_70_79_m   ).tolist(), 1, True ) )
+    data_80_plus_total = get_differential_series( get_patched_data ( (data_80_plus_f + data_80_plus_m ).tolist(), 1, True ) )
 
     tmp_list = [ data_0_9_total, data_10_19_total, data_20_29_total, data_30_39_total, data_40_49_total, data_50_59_total, data_60_69_total, data_70_79_total, data_80_plus_total ]
 
@@ -256,8 +258,6 @@ def process_data():
     # this is a multi year series starting in 01/01/2009
     total_deaths = mort_data['geral_pais'].tolist()
     avg_deaths   = get_avg_deaths(total_deaths, days, 5)
-
-    print(len(cfr), len(rt), len(pcr_tests), len(pcr_pos))
 
     # smooth data before presenting
     s_new          = get_smooth_list (new, 7)
