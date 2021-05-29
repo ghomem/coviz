@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256
 from bokeh.plotting import figure
 
@@ -223,7 +223,7 @@ def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtoolti
     aplot.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE2
     aplot.legend.spacing = PLOT_LEGEND_SPACING
 
-def set_plot_date_details( aplot ):
+def set_plot_date_details( aplot, asource = None ):
 
     aplot.xaxis.formatter = DatetimeTickFormatter( months=["%b %Y"], years =["%b %Y"], )
 
@@ -231,6 +231,16 @@ def set_plot_date_details( aplot ):
     aplot.x_range.end   = data_dates[days-1] - datetime(1970, 1, 1).date()
 
     aplot.xaxis.major_label_orientation = math.pi/4
+
+    if asource:
+        y_min, y_max = get_y_limits (source_plot1, data_dates[0+DATE_IGNORE], data_dates[days-1])
+        range_delta = y_max * PLOT_RANGE_FACTOR
+
+        # this thing alone prevents an interference from toggling the visibility of clines
+        # and the scale of the plots; comment this line and you will see :-)
+        # reference:
+        # https://discourse.bokeh.org/t/autoscaling-of-axis-range-with-streaming-multiline-plot-with-bokeh-server/1284/2?u=comperem
+        aplot.y_range=Range1d(y_min - range_delta , y_max + range_delta)
 
 # callbacks
 
@@ -241,15 +251,6 @@ def update_state(new):
     cline2.visible = clines_switch.active
     cline3.visible = clines_switch.active
     cline4.visible = clines_switch.active
-
-    # TODO
-    # the visibility toggling is interfering with the automatic plot range
-    # changing the alpha instead of visibility results in the same
-
-    # this is a workaround, that unfortunately introduces flicker between ranges
-    my_value = date_slider1.value
-    reset_plot_range()
-    date_slider1.value = my_value
 
 # for the data range
 def update_plot_range (attr, old, new):
@@ -314,7 +315,7 @@ source_plot1 = make_data_source_dates(data_dates, data_incidence)
 plot1 = make_plot ('incidence', PLOT1_TITLE, days, 'datetime')
 l11 = plot1.line('x','y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot1, 'Date', 'Count', '@x{%F}', '@y{0.00}', 'vline', False, False)
-set_plot_date_details(plot1)
+set_plot_date_details(plot1, source_plot1)
 
 # two
 
