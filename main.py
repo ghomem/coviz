@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256
 from bokeh.plotting import figure
 
@@ -26,6 +26,9 @@ PLOT_LINE_WIDTH_CRITICAL = 2
 
 PLOT_LINE_ALPHA       = 0.6
 PLOT_LINE_ALPHA_MUTED = 0.1
+
+# for dynamic range adjustments
+PLOT_RANGE_FACTOR = 0.05
 
 PLOT_X_LABEL  = 'Days'
 PLOT_Y_LABEL  = 'Count'
@@ -66,6 +69,8 @@ INCIDENCE_LIMIT  = 120
 POSITIVITY_LIMIT = 4
 UCI_LIMIT        = 245
 RT_LIMIT         = 1
+
+DATE_IGNORE = 15
 
 def make_age_labels ( nr_labels ):
 
@@ -227,6 +232,8 @@ def set_plot_date_details( aplot ):
 
     aplot.xaxis.major_label_orientation = math.pi/4
 
+# callbacks
+
 # for the toggle button action
 def update_state(new):
 
@@ -235,6 +242,60 @@ def update_state(new):
     cline3.visible = clines_switch.active
     cline4.visible = clines_switch.active
 
+    # TODO
+    # the visibility toggling is interfering with the automatic plot range
+    # changing the alpha instead of visibility results in the same
+
+    # this is a workaround, that unfortunately introduces flicker between ranges
+    my_value = date_slider1.value
+    reset_plot_range()
+    date_slider1.value = my_value
+
+# for the data range
+def update_plot_range (attr, old, new):
+
+    date_i = date_slider1.value[0]
+    date_f = date_slider1.value[1]
+
+    if date_i == date_f:
+        return
+
+    date_i_cmp = date_slider1.value_as_date[0]
+    date_f_cmp = date_slider1.value_as_date[1]
+
+    # TODO: we need all of the plots and all of the sources
+    for p in [ plot1 ]:
+        p.x_range.start = date_i
+        p.x_range.end   = date_f
+
+        y_min, y_max = get_y_limits (source_plot1, date_i_cmp, date_f_cmp)
+
+        #print (y_min, y_max)
+
+        # adjust range
+        range_delta = y_max * PLOT_RANGE_FACTOR
+        p.y_range.end    = y_max + range_delta
+        p.y_range.start  = y_min - range_delta
+
+def reset_plot_range ():
+
+    date_i = data_dates[0+DATE_IGNORE]
+    date_f = data_dates[days-1]
+
+    date_slider1.value = ( date_i, date_f )
+
+def get_y_limits ( source, date_i, date_f ):
+
+    # calculate indexes in the y data
+    y_i = np.where( source.data['x'] == date_i )[0][0]
+    y_f = np.where( source.data['x'] == date_f )[0][0]
+
+    # get min and max
+    y_data = source_plot1.data['y'][y_i:y_f]
+    y_max = y_data.max()
+    y_min = y_data.min()
+
+    return y_min, y_max
 
 # main
 
@@ -342,6 +403,16 @@ cline2.visible = False
 cline3.visible = False
 cline4.visible = False
 
+# date range widget
+
+# for scale calculation we start later because some series have nans in the beggining
+date_i = data_dates[0+DATE_IGNORE]
+date_f = data_dates[days-1]
+
+date_slider1 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1)
+
+date_slider1.on_change('value', update_plot_range)
+
 # second page
 
 nr_series = len(data_strat_new)
@@ -407,7 +478,9 @@ set_plot_date_details(plot12)
 
 # section 1
 
-curdoc().add_root(clines_switch)
+controls1 = row (date_slider1, clines_switch, name="section1_controls" )
+#controls1 = row (clines_switch, name="section1_controls" )
+curdoc().add_root(controls1)
 
 grid = gridplot([ 
                   [ plot1, plot3, plot5, plot7 ],
