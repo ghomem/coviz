@@ -2,10 +2,11 @@ import math
 import numpy as np
 import pandas as pd
 
+from functools import partial
 from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256
 from bokeh.plotting import figure
 
@@ -17,7 +18,7 @@ PLOT_TOOLS    ='save,reset,pan,wheel_zoom,box_zoom'
 
 PLOT_HEIGHT   = 250 # first section, but the actual height is constrained by the width
 PLOT_WIDTH    = 400
-PLOT_HEIGHT2  = 160 # for the second section
+PLOT_HEIGHT2  = 145 # for the second section
 TEXT_WIDTH    = 300
 LMARGIN_WIDTH = 20
 
@@ -26,6 +27,9 @@ PLOT_LINE_WIDTH_CRITICAL = 2
 
 PLOT_LINE_ALPHA       = 0.6
 PLOT_LINE_ALPHA_MUTED = 0.1
+
+# for dynamic range adjustments
+PLOT_RANGE_FACTOR = 0.05
 
 PLOT_X_LABEL  = 'Days'
 PLOT_Y_LABEL  = 'Count'
@@ -66,6 +70,8 @@ INCIDENCE_LIMIT  = 120
 POSITIVITY_LIMIT = 4
 UCI_LIMIT        = 245
 RT_LIMIT         = 1
+
+DATE_IGNORE = 15
 
 def make_age_labels ( nr_labels ):
 
@@ -127,7 +133,7 @@ def make_data_source_multi_dates ( datax, datay_list ):
     return ColumnDataSource(df)
 
 # set properties common to all the plots based on linear xaxis
-def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='vline', show_x_label = True, show_y_label = False, ylabel2 = PLOT_Y_LABEL, ytooltip_format2 = None, tooltip_line = None ):
+def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='vline', show_x_label = True, show_y_label = False, ylabel2 = PLOT_Y_LABEL, ytooltip_format2 = None, tooltip_line = None, show_x_axis = True ):
     aplot.toolbar.active_drag    = None
     aplot.toolbar.active_scroll  = None
     aplot.toolbar.active_tap     = None
@@ -166,6 +172,8 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
         aplot.xaxis.axis_label = xlabel
     if show_y_label:
         aplot.yaxis.axis_label = ylabel
+
+    aplot.xaxis.visible = show_x_axis
 
 # set properties common to all the plots with multiple lines
 def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtooltip_format = "@x{0}", tooltip_mode ='vline', tooltip_line = None, extra_precision = False, show_x_axis = False ):
@@ -218,7 +226,7 @@ def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtoolti
     aplot.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE2
     aplot.legend.spacing = PLOT_LEGEND_SPACING
 
-def set_plot_date_details( aplot ):
+def set_plot_date_details( aplot, asource = None ):
 
     aplot.xaxis.formatter = DatetimeTickFormatter( months=["%b %Y"], years =["%b %Y"], )
 
@@ -226,6 +234,18 @@ def set_plot_date_details( aplot ):
     aplot.x_range.end   = data_dates[days-1] - datetime(1970, 1, 1).date()
 
     aplot.xaxis.major_label_orientation = math.pi/4
+
+    if asource:
+        y_min, y_max = get_y_limits (asource, data_dates[0+DATE_IGNORE], data_dates[days-1])
+        range_delta = y_max * PLOT_RANGE_FACTOR
+
+        # this thing alone prevents an interference from toggling the visibility of clines
+        # and the scale of the plots; comment this line and you will see :-)
+        # reference:
+        # https://discourse.bokeh.org/t/autoscaling-of-axis-range-with-streaming-multiline-plot-with-bokeh-server/1284/2?u=comperem
+        aplot.y_range=Range1d(y_min - range_delta , y_max + range_delta)
+
+# callbacks
 
 # for the toggle button action
 def update_state(new):
@@ -235,6 +255,76 @@ def update_state(new):
     cline3.visible = clines_switch.active
     cline4.visible = clines_switch.active
 
+# for the data range
+def update_plot_range (attr, old, new, section):
+
+    if section == '1':
+        my_slider    = date_slider1
+        my_plot_data = plot_data_s1
+    else:
+        my_slider    = date_slider2
+        my_plot_data = plot_data_s2
+
+    date_i = my_slider.value[0]
+    date_f = my_slider.value[1]
+
+    if date_i == date_f:
+        return
+
+    date_i_cmp = my_slider.value_as_date[0]
+    date_f_cmp = my_slider.value_as_date[1]
+
+    for d in my_plot_data:
+
+        # we get the plot from the tuple
+        p = d[0]
+
+        # for some reason we need to pad the range to get an exact day match with the slider
+        p.x_range.start = date_i - pd.Timedelta(days=1).total_seconds()*1000
+
+        # this one is just for the line not to be attached to the limit of the plot
+        p.x_range.end   = date_f + pd.Timedelta(days=2).total_seconds()*1000
+
+        # we pass the data source from the tuple
+        y_min, y_max = get_y_limits (d[1], date_i_cmp, date_f_cmp)
+        if math.isnan(y_min) or math.isnan(y_max):
+            print('not rescaling due to having received nan')
+            continue
+
+        #print (y_min, y_max)
+
+        # adjust range
+        range_delta = y_max * PLOT_RANGE_FACTOR
+        p.y_range.end    = y_max + range_delta
+        p.y_range.start  = y_min - range_delta
+
+def get_y_limits ( source, date_i, date_f ):
+
+    # calculate indexes in the y data
+    y_i = np.where( source.data['x'] == date_i )[0][0]
+    y_f = np.where( source.data['x'] == date_f )[0][0]
+
+    # get min and max
+
+    # case of simple plots with series 'y'
+    try:
+        y_data = source.data['y'][y_i:y_f]
+        y_max = np.nanmax(y_data)
+        y_min = np.nanmin(y_data)
+
+        return y_min, y_max
+
+    # case of multi line plots of section 2
+    except:
+        y_max_list = []
+        y_min_list = []
+        for s in source.data:
+            if s == 'x' or s == 'index':
+                continue
+            y_max_list.append( np.nanmax(source.data[s][y_i:y_f]) )
+            y_min_list.append( np.nanmin(source.data[s][y_i:y_f]) )
+
+        return min(y_min_list), max(y_max_list)
 
 # main
 
@@ -244,8 +334,9 @@ data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence
 
 days=len(data_new)
 
-# common x axis
-x = np.linspace(1, days, days)
+# 
+plot_data_s1 = []
+plot_data_s2 = []
 
 # one
 
@@ -253,7 +344,9 @@ source_plot1 = make_data_source_dates(data_dates, data_incidence)
 plot1 = make_plot ('incidence', PLOT1_TITLE, days, 'datetime')
 l11 = plot1.line('x','y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot1, 'Date', 'Count', '@x{%F}', '@y{0.00}', 'vline', False, False)
-set_plot_date_details(plot1)
+set_plot_date_details(plot1, source_plot1)
+
+plot_data_s1.append( (plot1, source_plot1) )
 
 # two
 
@@ -261,7 +354,9 @@ source_plot2 = make_data_source_dates(data_dates, data_pcr_pos)
 plot2 = make_plot ('pcr_pos', PLOT2_TITLE, days, 'datetime')
 l21 = plot2.line('x', 'y', source=source_plot2, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot2, 'Date', '%', '@x{%F}', '@y{0.00}', 'vline', False, False)
-set_plot_date_details(plot2)
+set_plot_date_details(plot2, source_plot2)
+
+plot_data_s1.append( (plot2, source_plot2) )
 
 # three
 
@@ -272,9 +367,11 @@ l32 = plot3.line('x', 'y2', source=source_plot3, line_width=PLOT_LINE_WIDTH, lin
 
 plot3.legend.location = 'top_left'
 set_plot_details(plot3, 'Date', 'Total', '@x{%F}', '@y{0}', 'vline', False, False,'UCI', "@y2{0}", l31)
-set_plot_date_details(plot3)
+set_plot_date_details(plot3, source_plot3)
 
 plot3.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
+
+plot_data_s1.append( (plot3, source_plot3) )
 
 # four
 
@@ -284,13 +381,17 @@ plot4.line('x', 'y', source=source_plot4, line_width=PLOT_LINE_WIDTH, line_alpha
 set_plot_details(plot4, 'Date', '%', '@x{%F}', '@y{0.00}', 'vline', False, False)
 set_plot_date_details(plot4)
 
+plot_data_s1.append( (plot4, source_plot4) )
+
 # five
 
 source_plot5 = make_data_source_dates(data_dates, data_new)
 plot5 = make_plot ('new', PLOT5_TITLE, days, 'datetime')
 plot5.line('x', 'y', source=source_plot5, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot5, 'Date', 'Count', '@x{%F}', '@y{0}', 'vline', False, False)
-set_plot_date_details(plot5)
+set_plot_date_details(plot5, source_plot5)
+
+plot_data_s1.append( (plot5, source_plot5) )
 
 # six
 
@@ -298,7 +399,9 @@ source_plot6 = make_data_source_dates(data_dates, data_rt)
 plot6 = make_plot ('rt', PLOT8_TITLE, days, 'datetime')
 plot6.line('x', 'y', source=source_plot6, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
 set_plot_details(plot6, 'Date', 'Value', '@x{%F}', '@y{0.00}', 'vline', False, False)
-set_plot_date_details(plot6)
+set_plot_date_details(plot6, source_plot6)
+
+plot_data_s1.append( (plot6, source_plot6) )
 
 # seven
 
@@ -309,9 +412,11 @@ l72 = plot7.line('x', 'y2', source=source_plot7, line_width=PLOT_LINE_WIDTH, lin
 
 plot7.legend.location = 'top_left'
 set_plot_details(plot7, 'Date', 'Current', '@x{%F}', '@y{0}', 'vline', False, False,'2015-2019', "@y2{0}", l71)
-set_plot_date_details(plot7)
+set_plot_date_details(plot7, source_plot7)
 
 plot7.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
+
+plot_data_s1.append( (plot7, source_plot7) )
 
 # eight
 
@@ -319,7 +424,9 @@ source_plot8 = make_data_source_dates(data_dates, data_cv19_deaths)
 plot8 = make_plot ('deaths', PLOT6_TITLE, days, 'datetime')
 plot8.line('x', 'y', source=source_plot8, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
 set_plot_details(plot8, 'Date', 'Count', '@x{%F}', '@y{0}', 'vline', False, False)
-set_plot_date_details(plot8)
+set_plot_date_details(plot8, source_plot8)
+
+plot_data_s1.append( (plot8, source_plot8) )
 
 # Critical lines
 # default, primary, success, warning, danger, light
@@ -342,6 +449,16 @@ cline2.visible = False
 cline3.visible = False
 cline4.visible = False
 
+# date range widget
+
+# for scale calculation we start later because of the moving average
+date_i = data_dates[0+6]
+date_f = data_dates[days-1]
+
+date_slider1 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1)
+
+date_slider1.on_change('value', partial(update_plot_range, section="1"))
+
 # second page
 
 nr_series = len(data_strat_new)
@@ -362,7 +479,9 @@ for j in range(0, nr_series ):
 
 # we know by inspection that line representing 40-49 is on top
 set_plot_details_multi(plot9, 'Date', labels, '@x{%F}', 'vline', lines[4], False, False)
-set_plot_date_details(plot9)
+set_plot_date_details(plot9, source_plot9)
+
+plot_data_s2.append( (plot9, source_plot9) )
 
 # ten
 
@@ -374,8 +493,10 @@ for j in range(0, nr_series ):
     lines.append( plot10.line('x', 'y'+str(j), source=source_plot10, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
 # the line for >= 80 is on top for this case
-set_plot_details_multi(plot10, 'Date', labels, '@x{%F}', 'vline', lines[nr_series -1 ], False, True)
-set_plot_date_details(plot10)
+set_plot_details_multi(plot10, 'Date', labels, '@x{%F}', 'vline', lines[nr_series -1 ], False, False)
+set_plot_date_details(plot10, source_plot10)
+
+plot_data_s2.append( (plot10, source_plot10) )
 
 # eleven
 
@@ -388,7 +509,9 @@ for j in range(0, nr_series ):
 
 # the line for >= 80 is on top for this case
 set_plot_details_multi(plot11, 'Days', labels, '@x{%F}', 'vline', lines[nr_series -1 ], True, False)
-set_plot_date_details(plot11)
+set_plot_date_details(plot11, source_plot11)
+
+plot_data_s2.append( (plot11, source_plot11) )
 
 # twelve
 
@@ -397,8 +520,17 @@ plot12 = make_plot ('vaccination', PLOT12_TITLE, days, 'datetime')
 l121 = plot12.line('x', 'y',  source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Partial' )
 l122 = plot12.line('x', 'y2', source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Complete' )
 plot12.legend.location = 'top_left'
-set_plot_details(plot12, 'Date', 'Partial', '@x{%F}', '@y{0}', 'vline', False, False,'Complete', "@y2{0}", l121)
-set_plot_date_details(plot12)
+set_plot_details(plot12, 'Date', 'Partial', '@x{%F}', '@y{0}', 'vline', False, False,'Complete', "@y2{0}", l121, False)
+
+set_plot_date_details(plot12, source_plot12)
+
+plot_data_s2.append( (plot12, source_plot12) )
+
+# date range widget
+
+date_slider2 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1)
+
+date_slider2.on_change('value', partial(update_plot_range, section="2"))
 
 #### Plot layout section ###
 
@@ -407,7 +539,10 @@ set_plot_date_details(plot12)
 
 # section 1
 
-curdoc().add_root(clines_switch)
+control_spacer = Spacer(width=10, height=10, width_policy='auto', height_policy='fixed')
+
+controls1 = row (date_slider1, control_spacer, clines_switch, name="section1_controls" )
+curdoc().add_root(controls1)
 
 grid = gridplot([ 
                   [ plot1, plot3, plot5, plot7 ],
@@ -419,6 +554,9 @@ layout1 = layout( grid, name='section1', sizing_mode='scale_width')
 curdoc().add_root(layout1)
 
 # section 2
+
+controls2 = row (date_slider2, name="section2_controls" )
+curdoc().add_root(controls2)
 
 grid2 = gridplot ([
                    [plot9,  plot11],
