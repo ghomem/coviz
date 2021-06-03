@@ -304,27 +304,18 @@ def get_y_limits ( source, date_i, date_f ):
     y_i = np.where( source.data['x'] == date_i )[0][0]
     y_f = np.where( source.data['x'] == date_f )[0][0]
 
-    # get min and max
+    # get min and max iterating over the plot series
+    y_max_list = []
+    y_min_list = []
+    for s in source.data:
+        # x and index are also sries in the data source, let's ignore them
+        if s == 'x' or s == 'index':
+            continue
+        y_max_list.append( np.nanmax(source.data[s][y_i:y_f]) )
+        y_min_list.append( np.nanmin(source.data[s][y_i:y_f]) )
 
-    # case of simple plots with series 'y'
-    try:
-        y_data = source.data['y'][y_i:y_f]
-        y_max = np.nanmax(y_data)
-        y_min = np.nanmin(y_data)
-
-        return y_min, y_max
-
-    # case of multi line plots of section 2
-    except:
-        y_max_list = []
-        y_min_list = []
-        for s in source.data:
-            if s == 'x' or s == 'index':
-                continue
-            y_max_list.append( np.nanmax(source.data[s][y_i:y_f]) )
-            y_min_list.append( np.nanmin(source.data[s][y_i:y_f]) )
-
-        return min(y_min_list), max(y_max_list)
+    # return the minimum of the minimuns for the interval, same for maximum
+    return min(y_min_list), max(y_max_list)
 
 # main
 
