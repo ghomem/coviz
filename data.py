@@ -113,8 +113,14 @@ def get_pcr_positivity ( pcr_tests, new, period, ignore_interval ):
     pcr_pos_data =  list(np.full( period + ignore_interval, None))
 
     for i, element in enumerate(pcr_tests):
+        print(i, element)
         if i > period + ignore_interval - 1:
-            pcr_pos_data.append ( ( new[i] / pcr_tests[i-period] )*100 )
+            num = new[i]
+            den = pcr_tests[i-period]
+            if num and den:
+                pcr_pos_data.append ( (num / den)*100 )
+            else:
+                pcr_pos_data.append (None)
 
     # let's smooth now
     result = get_smooth_list(pcr_pos_data, 7)
