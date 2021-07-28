@@ -17,6 +17,8 @@ CFR_IGNORE = 30  # ignore early days
 INC_PERIOD  = 14    # period for incidence calculations
 INC_DIVIDER = 102.8 # to get incidence per 100k people
 
+DATA_DIR = '/home/deployment/data/'
+
 # we tolerate isolated one-day or two day holes and make an average of adjacent days
 def get_patched_data ( data, delta, fill_initial = False ):
 
@@ -221,10 +223,10 @@ def pad_data ( data, target_size, element, left = True ):
 def process_data():
 
     # get the latest of each file type
-    files1 = glob.glob('/home/deployment/data/data-*.csv')
-    files2 = glob.glob('/home/deployment/data/amostras-*.csv')
-    files3 = glob.glob('/home/deployment/data/mortalidade-*.csv')
-    files4 = glob.glob('/home/deployment/data/vacinas-*.csv')
+    files1 = glob.glob(DATA_DIR + 'data-*.csv')
+    files2 = glob.glob(DATA_DIR + 'amostras-*.csv')
+    files3 = glob.glob(DATA_DIR + 'mortalidade-*.csv')
+    files4 = glob.glob(DATA_DIR + 'vacinas-*.csv')
 
     main_file  = max(files1, key=os.path.getctime)
     tests_file = max(files2, key=os.path.getctime)
@@ -303,14 +305,36 @@ def get_counties_incidence(row, incidence_data, idx):
 
     return incidence;
 
-# get county incidence list at a certain date
-# FIXME index or date missing
-def process_data_counties ( ):
+def get_incidence_index ( incidence_data, requested_date ):
 
-    files1 = glob.glob('/home/deployment/data/data_concelhos_incidencia-*.csv')
+    # filter by the requested date, using a nearest match
+
+    # get a series with the differences between the requested date and the existing dates
+    delta_series = abs( pd.to_datetime(incidence_data['data'], format = '%d-%m-%Y') - pd.to_datetime(requested_date))
+
+    print(delta_series)
+
+    # find the index of the minimum differnce
+    idx = delta_series.idxmin()
+
+    print('index for date', requested_date, 'is', idx, 'and corresponding date is', pd.to_datetime(incidence_data['data'][idx]))
+
+    return idx
+
+# get county incidence list at a certain date
+def process_data_counties ( requested_date = None ):
+
+    files1 = glob.glob(DATA_DIR + 'data_concelhos_incidencia-*.csv')
 
     incidence_file = max(files1, key=os.path.getctime)
     incidence_data = pd.read_csv(incidence_file)
+
+    map_date_i = incidence_data['data'].tolist()[0]
+    map_date_f = incidence_data['data'].tolist()[-1]
+
+    # the default is the latest available date
+    if requested_date == None:
+        requested_date = map_date_f
 
     # the shapefile comes from:
     # https://dados.gov.pt/s/resources/concelhos-de-portugal/20181112-193505/concelhos-shapefile.zip
@@ -327,9 +351,13 @@ def process_data_counties ( ):
     # based on this work
     # https://github.com/jfexbrayat/bokeh-covid/blob/main/bokeh_covid.ipynb
 
+    # let's determine the best index on the incidence vs time table for a requested date
+    # that is because data_concelhos_incidencia-*.csv seems to be updated only each 7 days
+    # but the pattern is not clear and we must make sure we don't crash
+    idx = get_incidence_index ( incidence_data, requested_date )
+
     # let's add a column with the incidence data for a certain moment in time
-    # FIXME: determine the index idx as a function of the date
-    poly_data['incidence'] = poly_data.apply(get_counties_incidence, incidence_data=incidence_data, idx=1, axis=1)
+    poly_data['incidence'] = poly_data.apply(get_counties_incidence, incidence_data=incidence_data, idx=idx, axis=1)
 
     # remove the islands
     poly_data = poly_data.loc[ poly_data['NAME_1'] != 'Azores'  ]
@@ -337,7 +365,9 @@ def process_data_counties ( ):
 
     #print(poly_data)
 
-    return poly_data
+    # we return a GeoDataFrame with the counties from the main land, to which an incidence column has been added
+    # we also return the first and last dates available from the incidence time series
+    return poly_data, map_date_i, map_date_f
 
 #process_data()
 #process_data_counties()

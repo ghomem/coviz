@@ -8,7 +8,7 @@ from functools import partial
 from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, LinearColorMapper
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256, OrRd
 from bokeh.plotting import figure
 
@@ -83,6 +83,9 @@ MAP_INCIDENCE_RESOLUTION = 9 # min 3, max 9
 
 MAP_WIDTH  = 500
 MAP_HEIGHT = 662
+
+# in meters, eg, 1000 -> 1km
+MAP_RESOLUTION = 1500
 
 MAP_TITLE ='14 day Incidence per county'
 
@@ -271,8 +274,12 @@ def make_map_plot( data ):
     # so we we are forced to reverse the palette manually
 
     colormap = reverse_palette(OrRd)[MAP_INCIDENCE_RESOLUTION]
-    aplot = data.plot_bokeh( title=MAP_TITLE, category='incidence',  hovertool=True, colormap=colormap, colormap_range=(MAP_INCIDENCE_MIN, MAP_INCIDENCE_MAX), hovertool_string=plot_map_hover, legend=False, figsize=(MAP_WIDTH, MAP_HEIGHT) )
 
+    # we now create a plot based on a geodataframe to which an incidence column has been added
+    # https://patrikhlobil.github.io/Pandas-Bokeh/#geoplots
+    aplot = data.plot_bokeh( title=MAP_TITLE, category='incidence', hovertool=True, colormap=colormap, colormap_range=(MAP_INCIDENCE_MIN, MAP_INCIDENCE_MAX), hovertool_string=plot_map_hover, legend=False, figsize=(MAP_WIDTH, MAP_HEIGHT), simplify_shapes=MAP_RESOLUTION)
+
+    # remove the interactions and decorations
     aplot.toolbar.active_drag   = None
     aplot.toolbar.active_scroll = None
     aplot.toolbar.active_tap    = None
@@ -350,6 +357,24 @@ def update_plot_range (attr, old, new, section):
         p.y_range.end    = y_max + range_delta
         p.y_range.start  = y_min - range_delta
 
+# for the map
+def update_map(attr, old, new):
+
+    date = date_slider_map.value_as_date
+
+    print('map updating', date)
+
+    print('process data counties - START')
+    new_data_incidence_counties, xxx, yyy = process_data_counties( date )
+    print('process data counties - DONE')
+
+    print('make new map - START')
+    new_plot_map = make_map_plot ( new_data_incidence_counties )
+    print('make new map - DONE')
+
+    # brute force replacement of the children, until something better comes up
+    row_section3.children = [ new_plot_map,  date_slider_map ]
+
 def get_y_limits ( source, date_i, date_f ):
 
     # calculate indexes in the y data
@@ -379,17 +404,7 @@ curdoc().title = PAGE_TITLE
 data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full = process_data()
 
 # map data
-data_incidence_counties = process_data_counties()
-
-### ONGOING ###
-
-pd.set_option('plotting.backend', 'pandas_bokeh')
-
-# TODO: passe date as parameter, data slider, country wide incidence vs rt plot
-
-plot_map = make_map_plot ( data_incidence_counties )
-
-### ONGOING ###
+data_incidence_counties, map_date_i, map_date_f  = process_data_counties()
 
 # calculate the nr of days using the most reliable source
 
@@ -596,7 +611,16 @@ date_slider2.on_change('value', partial(update_plot_range, section="2"))
 
 #### Third page ####
 
+# pandas option, necessary for bokeh plots from pandas
+pd.set_option('plotting.backend', 'pandas_bokeh')
 
+plot_map = make_map_plot ( data_incidence_counties )
+
+# the step parameter is in miliseconds
+step_days = 7
+date_slider_map = DateSlider(title='Select date from the slider', start=map_date_i, end=map_date_f, value=map_date_f, step = step_days*1000*60*60*24 )
+
+date_slider_map.on_change('value_throttled', partial(update_map))
 
 #### Plot layout section ###
 
@@ -634,7 +658,7 @@ layout2 = layout( grid2, name='section2', sizing_mode='scale_width')
 curdoc().add_root(layout2)
 
 # section 3
-
-layout3 = layout( plot_map, name='section3')
+row_section3 = row(plot_map, date_slider_map)
+layout3 = layout( row_section3, name='section3')
 
 curdoc().add_root(layout3)
