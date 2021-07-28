@@ -321,7 +321,7 @@ def get_y_limits ( source, date_i, date_f ):
 
 curdoc().title = PAGE_TITLE
 
-data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_1d, data_vacc_2d = process_data()
+data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full = process_data()
 
 days=len(data_new)
 
@@ -506,7 +506,7 @@ plot_data_s2.append( (plot11, source_plot11) )
 
 # twelve
 
-source_plot12 = make_data_source_dates(data_dates, data_vacc_1d, data_vacc_2d)
+source_plot12 = make_data_source_dates(data_dates, data_vacc_part, data_vacc_full)
 plot12 = make_plot ('vaccination', PLOT12_TITLE, days, 'datetime')
 l121 = plot12.line('x', 'y',  source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Partial' )
 l122 = plot12.line('x', 'y2', source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Complete' )

@@ -254,12 +254,13 @@ def process_data():
     pcr_tests    = pad_data( tests_data['amostras_pcr_novas'].tolist(), days, None, False)
     pcr_pos      = get_pcr_positivity( pcr_tests, new, 2, 0)
 
-    tmp_vacc_1d  = vacc_data['doses1'].tolist()
-    tmp_vacc_2d  = vacc_data['doses2'].tolist()
+
+    tmp_vacc_part  = vacc_data['pessoas_inoculadas'].tolist()
+    tmp_vacc_full  = vacc_data['pessoas_vacinadas_completamente'].tolist()
 
     # vaccination started later, so we must pad the data
-    vacc_1d = pad_data(tmp_vacc_1d, days, 0, True)
-    vacc_2d = pad_data(tmp_vacc_2d, days, 0, True)
+    vacc_part = pad_data(tmp_vacc_part, days, 0, True)
+    vacc_full = pad_data(tmp_vacc_full, days, 0, True)
 
     # this is a multi year series starting in 01/01/2009
     total_deaths = mort_data['geral_pais'].tolist()
@@ -276,6 +277,6 @@ def process_data():
 
     strat_cfr = get_stratified_cfr ( main_data, CFR_DELTA, CFR_IGNORE )
 
-    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_1d, vacc_2d
+    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full
 
 #process_data()
