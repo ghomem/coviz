@@ -82,7 +82,9 @@ MAP_INCIDENCE_MAX = 1600
 MAP_INCIDENCE_RESOLUTION = 9 # min 3, max 9
 
 MAP_WIDTH  = 500
-MAP_HEIGHT = 600
+MAP_HEIGHT = 662
+
+MAP_TITLE ='14 day Incidence per county'
 
 def make_age_labels ( nr_labels ):
 
@@ -256,7 +258,7 @@ def set_plot_date_details( aplot, asource = None ):
         # https://discourse.bokeh.org/t/autoscaling-of-axis-range-with-streaming-multiline-plot-with-bokeh-server/1284/2?u=comperem
         aplot.y_range=Range1d(y_min - range_delta , y_max + range_delta)
 
-def make_map_plot( title, data ):
+def make_map_plot( data ):
 
     plot_map_hover = [ ('County', '@NAME_2'), ('Incidence', '@incidence'), ]
 
@@ -269,7 +271,7 @@ def make_map_plot( title, data ):
     # so we we are forced to reverse the palette manually
 
     colormap = reverse_palette(OrRd)[MAP_INCIDENCE_RESOLUTION]
-    aplot = data.plot_bokeh( title='Incidence per county', category='incidence',  hovertool=True, colormap=colormap, colormap_range=(MAP_INCIDENCE_MIN, MAP_INCIDENCE_MAX), hovertool_string=plot_map_hover, legend=False, figsize=(MAP_WIDTH, MAP_HEIGHT) )
+    aplot = data.plot_bokeh( title=MAP_TITLE, category='incidence',  hovertool=True, colormap=colormap, colormap_range=(MAP_INCIDENCE_MIN, MAP_INCIDENCE_MAX), hovertool_string=plot_map_hover, legend=False, figsize=(MAP_WIDTH, MAP_HEIGHT) )
 
     aplot.toolbar.active_drag   = None
     aplot.toolbar.active_scroll = None
@@ -385,7 +387,7 @@ pd.set_option('plotting.backend', 'pandas_bokeh')
 
 # TODO: passe date as parameter, data slider, country wide incidence vs rt plot
 
-plot_map = make_map_plot ( 'Incidence per county', data_incidence_counties )
+plot_map = make_map_plot ( data_incidence_counties )
 
 ### ONGOING ###
 
