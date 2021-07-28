@@ -1,16 +1,18 @@
 import math
 import numpy as np
 import pandas as pd
+import geopandas as gpd
+import pandas_bokeh
 
 from functools import partial
 from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d
-from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, LinearColorMapper
+from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256, OrRd
 from bokeh.plotting import figure
 
-from .data import process_data
+from .data import process_data, process_data_counties
 
 PAGE_TITLE = 'Coviz'
 
@@ -72,6 +74,15 @@ UCI_LIMIT        = 245
 RT_LIMIT         = 1
 
 DATE_IGNORE = 15
+
+# map related
+
+MAP_INCIDENCE_MIN = 0
+MAP_INCIDENCE_MAX = 1600
+MAP_INCIDENCE_RESOLUTION = 9 # min 3, max 9
+
+MAP_WIDTH  = 500
+MAP_HEIGHT = 600
 
 def make_age_labels ( nr_labels ):
 
@@ -245,6 +256,45 @@ def set_plot_date_details( aplot, asource = None ):
         # https://discourse.bokeh.org/t/autoscaling-of-axis-range-with-streaming-multiline-plot-with-bokeh-server/1284/2?u=comperem
         aplot.y_range=Range1d(y_min - range_delta , y_max + range_delta)
 
+def make_map_plot( title, data ):
+
+    plot_map_hover = [ ('County', '@NAME_2'), ('Incidence', '@incidence'), ]
+
+    # According to the docs the colormap parameter of the plot_bokeh function:
+    # "Defines the colors to plot. Can be either a list of colors or the name of a Bokeh color palette"
+
+    # because our original palette has the colors in the wrong direction
+    # and because of this https://github.com/bokeh/bokeh/issues/7297
+    # we can't just invert the colormap_range or we loose the legend on the color bar
+    # so we we are forced to reverse the palette manually
+
+    colormap = reverse_palette(OrRd)[MAP_INCIDENCE_RESOLUTION]
+    aplot = data.plot_bokeh( title='Incidence per county', category='incidence',  hovertool=True, colormap=colormap, colormap_range=(MAP_INCIDENCE_MIN, MAP_INCIDENCE_MAX), hovertool_string=plot_map_hover, legend=False, figsize=(MAP_WIDTH, MAP_HEIGHT) )
+
+    aplot.toolbar.active_drag   = None
+    aplot.toolbar.active_scroll = None
+    aplot.toolbar.active_tap    = None
+
+    aplot.toolbar_location = None
+
+    aplot.xaxis.visible = False
+    aplot.yaxis.visible = False
+
+    return aplot
+
+# this function iterates across the several resolutions (color sets) of a bokeh palette
+# and reverses their order
+def reverse_palette ( original_palette ):
+
+    palette = { }
+    base_value = 3
+    for item in original_palette.items():
+        #print(base_value, item)
+        palette[base_value] = item[1][::-1]
+        base_value = base_value + 1
+
+    return palette
+
 # callbacks
 
 # for the toggle button action
@@ -321,13 +371,32 @@ def get_y_limits ( source, date_i, date_f ):
 
 curdoc().title = PAGE_TITLE
 
-data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_1d, data_vacc_2d = process_data()
+# fetch data from files
+
+# regular plots data
+data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full = process_data()
+
+# map data
+data_incidence_counties = process_data_counties()
+
+### ONGOING ###
+
+pd.set_option('plotting.backend', 'pandas_bokeh')
+
+# TODO: passe date as parameter, data slider, country wide incidence vs rt plot
+
+plot_map = make_map_plot ( 'Incidence per county', data_incidence_counties )
+
+### ONGOING ###
+
+# calculate the nr of days using the most reliable source
 
 days=len(data_new)
 
-# 
 plot_data_s1 = []
 plot_data_s2 = []
+
+#### First page ####
 
 # one
 
@@ -450,7 +519,7 @@ date_slider1 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, v
 
 date_slider1.on_change('value', partial(update_plot_range, section="1"))
 
-# second page
+#### Second page ####
 
 nr_series = len(data_strat_new)
 labels = make_age_labels(nr_series)
@@ -506,7 +575,7 @@ plot_data_s2.append( (plot11, source_plot11) )
 
 # twelve
 
-source_plot12 = make_data_source_dates(data_dates, data_vacc_1d, data_vacc_2d)
+source_plot12 = make_data_source_dates(data_dates, data_vacc_part, data_vacc_full)
 plot12 = make_plot ('vaccination', PLOT12_TITLE, days, 'datetime')
 l121 = plot12.line('x', 'y',  source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Partial' )
 l122 = plot12.line('x', 'y2', source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Complete' )
@@ -522,6 +591,10 @@ plot_data_s2.append( (plot12, source_plot12) )
 date_slider2 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1)
 
 date_slider2.on_change('value', partial(update_plot_range, section="2"))
+
+#### Third page ####
+
+
 
 #### Plot layout section ###
 
@@ -557,3 +630,9 @@ grid2 = gridplot ([
 layout2 = layout( grid2, name='section2', sizing_mode='scale_width')
 
 curdoc().add_root(layout2)
+
+# section 3
+
+layout3 = layout( plot_map, name='section3')
+
+curdoc().add_root(layout3)

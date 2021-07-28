@@ -1,6 +1,7 @@
 import statistics as st
 import numpy as np
 import pandas as pd
+import geopandas as gpd
 import glob
 import os
 import csv
@@ -254,12 +255,12 @@ def process_data():
     pcr_tests    = pad_data( tests_data['amostras_pcr_novas'].tolist(), days, None, False)
     pcr_pos      = get_pcr_positivity( pcr_tests, new, 2, 0)
 
-    tmp_vacc_1d  = vacc_data['doses1'].tolist()
-    tmp_vacc_2d  = vacc_data['doses2'].tolist()
+    tmp_vacc_part  = vacc_data['pessoas_inoculadas'].tolist()
+    tmp_vacc_full  = vacc_data['pessoas_vacinadas_completamente'].tolist()
 
     # vaccination started later, so we must pad the data
-    vacc_1d = pad_data(tmp_vacc_1d, days, 0, True)
-    vacc_2d = pad_data(tmp_vacc_2d, days, 0, True)
+    vacc_part = pad_data(tmp_vacc_part, days, 0, True)
+    vacc_full = pad_data(tmp_vacc_full, days, 0, True)
 
     # this is a multi year series starting in 01/01/2009
     total_deaths = mort_data['geral_pais'].tolist()
@@ -276,6 +277,67 @@ def process_data():
 
     strat_cfr = get_stratified_cfr ( main_data, CFR_DELTA, CFR_IGNORE )
 
-    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_1d, vacc_2d
+    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full
+
+def get_counties_incidence(row, incidence_data, idx):
+
+    # NAME_2 is the county name (concelho)
+    name = row['NAME_2']
+    ucase_name = name.upper()
+
+    # handle the only mismatches between the incidence data and the shape file
+    if ucase_name == 'PRAIA DA VITÓRIA':
+        ucase_name = 'VILA DA PRAIA DA VITÓRIA'
+
+    if ucase_name == 'PONTE DE SÔR':
+        ucase_name = 'PONTE DE SOR'
+
+    try:
+        # select column and then row
+        incidence = incidence_data[ucase_name][idx]
+    except:
+        print('incidence not found for ' + ucase_name)
+        incidence = 0
+
+    #print(ucase_name, incidence)
+
+    return incidence;
+
+# get county incidence list at a certain date
+# FIXME index or date missing
+def process_data_counties ( ):
+
+    files1 = glob.glob('/home/deployment/data/data_concelhos_incidencia-*.csv')
+
+    incidence_file = max(files1, key=os.path.getctime)
+    incidence_data = pd.read_csv(incidence_file)
+
+    # the shapefile comes from:
+    # https://dados.gov.pt/s/resources/concelhos-de-portugal/20181112-193505/concelhos-shapefile.zip
+
+    # we  mention the .shp file but the companion files from the zip must be in the same directory
+    poly_file = '/home/deployment/data/shape/concelhos.shp'
+
+    # a GeoDataFrame object is a pandas.DataFrame that has a column with geometry
+    # https://geopandas.org/docs/reference/api/geopandas.GeoDataFrame.html
+    poly_data = gpd.read_file(poly_file)
+
+    pd.set_option('display.max_rows', None)
+
+    # based on this work
+    # https://github.com/jfexbrayat/bokeh-covid/blob/main/bokeh_covid.ipynb
+
+    # let's add a column with the incidence data for a certain moment in time
+    # FIXME: determine the index idx as a function of the date
+    poly_data['incidence'] = poly_data.apply(get_counties_incidence, incidence_data=incidence_data, idx=1, axis=1)
+
+    # remove the islands
+    poly_data = poly_data.loc[ poly_data['NAME_1'] != 'Azores'  ]
+    poly_data = poly_data.loc[ poly_data['NAME_1'] != 'Madeira' ]
+
+    #print(poly_data)
+
+    return poly_data
 
 #process_data()
+#process_data_counties()
