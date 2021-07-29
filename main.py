@@ -403,6 +403,7 @@ def get_y_limits ( source, date_i, date_f ):
 
 curdoc().title = PAGE_TITLE
 
+
 # fetch data from files
 
 # regular plots data
@@ -410,8 +411,6 @@ data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence
 
 # map data
 data_incidence_counties, map_date_i, map_date_f  = process_data_counties()
-
-# calculate the nr of days using the most reliable source
 
 days=len(data_new)
 
