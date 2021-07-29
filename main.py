@@ -8,7 +8,7 @@ from functools import partial
 from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256, OrRd
 from bokeh.plotting import figure
 
@@ -87,7 +87,11 @@ MAP_HEIGHT = 662
 # in meters, eg, 1000 -> 1km
 MAP_RESOLUTION = 1500
 
+MAP_TILE_PROVIDER = None #
+
 MAP_TITLE ='14 day Incidence per county'
+
+TEXT_NOTES  ='<strong>Important:</strong> use the mouse for the initial selection and the cursors for fine tuning. The plot takes a couple of seconds to update after each data selection.'
 
 def make_age_labels ( nr_labels ):
 
@@ -277,7 +281,8 @@ def make_map_plot( data ):
 
     # we now create a plot based on a geodataframe to which an incidence column has been added
     # https://patrikhlobil.github.io/Pandas-Bokeh/#geoplots
-    aplot = data.plot_bokeh( title=MAP_TITLE, category='incidence', hovertool=True, colormap=colormap, colormap_range=(MAP_INCIDENCE_MIN, MAP_INCIDENCE_MAX), hovertool_string=plot_map_hover, legend=False, figsize=(MAP_WIDTH, MAP_HEIGHT), simplify_shapes=MAP_RESOLUTION)
+    aplot = data.plot_bokeh( title=MAP_TITLE, category='incidence', hovertool=True, colormap=colormap, colormap_range=(MAP_INCIDENCE_MIN, MAP_INCIDENCE_MAX),
+                             hovertool_string=plot_map_hover, legend=False, figsize=(MAP_WIDTH, MAP_HEIGHT), simplify_shapes=MAP_RESOLUTION, tile_provider=MAP_TILE_PROVIDER)
 
     # remove the interactions and decorations
     aplot.toolbar.active_drag   = None
@@ -373,7 +378,7 @@ def update_map(attr, old, new):
     print('make new map - DONE')
 
     # brute force replacement of the children, until something better comes up
-    row_section3.children = [ new_plot_map,  date_slider_map ]
+    column_section3_map.children = [ new_plot_map ]
 
 def get_y_limits ( source, date_i, date_f ):
 
@@ -618,7 +623,7 @@ plot_map = make_map_plot ( data_incidence_counties )
 
 # the step parameter is in miliseconds
 step_days = 7
-date_slider_map = DateSlider(title='Select date from the slider', start=map_date_i, end=map_date_f, value=map_date_f, step = step_days*1000*60*60*24 )
+date_slider_map = DateSlider(title='Selected date', start=map_date_i, end=map_date_f, value=map_date_f, step = step_days*1000*60*60*24, width_policy='fixed', width=PLOT_WIDTH-40 )
 
 date_slider_map.on_change('value_throttled', partial(update_map))
 
@@ -658,7 +663,29 @@ layout2 = layout( grid2, name='section2', sizing_mode='scale_width')
 curdoc().add_root(layout2)
 
 # section 3
-row_section3 = row(plot_map, date_slider_map)
+
+# we create plot identical to plot1 (incidence), using the existing data source
+plot1_copy = make_plot ('incidence', PLOT1_TITLE, days, 'datetime')
+plot1_copy.line('x','y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+set_plot_details(plot1_copy, 'Date', 'Count', '@x{%F}', '@y{0.00}', 'vline', False, False)
+set_plot_date_details(plot1_copy, source_plot1)
+
+# but we change the range
+# we can't do this on a directy copy of plot1, because it is shallow
+plot1_copy.x_range.start = pd.to_datetime(map_date_i)
+plot1_copy.x_range.end   = pd.to_datetime(map_date_f)
+
+notes = Div(text=TEXT_NOTES, width=TEXT_WIDTH)
+
+# now the layout
+
+slider_spacer = Spacer(width=30, height=50, width_policy='auto', height_policy='fixed')
+
+column_section3_map    = column(plot_map)
+column_section3_others = column( [plot1_copy, row( [slider_spacer, date_slider_map] ), row( [ slider_spacer, notes] ) ] )
+
+row_section3 = row ( column_section3_map , column_section3_others )
+
 layout3 = layout( row_section3, name='section3')
 
 curdoc().add_root(layout3)

@@ -312,7 +312,7 @@ def get_incidence_index ( incidence_data, requested_date ):
     # get a series with the differences between the requested date and the existing dates
     delta_series = abs( pd.to_datetime(incidence_data['data'], format = '%d-%m-%Y') - pd.to_datetime(requested_date))
 
-    print(delta_series)
+    #print(delta_series)
 
     # find the index of the minimum differnce
     idx = delta_series.idxmin()
