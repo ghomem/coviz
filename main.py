@@ -374,21 +374,25 @@ def update_map(attr, old, new):
 
     print('map updating', date)
 
-    print('process data counties - START')
+    #print('process data counties - START')
+
     new_data_incidence_counties, xxx, yyy = process_data_counties( date )
-    print('process data counties - DONE')
 
-    print('make new map - START')
+    #print('process data counties - DONE')
 
-    # needs to be converted, this is what plot_bokeh does inside
-    tmp_df = convert_geoDataFrame_to_patches(new_data_incidence_counties, 'geometry')
-    new_data_source = ColumnDataSource( tmp_df )
+    #print('make new map - START')
 
-    # the actual colored data is stored on a field called Colormap
-    # this happens inside plot_bokeh, we are just updating it
-    plot_map_s1.data['Colormap'] = new_data_source.data['incidence']
+    # index in tmp_df has repeat values, as multipoly in the original data were converted into several lines
+    j = 0
+    inc_list = np.array ( [] )
+    for index in aux_index:
+        #print (index, j)
+        inc_list = np.append(inc_list, new_data_incidence_counties['incidence'][index])
+        j = j + 1
 
-    print('make new map - DONE')
+    plot_map_s1.data['Colormap'] = inc_list
+
+    #print('make new map - DONE')
 
 def get_y_limits ( source, date_i, date_f ):
 
@@ -420,6 +424,13 @@ data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence
 
 # map data
 data_incidence_counties, map_date_i, map_date_f  = process_data_counties()
+
+# needs to be converted for index extraction, this is what plot_bokeh does inside
+aux_df = convert_geoDataFrame_to_patches(data_incidence_counties, 'geometry')
+
+# the conversion transforms lines that have multiple polygons into multiple lines with the same index
+# index has repeat values because of that
+aux_index = aux_df.index
 
 # calculate the nr of days using the most reliable source
 
