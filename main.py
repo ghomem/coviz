@@ -92,7 +92,7 @@ MAP_TILE_PROVIDER = None #
 
 MAP_TITLE ='14 day Incidence per county'
 
-TEXT_NOTES  ='<strong>Important:</strong> use the mouse for the initial selection and the cursors for fine tuning. The plot takes ~ 1s to update after each data selection.'
+TEXT_NOTES  ='<strong>Important:</strong> use the mouse for the initial selection and the cursors for fine tuning. The plot takes ~ 1s to update after each date selection.'
 
 def make_age_labels ( nr_labels ):
 
