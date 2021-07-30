@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 import pandas_bokeh
+from pandas_bokeh.geoplot import convert_geoDataFrame_to_patches
 
 from functools import partial
 from datetime import datetime
@@ -281,8 +282,10 @@ def make_map_plot( data ):
 
     # we now create a plot based on a geodataframe to which an incidence column has been added
     # https://patrikhlobil.github.io/Pandas-Bokeh/#geoplots
-    aplot = data.plot_bokeh( title=MAP_TITLE, category='incidence', hovertool=True, colormap=colormap, colormap_range=(MAP_INCIDENCE_MIN, MAP_INCIDENCE_MAX),
+    aplot = data.plot_bokeh( name = 'themap', title=MAP_TITLE, category='incidence', hovertool=True, colormap=colormap, colormap_range=(MAP_INCIDENCE_MIN, MAP_INCIDENCE_MAX),
                              hovertool_string=plot_map_hover, legend=False, figsize=(MAP_WIDTH, MAP_HEIGHT), simplify_shapes=MAP_RESOLUTION, tile_provider=MAP_TILE_PROVIDER)
+
+    data_source = aplot.select(name = 'themap').data_source
 
     # remove the interactions and decorations
     aplot.toolbar.active_drag   = None
@@ -294,7 +297,7 @@ def make_map_plot( data ):
     aplot.xaxis.visible = False
     aplot.yaxis.visible = False
 
-    return aplot
+    return aplot, data_source
 
 # this function iterates across the several resolutions (color sets) of a bokeh palette
 # and reverses their order
@@ -374,11 +377,10 @@ def update_map(attr, old, new):
     print('process data counties - DONE')
 
     print('make new map - START')
-    new_plot_map = make_map_plot ( new_data_incidence_counties )
+    tmp_df = convert_geoDataFrame_to_patches(new_data_incidence_counties, 'geometry')
+    new_data_source = ColumnDataSource( tmp_df )
+    plot_map_s1.data = dict(new_data_source.data)
     print('make new map - DONE')
-
-    # brute force replacement of the children, until something better comes up
-    column_section3_map.children = [ new_plot_map ]
 
 def get_y_limits ( source, date_i, date_f ):
 
@@ -619,7 +621,7 @@ date_slider2.on_change('value', partial(update_plot_range, section="2"))
 # pandas option, necessary for bokeh plots from pandas
 pd.set_option('plotting.backend', 'pandas_bokeh')
 
-plot_map = make_map_plot ( data_incidence_counties )
+plot_map, plot_map_s1  = make_map_plot ( data_incidence_counties )
 
 # the step parameter is in miliseconds
 step_days = 7
