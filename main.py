@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 import pandas_bokeh
+from pandas_bokeh.geoplot import convert_geoDataFrame_to_patches
 
 from functools import partial
 from datetime import datetime
@@ -267,7 +268,7 @@ def set_plot_date_details( aplot, asource = None ):
 
 def make_map_plot( data ):
 
-    plot_map_hover = [ ('County', '@NAME_2'), ('Incidence', '@incidence'), ]
+    hover_string = [ ('County', '@NAME_2'), ('Incidence', '@incidence'), ]
 
     # According to the docs the colormap parameter of the plot_bokeh function:
     # "Defines the colors to plot. Can be either a list of colors or the name of a Bokeh color palette"
@@ -281,8 +282,12 @@ def make_map_plot( data ):
 
     # we now create a plot based on a geodataframe to which an incidence column has been added
     # https://patrikhlobil.github.io/Pandas-Bokeh/#geoplots
-    aplot = data.plot_bokeh( title=MAP_TITLE, category='incidence', hovertool=True, colormap=colormap, colormap_range=(MAP_INCIDENCE_MIN, MAP_INCIDENCE_MAX),
-                             hovertool_string=plot_map_hover, legend=False, figsize=(MAP_WIDTH, MAP_HEIGHT), simplify_shapes=MAP_RESOLUTION, tile_provider=MAP_TILE_PROVIDER)
+    aplot = data.plot_bokeh( name = 'themap', title=MAP_TITLE, category='incidence', hovertool=True, colormap=colormap, colormap_range=(MAP_INCIDENCE_MIN, MAP_INCIDENCE_MAX),
+                             hovertool_string=hover_string, legend=False, figsize=(MAP_WIDTH, MAP_HEIGHT), simplify_shapes=MAP_RESOLUTION, tile_provider=MAP_TILE_PROVIDER)
+
+    # we are selecting the plot by name and then getting the data_source
+    # the name was given in the invocatino of plot_bokeh
+    data_source = aplot.select(name = 'themap').data_source
 
     # remove the interactions and decorations
     aplot.toolbar.active_drag   = None
@@ -294,7 +299,7 @@ def make_map_plot( data ):
     aplot.xaxis.visible = False
     aplot.yaxis.visible = False
 
-    return aplot
+    return aplot, data_source
 
 # this function iterates across the several resolutions (color sets) of a bokeh palette
 # and reverses their order
@@ -370,15 +375,25 @@ def update_map(attr, old, new):
     print('map updating', date)
 
     print('process data counties - START')
+
     new_data_incidence_counties, xxx, yyy = process_data_counties( date )
+
     print('process data counties - DONE')
 
-    print('make new map - START')
-    new_plot_map = make_map_plot ( new_data_incidence_counties )
-    print('make new map - DONE')
+    # index in aux_index has repeated values, as multipoly rows in the original data were converted into several rows
+    j = 0
+    inc_list = np.array ( [] )
+    for index in aux_index:
+        #print (index, j)
+        inc_list = np.append(inc_list, new_data_incidence_counties['incidence'][index])
+        j = j + 1
 
-    # brute force replacement of the children, until something better comes up
-    column_section3_map.children = [ new_plot_map ]
+    # we update the data source directly on the column that holds the incidence info
+    # this column, name Colormap, is added inside plot_bokeh
+    plot_map_s1.data['Colormap'] = inc_list
+
+    # we refresh the tooltips using the Colormap column as the list
+    plot_map.hover.tooltips = [ ('County', '@NAME_2'), ('Incidence', '@Colormap'), ]
 
 def get_y_limits ( source, date_i, date_f ):
 
@@ -411,6 +426,17 @@ data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence
 
 # map data
 data_incidence_counties, map_date_i, map_date_f  = process_data_counties()
+
+# our original data has one line per county, and each line contains a set of polygons
+# for a performant map update on update_map we need to keep a converted version
+# this version has multiple lines with the same index for counties that hove multipolygons
+aux_df = convert_geoDataFrame_to_patches(data_incidence_counties, 'geometry')
+
+# the conversion transforms lines that have multiple polygons into multiple lines with the same index
+# index has repeated values because of that
+aux_index = aux_df.index
+
+# calculate the nr of days using the most reliable source
 
 days=len(data_new)
 
@@ -618,7 +644,7 @@ date_slider2.on_change('value', partial(update_plot_range, section="2"))
 # pandas option, necessary for bokeh plots from pandas
 pd.set_option('plotting.backend', 'pandas_bokeh')
 
-plot_map = make_map_plot ( data_incidence_counties )
+plot_map, plot_map_s1 = make_map_plot ( data_incidence_counties )
 
 # the step parameter is in miliseconds
 step_days = 7
