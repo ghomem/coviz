@@ -285,6 +285,8 @@ def make_map_plot( data ):
     aplot = data.plot_bokeh( name = 'themap', title=MAP_TITLE, category='incidence', hovertool=True, colormap=colormap, colormap_range=(MAP_INCIDENCE_MIN, MAP_INCIDENCE_MAX),
                              hovertool_string=plot_map_hover, legend=False, figsize=(MAP_WIDTH, MAP_HEIGHT), simplify_shapes=MAP_RESOLUTION, tile_provider=MAP_TILE_PROVIDER)
 
+    # we are selecting the plot by name and then getting the data_source
+    # the name was given in the invocatino of plot_bokeh
     data_source = aplot.select(name = 'themap').data_source
 
     # remove the interactions and decorations
