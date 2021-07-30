@@ -418,6 +418,7 @@ def get_y_limits ( source, date_i, date_f ):
 
 curdoc().title = PAGE_TITLE
 
+
 # fetch data from files
 
 # regular plots data
