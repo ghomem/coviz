@@ -377,9 +377,15 @@ def update_map(attr, old, new):
     print('process data counties - DONE')
 
     print('make new map - START')
+
+    # needs to be converted, this is what plot_bokeh does inside
     tmp_df = convert_geoDataFrame_to_patches(new_data_incidence_counties, 'geometry')
     new_data_source = ColumnDataSource( tmp_df )
-    plot_map_s1.data = dict(new_data_source.data)
+
+    # the actual colored data is stored on a field called Colormap
+    # this happens inside plot_bokeh, we are just updating it
+    plot_map_s1.data['Colormap'] = new_data_source.data['incidence']
+
     print('make new map - DONE')
 
 def get_y_limits ( source, date_i, date_f ):
