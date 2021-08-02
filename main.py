@@ -9,7 +9,7 @@ from functools import partial
 from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, PreText
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256, OrRd
 from bokeh.plotting import figure
 
@@ -414,6 +414,83 @@ def get_y_limits ( source, date_i, date_f ):
     # return the minimum of the minimuns for the interval, same for maximum
     return min(y_min_list), max(y_max_list)
 
+def make_layouts( horizontal = True):
+
+    control_spacer = Spacer(width=10, height=10, width_policy='auto', height_policy='fixed')
+    controls1 = row (date_slider1, control_spacer, clines_switch, name="section1_controls" )
+
+    # first
+
+    if horizontal:
+        grid = gridplot([
+                        [ plot1, plot3, plot5, plot7 ],
+                        [ plot2, plot4, plot6, plot8 ] ],
+                        plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT, toolbar_location=None, sizing_mode='scale_width')
+    else:
+        grid = gridplot([
+                  [ plot1, plot3 ],
+                  [ plot5, plot7 ],
+                  [ plot2, plot4 ],
+                  [ plot6, plot8 ] ],
+                  plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT, toolbar_location=None, sizing_mode='scale_width')
+
+    layout1 = layout(grid, name='section1', sizing_mode='scale_width')
+
+    # second
+
+    controls2 = row (date_slider2, name="section2_controls" )
+
+    if horizontal:
+        grid2 = gridplot ([
+                          [plot9,  plot11],
+                          [plot10, plot12] ],
+                          plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT2, toolbar_location=None, sizing_mode='scale_width')
+    else:
+        grid2 = gridplot ([
+                          [plot9 ],
+                          [plot11],
+                          [plot10],
+                          [plot12] ],
+                          plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT2, toolbar_location=None, sizing_mode='scale_width')
+
+    layout2 = layout( grid2, name='section2', sizing_mode='scale_width')
+
+    # third
+
+    # we create plot identical to plot1 (incidence), using the existing data source
+    plot1_copy = make_plot ('incidence', PLOT1_TITLE, days, 'datetime')
+    plot1_copy.line('x','y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+    set_plot_details(plot1_copy, 'Date', 'Count', '@x{%F}', '@y{0.00}', 'vline', False, False)
+    set_plot_date_details(plot1_copy, source_plot1)
+
+    # but we change the range
+    # we can't do this on a directy copy of plot1, because it is shallow
+    plot1_copy.x_range.start = pd.to_datetime(map_date_i)
+    plot1_copy.x_range.end   = pd.to_datetime(map_date_f)
+
+    notes = Div(text=TEXT_NOTES, width=TEXT_WIDTH)
+
+    # now the layout
+
+    if horizontal:
+        slider_spacer = Spacer(width=30, height=50, width_policy='auto', height_policy='fixed')
+
+        column_section3_map    = column(plot_map)
+        column_section3_others = column( [plot1_copy, row( [slider_spacer, date_slider_map] ), row( [ slider_spacer, notes] ) ] )
+
+        row_section3 = row ( column_section3_map , column_section3_others )
+        layout3 = layout( row_section3, name='section3')
+    else:
+        slider_spacer = Spacer(width=30, height=50, width_policy='auto', height_policy='fixed')
+
+        column_section3_map = column( [plot_map, row( [slider_spacer, date_slider_map] ), row( [ slider_spacer, notes] ), plot1_copy ] )
+
+        layout3 = layout( column_section3_map, name='section3')
+
+
+    return layout1, layout2, layout3, controls1, controls2
+
+
 # main
 
 curdoc().title = PAGE_TITLE
@@ -654,63 +731,12 @@ date_slider_map.on_change('value_throttled', partial(update_map))
 
 #### Plot layout section ###
 
-# the layout name is added here then invoked from the HTML template
-# all roots added here must be invoked on the HTML
+layout1, layout2, layout3, controls1, controls2 = make_layouts()
 
-# section 1
-
-control_spacer = Spacer(width=10, height=10, width_policy='auto', height_policy='fixed')
-
-controls1 = row (date_slider1, control_spacer, clines_switch, name="section1_controls" )
 curdoc().add_root(controls1)
-
-grid = gridplot([ 
-                  [ plot1, plot3, plot5, plot7 ],
-                  [ plot2, plot4, plot6, plot8 ] ],
-                  plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT, toolbar_location=None, sizing_mode='scale_width')
-
-layout1 = layout( grid, name='section1', sizing_mode='scale_width')
-
 curdoc().add_root(layout1)
 
-# section 2
-
-controls2 = row (date_slider2, name="section2_controls" )
 curdoc().add_root(controls2)
-
-grid2 = gridplot ([
-                   [plot9,  plot11],
-                   [plot10, plot12] ], 
-                   plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT2, toolbar_location=None, sizing_mode='scale_width')
-
-layout2 = layout( grid2, name='section2', sizing_mode='scale_width')
-
 curdoc().add_root(layout2)
-
-# section 3
-
-# we create plot identical to plot1 (incidence), using the existing data source
-plot1_copy = make_plot ('incidence', PLOT1_TITLE, days, 'datetime')
-plot1_copy.line('x','y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
-set_plot_details(plot1_copy, 'Date', 'Count', '@x{%F}', '@y{0.00}', 'vline', False, False)
-set_plot_date_details(plot1_copy, source_plot1)
-
-# but we change the range
-# we can't do this on a directy copy of plot1, because it is shallow
-plot1_copy.x_range.start = pd.to_datetime(map_date_i)
-plot1_copy.x_range.end   = pd.to_datetime(map_date_f)
-
-notes = Div(text=TEXT_NOTES, width=TEXT_WIDTH)
-
-# now the layout
-
-slider_spacer = Spacer(width=30, height=50, width_policy='auto', height_policy='fixed')
-
-column_section3_map    = column(plot_map)
-column_section3_others = column( [plot1_copy, row( [slider_spacer, date_slider_map] ), row( [ slider_spacer, notes] ) ] )
-
-row_section3 = row ( column_section3_map , column_section3_others )
-
-layout3 = layout( row_section3, name='section3')
 
 curdoc().add_root(layout3)
