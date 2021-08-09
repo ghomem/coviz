@@ -329,8 +329,13 @@ def process_data_counties ( requested_date = None ):
     incidence_file = max(files1, key=os.path.getctime)
     incidence_data = pd.read_csv(incidence_file)
 
-    map_date_i = incidence_data['data'].tolist()[0]
-    map_date_f = incidence_data['data'].tolist()[-1]
+    # retrieves strings from the file
+    str_map_date_i = incidence_data['data'].tolist()[0]
+    str_map_date_f = incidence_data['data'].tolist()[-1]
+
+    # converts to proper dates
+    map_date_i = datetime.strptime(str_map_date_i,'%d-%m-%Y').date()
+    map_date_f = datetime.strptime(str_map_date_f,'%d-%m-%Y').date()
 
     # the default is the latest available date
     if requested_date == None:
