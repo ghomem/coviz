@@ -3689,16 +3689,16 @@ input, select, textarea {
 			z-index: 1;
 		}
 
-              .banner.style2 .content2 {
-                        padding: 0.25rem 0.25rem 0.25rem 0.25rem ;
-                        position: relative;
-						width: 100% !important;
-                        max-width: 100%;
-                        background-color: inherit;
-                        border-radius: 0.5rem;
-                        margin-bottom: 0rem;
-                        z-index: 1;
-                }
+		.banner.style2 .content2 {
+				padding: 0.25rem 0.25rem 0.25rem 0.25rem ;
+				position: relative;
+				width: 100% !important;
+				max-width: 100%;
+				background-color: inherit;
+				border-radius: 0.5rem;
+				margin-bottom: 0rem;
+				z-index: 1;
+		}
 
 		.banner.style2 .image {
 			-moz-flex-grow: 0;
