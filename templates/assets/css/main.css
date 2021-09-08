@@ -3669,7 +3669,7 @@ input, select, textarea {
 		.banner.style2 .content {
 			padding: 2.25rem 2.25rem 2.25rem 3.25rem ;
 			position: relative;
-			width: 85rem;
+			width: 100% !important;
 			max-width: 100%;
 			background-color: inherit;
 			border-radius: 0.5rem;
@@ -3681,7 +3681,7 @@ input, select, textarea {
 		.banner.style2 .content-custom {
 			padding: 2.25rem 2.25rem 0.25rem 3.25rem ;
 			position: relative;
-			width: 85rem;
+			width: 100% !important;
 			max-width: 100%;
 			background-color: inherit;
 			border-radius: 0.5rem;
@@ -3692,7 +3692,7 @@ input, select, textarea {
               .banner.style2 .content2 {
                         padding: 0.25rem 0.25rem 0.25rem 0.25rem ;
                         position: relative;
-                        width: 80rem;
+						width: 100% !important;
                         max-width: 100%;
                         background-color: inherit;
                         border-radius: 0.5rem;
