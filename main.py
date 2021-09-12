@@ -448,8 +448,8 @@ def make_layouts( horizontal = True):
     else:
         grid2 = gridplot ([
                           [plot9 ],
-                          [plot11],
                           [plot10],
+                          [plot11],
                           [plot12] ],
                           plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT2, toolbar_location=None, sizing_mode='scale_width')
 
