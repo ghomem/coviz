@@ -96,7 +96,7 @@ MAP_TITLE ='14 day Incidence per county'
 TEXT_NOTES  ='<strong>Important:</strong> use the mouse for the initial selection and the cursors for fine tuning. The plot takes ~ 1s to update after each date selection.'
 
 # layout related variables
-MIN_HORIZONTAL_WIDTH = 1400
+MIN_HORIZONTAL_WIDTH = 1360
 
 window_size_data_source = ColumnDataSource( data = { 'width' :[0] ,  'height': [0] } )
 
