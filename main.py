@@ -409,7 +409,10 @@ def update_map(attr, old, new):
 # after document load
 def on_document_ready(evt):
     # here we change some property on the fake_toggle widget
-    print('document is ready')
+    print('document is ready, refreshing fake widget')
+
+    # this forces a change on the fake slider, which then invokes the JS callback
+    fake_slider.value = ( date_i, date_i )
     fake_slider.value = ( date_i, date_f )
 
 # this callbacks takes action on the server side upon dimensions change
@@ -492,7 +495,11 @@ def get_y_limits ( source, date_i, date_f ):
 def make_layouts( ):
 
     control_spacer = Spacer(width=10, height=10, width_policy='auto', height_policy='fixed')
+
+    # use this line for debugging with the fake slider
     controls1 = row (date_slider1, control_spacer, fake_slider, clines_switch, name="section1_controls" )
+
+    fake_slider.visible = False
 
     # first
 
