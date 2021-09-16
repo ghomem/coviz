@@ -8,7 +8,7 @@ import csv
 import math
 from datetime import datetime
 
-RT_PERIOD = 4   # infections activity period considered for RT
+RT_PERIOD = 7   # infections activity period considered for RT
 RT_IGNORE = 3   # ignore early days
 
 CFR_DELTA  = 14  # average time to die for CFR calculation
