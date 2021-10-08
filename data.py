@@ -212,13 +212,18 @@ def get_stratified_cfr ( data, CFR_DELTA, CFR_IGNORE ):
 
 def pad_data ( data, target_size, element, left = True ):
 
-    for j in range( target_size - len(data) ):
-        if left:
-            data.insert(0, element)
-        else:
-            data.append(element)
+    delta = target_size - len(data)
 
-    return data
+    # if we don't have enough data we pad with "element"
+    if delta >= 0:
+        for j in range( target_size - len(data) ):
+            if left:
+                data.insert(0, element)
+            else:
+                data.append(element)
+
+    # in case we had more data than wanted we trim it
+    return data[:target_size]
 
 def process_data():
 
@@ -254,6 +259,7 @@ def process_data():
     rt           = get_rt(new, RT_PERIOD, RT_IGNORE)
 
     # padding the pcr_tests series because it has 2 days of delay it seems - checked on 20/05/2021
+    # the padding function also trims it in case it has more data then the other series - chcked on 08/10/2021
     pcr_tests    = pad_data( tests_data['amostras_pcr_novas'].tolist(), days, None, False)
     pcr_pos      = get_pcr_positivity( pcr_tests, new, 2, 0)
 
