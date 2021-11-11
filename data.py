@@ -174,8 +174,8 @@ def get_deaths_band ( avg_deaths, sd_deaths ):
     d_sup_data = []
 
     for i, element in enumerate(avg_deaths):
-        d_inf = element - sd_deaths[i] / 2
-        d_sup = element + sd_deaths[i] / 2
+        d_inf = element - sd_deaths[i]
+        d_sup = element + sd_deaths[i]
         d_inf_data.append(d_inf)
         d_sup_data.append(d_sup)
 
