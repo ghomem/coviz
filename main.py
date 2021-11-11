@@ -9,7 +9,7 @@ from functools import partial
 from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256, OrRd
 from bokeh.plotting import figure
 from bokeh.events import DocumentReady
@@ -575,7 +575,7 @@ curdoc().title = PAGE_TITLE
 # fetch data from files
 
 # regular plots data
-data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full = process_data()
+data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_avg_deaths_inf, data_avg_deaths_sup, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full = process_data()
 
 # map data
 data_incidence_counties, map_date_i, map_date_f  = process_data_counties()
@@ -665,10 +665,15 @@ plot_data_s1.append( (plot6, source_plot6) )
 
 # seven
 
-source_plot7 = make_data_source_dates(data_dates, data_total_deaths, data_avg_deaths)
+df = pd.DataFrame(data={ 'x': data_dates, 'y': data_total_deaths, 'y2': data_avg_deaths, 'y3': data_avg_deaths_inf, 'y4': data_avg_deaths_sup }, columns=['x', 'y', 'y2', 'y3', 'y4'])
+source_plot7 = ColumnDataSource(df)
+
 plot7 = make_plot ('total deaths', PLOT7_TITLE, days, 'datetime')
 l71 = plot7.line('x', 'y',  source=source_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Current' )
-l72 = plot7.line('x', 'y2', source=source_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='2015-2019' )
+l72 = plot7.line('x', 'y2', source=source_plot7, line_width=1, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='2015-2019 ± SD' )
+
+band = Band(base='x', lower='y3', upper='y4', source=source_plot7, level='underlay', line_width=1, line_color=PLOT_LINE_COLOR_HIGHLIGHT, fill_color=PLOT_LINE_COLOR_HIGHLIGHT, line_alpha=PLOT_LINE_ALPHA, fill_alpha=PLOT_LINE_ALPHA)
+plot7.add_layout(band)
 
 plot7.legend.location = 'top_left'
 set_plot_details(plot7, 'Date', 'Current', '@x{%F}', '@y{0}', 'vline', False, False,'2015-2019', "@y2{0}", l71)
