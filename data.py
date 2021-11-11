@@ -17,6 +17,8 @@ CFR_IGNORE = 30  # ignore early days
 INC_PERIOD  = 14    # period for incidence calculations
 INC_DIVIDER = 102.8 # to get incidence per 100k people
 
+MAV_PERIOD = 7 # period for moving average calculations
+
 DATA_DIR = '/home/deployment/data/'
 
 # we tolerate isolated one-day or two day holes and make an average of adjacent days
@@ -92,7 +94,7 @@ def get_cfr ( deaths, new, period, ignore_interval ):
             cfr_data.append( ratio * 100 )
 
     # let's smooth now
-    result = get_smooth_list(cfr_data, 7)
+    result = get_smooth_list(cfr_data, MAV_PERIOD)
 
     return result
 
@@ -107,7 +109,7 @@ def get_rt ( new, period, ignore_interval ):
             r_data.append( new[i] / (total/period) )
 
     # let's smooth now
-    result = get_smooth_list(r_data, 7)
+    result = get_smooth_list(r_data, MAV_PERIOD)
 
     return result
 
@@ -126,17 +128,21 @@ def get_pcr_positivity ( pcr_tests, new, period, ignore_interval ):
                 pcr_pos_data.append (None)
 
     # let's smooth now
-    result = get_smooth_list(pcr_pos_data, 7)
+    result = get_smooth_list(pcr_pos_data, MAV_PERIOD)
 
     return result
 
 def get_avg_deaths ( total_deaths, span, years ):
 
     avg_data = []
+    sd_data  = []
 
     data_length=len(total_deaths)
     for d in range(0,span):
+
         daily_sum = 0
+        daily_var_sum = 0
+
         # we go back 2 years so this is always considering 2015-2019 (pre-Covid)
         for i in range(2, years + 2):
             base_index = data_length-1-span
@@ -144,9 +150,36 @@ def get_avg_deaths ( total_deaths, span, years ):
             day_index = d-365*int(d/365)
             index = base_index-i*365+day_index
             daily_sum = daily_sum + total_deaths[ index ]
-        avg_data.append(daily_sum / years )
 
-    return avg_data
+        daily_average = daily_sum / years
+        avg_data.append( daily_average )
+
+        for i in range(2, years + 2):
+            base_index = data_length-1-span
+            # we never let the day index go beyound 365
+            day_index = d-365*int(d/365)
+            index = base_index-i*365+day_index
+            daily_var_sum = daily_var_sum + (daily_average - total_deaths[ index ])**2
+
+        daily_sd = math.sqrt( daily_var_sum / years )
+        sd_data.append( daily_sd )
+
+        #print(daily_average, daily_sd)
+
+    return avg_data, sd_data
+
+def get_deaths_band ( avg_deaths, sd_deaths ):
+
+    d_inf_data = []
+    d_sup_data = []
+
+    for i, element in enumerate(avg_deaths):
+        d_inf = element - sd_deaths[i]
+        d_sup = element + sd_deaths[i]
+        d_inf_data.append(d_inf)
+        d_sup_data.append(d_sup)
+
+    return d_inf_data, d_sup_data
 
 def get_dates( date_strings ):
 
@@ -272,20 +305,27 @@ def process_data():
 
     # this is a multi year series starting in 01/01/2009
     total_deaths = mort_data['geral_pais'].tolist()
-    avg_deaths   = get_avg_deaths(total_deaths, days, 5)
+
+    # we get the average and standard deviation per day
+    avg_deaths, sd_deaths = get_avg_deaths(total_deaths, days, 5)
+
+    avg_deaths_inf, avg_deaths_sup = get_deaths_band ( avg_deaths, sd_deaths )
 
     # smooth data before presenting
-    s_new          = get_smooth_list (new, 7)
-    s_cv19_deaths  = get_smooth_list (cv19_deaths, 7)
-    s_total_deaths = get_smooth_list (total_deaths[-days:], 7)
+    s_new            = get_smooth_list (new, MAV_PERIOD)
+    s_cv19_deaths    = get_smooth_list (cv19_deaths, MAV_PERIOD)
+    s_total_deaths   = get_smooth_list (total_deaths[-days:], MAV_PERIOD)
+    s_avg_deaths     = get_smooth_list (avg_deaths, MAV_PERIOD)
+    s_avg_deaths_inf = get_smooth_list (avg_deaths_inf, MAV_PERIOD)
+    s_avg_deaths_sup = get_smooth_list (avg_deaths_sup, MAV_PERIOD)
 
     # these lists are already smoothed
-    s_strat_cv19_new    = get_stratified_data ( main_data, 'confirmados', True, 7 )
-    s_strat_cv19_deaths = get_stratified_data ( main_data, 'obitos', True, 7 )
+    s_strat_cv19_new    = get_stratified_data ( main_data, 'confirmados', True, MAV_PERIOD )
+    s_strat_cv19_deaths = get_stratified_data ( main_data, 'obitos', True, MAV_PERIOD )
 
     strat_cfr = get_stratified_cfr ( main_data, CFR_DELTA, CFR_IGNORE )
 
-    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, avg_deaths, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full
+    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, s_avg_deaths, s_avg_deaths_inf, s_avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full
 
 def get_counties_incidence(row, incidence_data, idx):
 
