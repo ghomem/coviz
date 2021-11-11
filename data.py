@@ -132,6 +132,43 @@ def get_pcr_positivity ( pcr_tests, new, period, ignore_interval ):
 
     return result
 
+# this function is situation specific for the sake of code readability
+# returns the average number of deaths in the "same" day of 2015-2019 and the corresponding standard deviation
+def get_avg_deaths_2015_2019 (total_deaths, span):
+
+    avg_data = []
+    sd_data  = []
+
+    deaths_2015 = total_deaths[    0:365    ] # normal year
+    deaths_2016 = total_deaths[  365:730 +1 ] # leap year
+    deaths_2017 = total_deaths[  731:1096   ] # normal year
+    deaths_2018 = total_deaths[ 1096:1461   ] # normal year
+    deaths_2019 = total_deaths[ 1461:1826   ] # normal year
+
+    # should be 365 366 365 365 365 1826
+    print ( len (deaths_2015), len(deaths_2016), len(deaths_2017), len(deaths_2018), len(deaths_2019), len(total_deaths) )
+
+    # should be 407 366 475 414 371
+    print ( deaths_2015[0], deaths_2016[0], deaths_2017[0], deaths_2018[0], deaths_2019[0] )
+
+    # should be 323 465 390 357 345
+    print ( deaths_2015[364], deaths_2016[364], deaths_2017[364], deaths_2018[364], deaths_2019[364] )
+
+    first_day_index = 55 # 26th of February
+    for d in range(0,span):
+        # idx varies between 0 and 364 (365 values)
+        # there could be some long term drift resulting from this code, but only over many years
+        idx = d + first_day_index - 365*int( (d + first_day_index) / 365 )
+        avg = ( deaths_2015[idx] + deaths_2016[idx] + deaths_2017[idx] + deaths_2018[idx] + deaths_2019[idx] ) / 5
+        var = ( (deaths_2015[idx] - avg)**2 + (deaths_2016[idx] - avg)**2 + (deaths_2017[idx] - avg)**2 + (deaths_2018[idx] - avg)**2 + (deaths_2019[idx] - avg)**2 ) / 5
+        sd  = math.sqrt(var)
+        print(d, idx, avg, sd)
+
+        avg_data.append(avg)
+        sd_data.append(sd)
+
+    return avg_data, sd_data
+
 def get_avg_deaths ( total_deaths, span, years ):
 
     avg_data = []
@@ -306,8 +343,18 @@ def process_data():
     # this is a multi year series starting in 01/01/2009
     total_deaths = mort_data['geral_pais'].tolist()
 
+    # note: 2016 is a leap year
+    idx1 = mort_data.index[ mort_data['Data'] == '01-01-2015' ][0]
+    idx2 = mort_data.index[ mort_data['Data'] == '31-12-2019' ][0] + 1
+
+    total_deaths_precovid = mort_data.iloc[ idx1:idx2 ]['geral_pais'].to_list()
+
+    #print (idx1, idx2)
+    #print(total_deaths_precovid)
+    #print(len(total_deaths_precovid))
+
     # we get the average and standard deviation per day
-    avg_deaths, sd_deaths = get_avg_deaths(total_deaths, days, 5)
+    avg_deaths, sd_deaths = get_avg_deaths_2015_2019(total_deaths_precovid, days)
 
     avg_deaths_inf, avg_deaths_sup = get_deaths_band ( avg_deaths, sd_deaths )
 
@@ -325,7 +372,10 @@ def process_data():
 
     strat_cfr = get_stratified_cfr ( main_data, CFR_DELTA, CFR_IGNORE )
 
-    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, s_avg_deaths, s_avg_deaths_inf, s_avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full
+    # starts at 26th of February of 2020
+    print(dates[0], dates[-1])
+
+    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, s_avg_deaths, avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full
 
 def get_counties_incidence(row, incidence_data, idx):
 
