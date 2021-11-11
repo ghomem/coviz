@@ -157,7 +157,7 @@ def get_avg_deaths_2015_2019 (total_deaths, span):
     first_day_index = 55 # 26th of February
     for d in range(0,span):
         # idx varies between 0 and 364 (365 values)
-        # for leap years
+        # there could be some long term drift resulting from this code, but only over many years
         idx = d + first_day_index - 365*int( (d + first_day_index) / 365 )
         avg = ( deaths_2015[idx] + deaths_2016[idx] + deaths_2017[idx] + deaths_2018[idx] + deaths_2019[idx] ) / 5
         var = ( (deaths_2015[idx] - avg)**2 + (deaths_2016[idx] - avg)**2 + (deaths_2017[idx] - avg)**2 + (deaths_2018[idx] - avg)**2 + (deaths_2019[idx] - avg)**2 ) / 5
