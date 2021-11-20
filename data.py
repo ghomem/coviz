@@ -333,8 +333,8 @@ def process_data():
     pcr_tests    = pad_data( tests_data['amostras_pcr_novas'].tolist(), days, None, False)
     pcr_pos      = get_pcr_positivity( pcr_tests, new, 2, 0)
 
-    tmp_vacc_part  = vacc_data['pessoas_inoculadas'].tolist()
-    tmp_vacc_full  = vacc_data['pessoas_vacinadas_completamente'].tolist()
+    tmp_vacc_part  = vacc_data['pessoas_inoculadas'].interpolate().tolist()
+    tmp_vacc_full  = vacc_data['pessoas_vacinadas_completamente'].interpolate().tolist()
 
     # vaccination started later, so we must pad the data
     vacc_part = pad_data(tmp_vacc_part, days, 0, True)
