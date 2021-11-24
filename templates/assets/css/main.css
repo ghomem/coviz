@@ -8647,7 +8647,8 @@ input, select, textarea {
 
 /* Media Queries for Mobile */
 
-@media (max-width: 360px) {
+
+@media (max-width: 1000px) {
 
 	h2 {
 	  font-size: 6.25rem !important;
@@ -8660,37 +8661,10 @@ input, select, textarea {
 	input[type="submit"].small, input[type="reset"].small, input[type="button"].small, button.small, .button.small {
 		font-size: 1.6rem !important;
 	}
-
-}
-
-@media (max-width: 480px) {
-
-	h2 {
-	  font-size: 6.25rem !important;
-	}
-	
-	header h2 + p {
-	  font-size: 3.25rem !important;
-    }
-
-	input[type="submit"].small, input[type="reset"].small, input[type="button"].small, button.small, .button.small {
-		font-size: 1.6rem !important;
+    
+	p.minor {
+		font-size: 2.4rem;
 	}
 
-}
-
-@media (max-width: 600px) {
-
-	h2 {
-	  font-size: 6.25rem !important;
-	}
-	
-	header h2 + p {
-	  font-size: 3.25rem !important;
-    }
-
-	input[type="submit"].small, input[type="reset"].small, input[type="button"].small, button.small, .button.small {
-		font-size: 1.6rem !important;
-	}
 
 }
