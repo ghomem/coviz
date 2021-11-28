@@ -8651,15 +8651,15 @@ input, select, textarea {
 @media (max-width: 1000px) {
 
 	h2 {
-	  font-size: 6.25rem !important;
+	  font-size: 4.25rem !important;
 	}
 	
 	header h2 + p {
-	  font-size: 3.25rem !important;
+	  font-size: 2.25rem !important;
     }
 
 	input[type="submit"].small, input[type="reset"].small, input[type="button"].small, button.small, .button.small {
-		font-size: 1.6rem !important;
+		font-size: 1.2rem !important;
 	}
     
 	p.minor {

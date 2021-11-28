@@ -7,7 +7,7 @@ PLOT_TOOLS    ='save,reset,pan,wheel_zoom,box_zoom'
 PLOT_HEIGHT   = 250 # first section, but the actual height is constrained by the width
 PLOT_WIDTH    = 400
 PLOT_HEIGHT2  = 145 # for the second section
-TEXT_WIDTH    = 300
+TEXT_WIDTH    = 500
 LMARGIN_WIDTH = 20
 
 PLOT_LINE_WIDTH          = 3
@@ -15,6 +15,9 @@ PLOT_LINE_WIDTH_CRITICAL = 2
 
 PLOT_LINE_ALPHA       = 0.6
 PLOT_LINE_ALPHA_MUTED = 0.1
+
+TITLE_SIZE_HORIZONTAL_LAYOUT = '13pt' # Bokeh default
+TITLE_SIZE_VERTICAL_LAYOUT   = '15pt' # For mobile
 
 # for dynamic range adjustments
 PLOT_RANGE_FACTOR = 0.05
@@ -77,7 +80,7 @@ MAP_TILE_PROVIDER = None #
 
 MAP_TITLE ='14 day Incidence per county'
 
-TEXT_NOTES  ='<strong>Important:</strong> use the mouse for the initial selection and the cursors for fine tuning. The plot takes ~ 1s to update after each date selection.'
+TEXT_NOTES  ='<strong>Important:</strong> use the mouse for the initial selection and the cursors for fine tuning.'
 
 # layout related variables
 MIN_HORIZONTAL_WIDTH = 1360
