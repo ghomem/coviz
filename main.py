@@ -429,15 +429,15 @@ def make_layouts( ):
     # first
 
     grid_h = gridplot([
-                      [ plot1, plot3, plot5, plot7 ],
-                      [ plot2, plot4, plot6, plot8 ] ],
+                      [ plot5, plot3, plot1, plot8 ],
+                      [ plot2, plot4, plot6, plot7 ] ],
                       plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT, toolbar_location=None, sizing_mode='scale_width')
 
     grid_v = gridplot([
-                      [ plot1, plot3 ],
-                      [ plot5, plot7 ],
-                      [ plot2, plot4 ],
-                      [ plot6, plot8 ] ],
+                      [ plot5, plot3 ],
+                      [ plot1, plot8 ],
+                      [ plot6, plot7 ],
+                      [ plot2, plot4 ] ],
                       plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT, toolbar_location=None, sizing_mode='scale_width')
 
     # second
