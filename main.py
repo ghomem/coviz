@@ -176,7 +176,7 @@ def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtoolti
     aplot.legend.location = 'top_left'
     aplot.legend.click_policy = 'mute'
 
-    aplot.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE2
+    aplot.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
     aplot.legend.spacing = PLOT_LEGEND_SPACING
 
 def set_plot_date_details( aplot, asource = None ):
@@ -497,24 +497,27 @@ def make_layouts( ):
 def adjust_widgets_to_layout( horizontal ):
 
     plot_list   = [ plot1, plot1_map, plot2, plot3, plot4, plot5, plot6, plot7, plot8, plot9, plot10, plot11, plot12, plot_map ]
+    plot_list_l = [ plot3, plot7, plot9, plot10, plot11, plot12 ] # these ones have legend
 
     for p in plot_list:
         if horizontal:
-            print('horizontal orientation adjustment for plots')
             p.title.text_font_size = TITLE_SIZE_HORIZONTAL_LAYOUT
         else:
-            print('vertical orientation adjustament for plots')
             p.title.text_font_size = TITLE_SIZE_VERTICAL_LAYOUT
 
+    for p in plot_list_l:
+        if horizontal:
+            p.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
+        else:
+            p.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE_VERTICAL_LAYOUT
+
     if horizontal:
-        print('horizontal orientation adjustment for the map')
         plot_map.plot_width   = MAP_WIDTH
         plot_map.plot_height  = MAP_HEIGHT
         plot1_map.width       = PLOT_WIDTH
         plot1_map.height      = PLOT_HEIGHT
         date_slider_map.width = PLOT_WIDTH-40
     else:
-        print('vertical orientation adjustment for the map')
         factor = 1.7
         factor2 = 1.91
         plot_map.plot_width   = int(MAP_WIDTH*factor)
