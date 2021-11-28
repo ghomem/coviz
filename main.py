@@ -358,6 +358,9 @@ def on_dimensions_change(attr, old, new):
 
         curdoc().clear()
 
+        # adjust the widgets depending on the current orientation
+        adjust_widgets_to_layout(horizontal)
+
         curdoc().add_root(controls1)
 
         if horizontal:
@@ -376,6 +379,7 @@ def on_dimensions_change(attr, old, new):
 
         # store the horizontalness state
         current_horizontal = horizontal
+
 
 dimensions_callback = CustomJS( args=dict(ds=window_size_data_source), code="""
 var width, height;
@@ -483,11 +487,41 @@ def make_layouts( ):
     layout1_v = layout(grid_v,  name='section1', sizing_mode='scale_width')
     layout2_v = layout(grid2_v, name='section2', sizing_mode='scale_width')
 
-    column_section3_map = column( [plot_map, row( [slider_spacer, date_slider_map] ), row( [ slider_spacer, notes] ), plot1_copy ] )
+    # we don't need the notes text on the vertical layout
+    column_section3_map = column( [plot_map, row( [slider_spacer, date_slider_map] ), plot1_copy ] )
 
     layout3_v = layout( column_section3_map, name='section3')
 
-    return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2
+    return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy
+
+def adjust_widgets_to_layout( horizontal ):
+
+    plot_list   = [ plot1, plot1_map, plot2, plot3, plot4, plot5, plot6, plot7, plot8, plot9, plot10, plot11, plot12, plot_map ]
+
+    for p in plot_list:
+        if horizontal:
+            print('horizontal orientation adjustment for plots')
+            p.title.text_font_size = TITLE_SIZE_HORIZONTAL_LAYOUT
+        else:
+            print('vertical orientation adjustament for plots')
+            p.title.text_font_size = TITLE_SIZE_VERTICAL_LAYOUT
+
+    if horizontal:
+        print('horizontal orientation adjustment for the map')
+        plot_map.plot_width   = MAP_WIDTH
+        plot_map.plot_height  = MAP_HEIGHT
+        plot1_map.width       = PLOT_WIDTH
+        plot1_map.height      = PLOT_HEIGHT
+        date_slider_map.width = PLOT_WIDTH-40
+    else:
+        print('vertical orientation adjustment for the map')
+        factor = 1.7
+        factor2 = 1.91
+        plot_map.plot_width   = int(MAP_WIDTH*factor)
+        plot_map.plot_height  = int(MAP_HEIGHT*factor)
+        plot1_map.width       = int(plot1_map.plot_width*factor2)
+        plot1_map.height      = PLOT_HEIGHT
+        date_slider_map.width = plot1_map.width-40
 
 # main
 
@@ -747,7 +781,7 @@ window_size_data_source.on_change('data', on_dimensions_change)
 # the layout name is added here then invoked from the HTML template
 # all roots added here must be invoked on the HTML
 
-layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2 = make_layouts()
+layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_map = make_layouts()
 
 # by default layouts are created assuming we have enough width for the ideal visualization mode
 # that is, we start with horizontal layouts
