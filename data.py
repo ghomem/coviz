@@ -329,16 +329,20 @@ def process_data():
     rt           = get_rt(new, RT_PERIOD, RT_IGNORE)
 
     # padding the pcr_tests series because it has 2 days of delay it seems - checked on 20/05/2021
-    # the padding function also trims it in case it has more data then the other series - chcked on 08/10/2021
+    # the padding function also trims it in case it has more data then the other series - checked on 08/10/2021
     pcr_tests    = pad_data( tests_data['amostras_pcr_novas'].tolist(), days, None, False)
     pcr_pos      = get_pcr_positivity( pcr_tests, new, 2, 0)
 
     tmp_vacc_part  = vacc_data['pessoas_inoculadas'].interpolate().tolist()
     tmp_vacc_full  = vacc_data['pessoas_vacinadas_completamente'].interpolate().tolist()
 
-    # vaccination started later, so we must pad the data
-    vacc_part = pad_data(tmp_vacc_part, days, 0, True)
-    vacc_full = pad_data(tmp_vacc_full, days, 0, True)
+    # right side padding to compensate the 2 week delay on reporting
+    tmp_vacc_part2 = pad_data(tmp_vacc_part, len(tmp_vacc_part) +14, None, False)
+    tmp_vacc_full2 = pad_data(tmp_vacc_full, len(tmp_vacc_full) +14, None, False)
+
+    # left side padding to compensate for vaccination having started later
+    vacc_part = pad_data(tmp_vacc_part2, days, 0, True)
+    vacc_full = pad_data(tmp_vacc_full2, days, 0, True)
 
     # this is a multi year series starting in 01/01/2009
     total_deaths = mort_data['geral_pais'].tolist()
