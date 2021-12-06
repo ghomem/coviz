@@ -8673,3 +8673,23 @@ input, select, textarea {
 
 
 }
+
+/* Set gray paddings to 0 with narrow resolutions */
+
+@media screen and (max-width: 980px) {
+.banner.style2 {
+    padding: 1.25rem 0rem 2.25rem 0rem !important;
+}
+}
+
+@media screen and (max-width: 1280px) {
+.banner.style2 {
+    padding: 1.25rem 0rem 2.25rem 0rem !important;
+}
+}
+
+@media screen and (max-width: 1440px) {
+.banner.style2 {
+    padding: 1.25rem 0rem 0.25rem 0rem !important;
+}
+}
