@@ -11,7 +11,7 @@ from datetime import datetime
 RT_PERIOD = 7   # infections activity period considered for RT
 RT_IGNORE = 3   # ignore early days
 
-CFR_DELTA  = 14  # average time to die for CFR calculation
+CFR_DELTA  = 10  # average time to die for CFR calculation
 CFR_IGNORE = 30  # ignore early days
 
 INC_PERIOD  = 14    # period for incidence calculations
