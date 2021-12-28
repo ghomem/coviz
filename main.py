@@ -583,7 +583,7 @@ plot3 = make_plot ('hosp', PLOT3_TITLE, days, 'datetime')
 l31 = plot3.line('x', 'y',  source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
 l32 = plot3.line('x', 'y2', source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='UCI' )
 
-plot3.legend.location = 'top_right'
+plot3.legend.location = 'top_left'
 set_plot_details(plot3, 'Date', 'Total', '@x{%F}', '@y{0}', 'vline', False, False,'UCI', "@y2{0}", l31)
 set_plot_date_details(plot3, source_plot3)
 
@@ -633,7 +633,7 @@ l72 = plot7.line('x', 'y2', source=source_plot7, line_width=1, line_alpha=PLOT_L
 band = Band(base='x', lower='y3', upper='y4', source=source_plot7, level='underlay', line_width=1, line_color=PLOT_LINE_COLOR_HIGHLIGHT, fill_color=PLOT_LINE_COLOR_HIGHLIGHT, line_alpha=PLOT_LINE_ALPHA, fill_alpha=PLOT_LINE_ALPHA)
 plot7.add_layout(band)
 
-plot7.legend.location = 'top_right'
+plot7.legend.location = 'top_left'
 set_plot_details(plot7, 'Date', 'Current', '@x{%F}', '@y{0}', 'vline', False, False,'2015-2019', "@y2{0}", l71)
 set_plot_date_details(plot7, source_plot7)
 
