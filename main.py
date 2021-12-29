@@ -634,7 +634,7 @@ band = Band(base='x', lower='y3', upper='y4', source=source_plot7, level='underl
 plot7.add_layout(band)
 
 plot7.legend.location = 'top_left'
-set_plot_details(plot7, 'Date', 'Current', '@x{%F}', '@y{0}', 'vline', False, False,'2015-2019', "@y2{0}", l71)
+set_plot_details(plot7, 'Date', 'Current', '@x{%F}', '@y{0}', 'vline', False, False,'2015-2019', "@y2{0} (@y3{0}-@y4{0})", l71)
 set_plot_date_details(plot7, source_plot7)
 
 plot7.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
