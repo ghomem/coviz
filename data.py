@@ -335,14 +335,18 @@ def process_data():
 
     tmp_vacc_part  = vacc_data['pessoas_inoculadas'].interpolate().tolist()
     tmp_vacc_full  = vacc_data['pessoas_vacinadas_completamente'].interpolate().tolist()
+    tmp_vacc_boost = vacc_data['pessoas_reforço'].interpolate().tolist()
 
     # right side padding to compensate the 2 week delay on reporting
-    tmp_vacc_part2 = pad_data(tmp_vacc_part, len(tmp_vacc_part) +14, None, False)
-    tmp_vacc_full2 = pad_data(tmp_vacc_full, len(tmp_vacc_full) +14, None, False)
+    tmp_vacc_part2  = pad_data(tmp_vacc_part,  len(tmp_vacc_part ) +14, None, False)
+    tmp_vacc_full2  = pad_data(tmp_vacc_full,  len(tmp_vacc_full ) +14, None, False)
+    tmp_vacc_boost2 = pad_data(tmp_vacc_boost, len(tmp_vacc_boost) +14, None, False)
 
     # left side padding to compensate for vaccination having started later
-    vacc_part = pad_data(tmp_vacc_part2, days, 0, True)
-    vacc_full = pad_data(tmp_vacc_full2, days, 0, True)
+    vacc_part  = pad_data(tmp_vacc_part2,  days, 0, True)
+    vacc_full  = pad_data(tmp_vacc_full2,  days, 0, True)
+    # we pad with nan here to avoid a strange overlap effect from the late starting booster doses
+    vacc_boost = pad_data(tmp_vacc_boost2, days, np.nan, True)
 
     # this is a multi year series starting in 01/01/2009
     total_deaths = mort_data['geral_pais'].tolist()
@@ -379,7 +383,7 @@ def process_data():
     # starts at 26th of February of 2020
     print(dates[0], dates[-1])
 
-    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, s_avg_deaths, avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full
+    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, s_avg_deaths, avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full, vacc_boost
 
 def get_counties_incidence(row, incidence_data, idx):
 

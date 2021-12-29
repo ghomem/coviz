@@ -86,7 +86,7 @@ def make_data_source_multi_dates ( datax, datay_list ):
     return ColumnDataSource(df)
 
 # set properties common to all the plots based on linear xaxis
-def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='vline', show_x_label = True, show_y_label = False, ylabel2 = PLOT_Y_LABEL, ytooltip_format2 = None, tooltip_line = None, show_x_axis = True ):
+def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='vline', show_x_label = True, show_y_label = False, ylabel2 = PLOT_Y_LABEL, ytooltip_format2 = None, tooltip_line = None, show_x_axis = True, ylabel3 = PLOT_Y_LABEL, ytooltip_format3 = None ):
     aplot.toolbar.active_drag    = None
     aplot.toolbar.active_scroll  = None
     aplot.toolbar.active_tap     = None
@@ -99,6 +99,10 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
     # check if we have a second line for tooltips
     if ytooltip_format2:
         tooltip_list.append( (ylabel2, ytooltip_format2) )
+
+    # same for 3rd
+    if ytooltip_format3:
+        tooltip_list.append( (ylabel3, ytooltip_format3) )
 
     # we pass a single render to anchor the tooltip to a specific line
     if tooltip_line:
@@ -533,7 +537,7 @@ curdoc().title = PAGE_TITLE
 # fetch data from files
 
 # regular plots data
-data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_avg_deaths_inf, data_avg_deaths_sup, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full = process_data()
+data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_avg_deaths_inf, data_avg_deaths_sup, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full, data_vacc_boost = process_data()
 
 # map data
 data_incidence_counties, map_date_i, map_date_f  = process_data_counties()
@@ -738,12 +742,15 @@ plot_data_s2.append( (plot11, source_plot11) )
 
 # twelve
 
-source_plot12 = make_data_source_dates(data_dates, data_vacc_part, data_vacc_full)
+df12 = pd.DataFrame(data={ 'x': data_dates, 'y': data_vacc_part, 'y2': data_vacc_full, 'y3': data_vacc_boost }, columns=['x', 'y', 'y2', 'y3'])
+source_plot12 = ColumnDataSource(df12)
+
 plot12 = make_plot ('vaccination', PLOT12_TITLE, days, 'datetime')
 l121 = plot12.line('x', 'y',  source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Partial' )
 l122 = plot12.line('x', 'y2', source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Complete' )
+l122 = plot12.line('x', 'y3', source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='Booster' )
 plot12.legend.location = 'top_left'
-set_plot_details(plot12, 'Date', 'Partial', '@x{%F}', '@y{0}', 'vline', False, False,'Complete', "@y2{0}", l121, False)
+set_plot_details(plot12, 'Date', 'Partial', '@x{%F}', '@y{0}', 'vline', False, False,'Complete', "@y2{0}", l121, False, 'Booster', "@y3{0}")
 
 set_plot_date_details(plot12, source_plot12)
 
