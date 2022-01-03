@@ -573,7 +573,7 @@ plot_data_s1.append( (plot1, source_plot1) )
 # two
 
 source_plot2 = make_data_source_dates(data_dates, data_pos)
-plot2 = make_plot ('_pos', PLOT2_TITLE, days, 'datetime')
+plot2 = make_plot ('positivity', PLOT2_TITLE, days, 'datetime')
 l21 = plot2.line('x', 'y', source=source_plot2, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot2, 'Date', '%', '@x{%F}', '@y{0.00}', 'vline', False, False)
 set_plot_date_details(plot2, source_plot2)
