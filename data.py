@@ -113,22 +113,22 @@ def get_rt ( new, period, ignore_interval ):
 
     return result
 
-def get_pcr_positivity ( pcr_tests, new, period, ignore_interval ):
+def get_positivity ( tests, new, period, ignore_interval ):
 
-    pcr_pos_data =  list(np.full( period + ignore_interval, None))
+    pos_data =  list(np.full( period + ignore_interval, None))
 
-    for i, element in enumerate(pcr_tests):
+    for i, element in enumerate(tests):
         print(i, element)
         if i > period + ignore_interval - 1:
             num = new[i]
-            den = pcr_tests[i-period]
+            den = tests[i-period]
             if num and den:
-                pcr_pos_data.append ( (num / den)*100 )
+                pos_data.append ( (num / den)*100 )
             else:
-                pcr_pos_data.append (None)
+                pos_data.append (None)
 
     # let's smooth now
-    result = get_smooth_list(pcr_pos_data, MAV_PERIOD)
+    result = get_smooth_list(pos_data, MAV_PERIOD)
 
     return result
 
@@ -330,8 +330,11 @@ def process_data():
 
     # padding the pcr_tests series because it has 2 days of delay it seems - checked on 20/05/2021
     # the padding function also trims it in case it has more data then the other series - checked on 08/10/2021
-    pcr_tests    = pad_data( tests_data['amostras_pcr_novas'].tolist(), days, None, False)
-    pcr_pos      = get_pcr_positivity( pcr_tests, new, 2, 0)
+    pcr_tests    = pad_data( tests_data['amostras_pcr_novas'].tolist(), days, 0, False)
+    ag_tests     = pad_data( tests_data['amostras_antigenio_novas'].tolist(), days, 0, False)
+
+    total_tests  = np.add(pcr_tests, ag_tests)
+    positivity   = get_positivity( total_tests, new, 2, 0)
 
     tmp_vacc_part  = vacc_data['pessoas_inoculadas'].interpolate().tolist()
     tmp_vacc_full  = vacc_data['pessoas_vacinadas_completamente'].interpolate().tolist()
@@ -383,7 +386,7 @@ def process_data():
     # starts at 26th of February of 2020
     print(dates[0], dates[-1])
 
-    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, pcr_pos, s_total_deaths, s_avg_deaths, avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full, vacc_boost
+    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, positivity, s_total_deaths, s_avg_deaths, avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full, vacc_boost
 
 def get_counties_incidence(row, incidence_data, idx):
 
