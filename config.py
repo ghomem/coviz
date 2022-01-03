@@ -39,7 +39,7 @@ PLOT_LEGEND_FONT_SIZE_VERTICAL_LAYOUT = '15px'
 PLOT_LEGEND_SPACING = 0
 
 PLOT1_TITLE  ='14 day Incidence'
-PLOT2_TITLE  ='PCR Positivity'
+PLOT2_TITLE  ='Positivity'
 PLOT3_TITLE  ='Hospitalized'
 PLOT4_TITLE  ='Case fatality rate'
 PLOT5_TITLE  ='New cases'

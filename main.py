@@ -537,7 +537,7 @@ curdoc().title = PAGE_TITLE
 # fetch data from files
 
 # regular plots data
-data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pcr_pos, data_total_deaths, data_avg_deaths, data_avg_deaths_inf, data_avg_deaths_sup, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full, data_vacc_boost = process_data()
+data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pos, data_total_deaths, data_avg_deaths, data_avg_deaths_inf, data_avg_deaths_sup, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full, data_vacc_boost = process_data()
 
 # map data
 data_incidence_counties, map_date_i, map_date_f  = process_data_counties()
@@ -572,8 +572,8 @@ plot_data_s1.append( (plot1, source_plot1) )
 
 # two
 
-source_plot2 = make_data_source_dates(data_dates, data_pcr_pos)
-plot2 = make_plot ('pcr_pos', PLOT2_TITLE, days, 'datetime')
+source_plot2 = make_data_source_dates(data_dates, data_pos)
+plot2 = make_plot ('positivity', PLOT2_TITLE, days, 'datetime')
 l21 = plot2.line('x', 'y', source=source_plot2, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot2, 'Date', '%', '@x{%F}', '@y{0.00}', 'vline', False, False)
 set_plot_date_details(plot2, source_plot2)
