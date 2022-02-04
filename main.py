@@ -433,7 +433,7 @@ def make_layouts( ):
     # first
 
     grid_h = gridplot([
-                      [ plot5, plot3, plot1, plot8 ],
+                      [ plot1, plot3, plot5, plot8 ],
                       [ plot2, plot4, plot6, plot7 ] ],
                       plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT, toolbar_location=None, sizing_mode='scale_width')
 
@@ -582,13 +582,16 @@ plot_data_s1.append( (plot2, source_plot2) )
 
 # three
 
-source_plot3 = make_data_source_dates(data_dates, data_hosp, data_hosp_uci)
+#source_plot3 = make_data_source_dates(data_dates, data_hosp, list(np.array(data_hosp_uci)*5))
+
+source_plot3 = ColumnDataSource(pd.DataFrame(data={ 'x': data_dates, 'y': data_hosp, 'y2': list(np.array(data_hosp_uci)*5), 'y3': data_hosp_uci }, columns=['x', 'y', 'y2', 'y3']))
+
 plot3 = make_plot ('hosp', PLOT3_TITLE, days, 'datetime')
 l31 = plot3.line('x', 'y',  source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
-l32 = plot3.line('x', 'y2', source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='UCI' )
+l32 = plot3.line('x', 'y2', source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='UCI x5' )
 
 plot3.legend.location = 'top_left'
-set_plot_details(plot3, 'Date', 'Total', '@x{%F}', '@y{0}', 'vline', False, False,'UCI', "@y2{0}", l31)
+set_plot_details(plot3, 'Date', 'Total', '@x{%F}', '@y{0}', 'vline', False, False,'UCI', "@y3{0}", l31)
 set_plot_date_details(plot3, source_plot3)
 
 plot3.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE

@@ -59,8 +59,8 @@ CLINES_SWITCH_HEIGHT = 30
 
 INCIDENCE_LIMIT  = 120
 POSITIVITY_LIMIT = 4
-UCI_LIMIT        = 245
 RT_LIMIT         = 1
+UCI_LIMIT        = 245 * 5 # multiplied by 5 because we are plotting the series x5
 
 DATE_IGNORE = 15
 
