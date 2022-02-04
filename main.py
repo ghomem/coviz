@@ -26,6 +26,16 @@ current_horizontal = True
 
 # functions
 
+def make_stats ( sum_new, sum_cv19_deaths, sum_total_deaths, sum_avg_deaths ):
+
+    my_str =  f"""Statistic for the selected date range:</br>
+                  Covid cases:  {sum_new}  Overall deaths: {sum_total_deaths}</br>
+                  Covid deaths: {sum_cv19_deaths}  Overall deaths 2015-2019: {sum_avg_deaths}"""
+
+    # TODO excess mortality
+
+    return my_str
+
 def make_age_labels ( nr_labels ):
 
     labels = []
@@ -260,6 +270,47 @@ def update_state(new):
     cline3.visible = clines_switch.active
     cline4.visible = clines_switch.active
 
+# for the visible stats
+def update_stats(attr, old, new):
+
+    date_i_cmp = date_slider1.value_as_date[0]
+    date_f_cmp = date_slider1.value_as_date[1]
+
+    # we need to know the list positions to sum the numbers
+    idx1 = (date_i_cmp-data_dates[0]).days
+    idx2 = (date_f_cmp-data_dates[0]).days
+
+    sum_new          = np.array( raw_data_new         [idx1:idx2+1] ).sum()
+    sum_cv19_deaths  = np.array( raw_data_cv19_deaths [idx1:idx2+1] ).sum()
+    sum_total_deaths = np.array( raw_data_total_deaths[idx1:idx2+1] ).sum()
+
+    sum_avg_deaths   = int( np.array( raw_data_avg_deaths[idx1:idx2+1] ).sum())
+
+    stats_str = make_stats (sum_new, sum_cv19_deaths, sum_total_deaths, sum_avg_deaths)
+    stats.text = stats_str
+
+    #print(stats_str)
+
+# makes the legends appear / disappear as necessary
+def update_legends(attr, old, new):
+
+    date_i_cmp = date_slider1.value_as_date[0]
+    date_f_cmp = date_slider1.value_as_date[1]
+
+    # we need to know the list positions to sum the numbers
+    idx1 = (date_i_cmp-data_dates[0]).days
+    idx2 = (date_f_cmp-data_dates[0]).days
+
+    # the -7 is because we start 7 days later on the dates, due to the moving average :-)
+    if idx2-idx1 < days - 7:
+        my_visibility = False
+    else:
+        my_visibility = True
+
+    # plots that have dynamic legend
+    plot3.legend.visible = my_visibility
+    plot7.legend.visible = my_visibility
+
 # for the data range
 def update_plot_range (attr, old, new, section):
 
@@ -430,9 +481,15 @@ def make_layouts( ):
 
     fake_slider.visible = False
 
+    # stats spacers, can't use the same multiple times
+    ssp1 = Spacer(width=10, height=10, width_policy='auto', height_policy='fixed')
+    ssp2 = Spacer(width=10, height=10, width_policy='auto', height_policy='fixed')
+    ssp3 = Spacer(width=10, height=10, width_policy='auto', height_policy='fixed')
+
     # first
 
     grid_h = gridplot([
+                      [ ssp1,  ssp2, ssp3,   stats ],
                       [ plot1, plot3, plot5, plot8 ],
                       [ plot2, plot4, plot6, plot7 ] ],
                       plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT, toolbar_location=None, sizing_mode='scale_width')
@@ -537,7 +594,12 @@ curdoc().title = PAGE_TITLE
 # fetch data from files
 
 # regular plots data
-data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pos, data_total_deaths, data_avg_deaths, data_avg_deaths_inf, data_avg_deaths_sup, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full, data_vacc_boost = process_data()
+data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pos, data_total_deaths, data_avg_deaths, data_avg_deaths_inf, data_avg_deaths_sup, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full, data_vacc_boost, raw_data = process_data()
+
+raw_data_new          = raw_data[0]
+raw_data_cv19_deaths  = raw_data[1]
+raw_data_total_deaths = raw_data[2]
+raw_data_avg_deaths   = raw_data[3]
 
 # map data
 data_incidence_counties, map_date_i, map_date_f  = process_data_counties()
@@ -559,6 +621,13 @@ plot_data_s1 = []
 plot_data_s2 = []
 
 #### First page ####
+
+# the statistical summary
+
+# this will be updated from the date slider callback
+stats = Div(text='', width=STATS_WIDTH)
+
+# and then the plots
 
 # one
 
@@ -687,7 +756,13 @@ date_f = data_dates[days-1]
 
 date_slider1 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1)
 
+# we want the plots to change in real time but the stats only to be updated after the user stopped moving the mouse
 date_slider1.on_change('value', partial(update_plot_range, section="1"))
+date_slider1.on_change('value', partial(update_legends))
+date_slider1.on_change('value_throttled', partial(update_stats))
+
+# the parameters are dummy as we take the values directly from the slider
+update_stats(0,0,0)
 
 #### Second page ####
 
