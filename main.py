@@ -9,7 +9,7 @@ from functools import partial
 from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, TableColumn, DataTable, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256, OrRd
 from bokeh.plotting import figure
 from bokeh.events import DocumentReady
@@ -25,16 +25,6 @@ window_size_data_source = ColumnDataSource( data = { 'width' :[0] ,  'height': [
 current_horizontal = True
 
 # functions
-
-def make_stats ( sum_new, sum_cv19_deaths, sum_total_deaths, sum_avg_deaths ):
-
-    my_str =  f"""Statistic for the selected date range:</br>
-                  Covid cases:  {sum_new}  Overall deaths: {sum_total_deaths}</br>
-                  Covid deaths: {sum_cv19_deaths}  Overall deaths 2015-2019: {sum_avg_deaths}"""
-
-    # TODO excess mortality
-
-    return my_str
 
 def make_age_labels ( nr_labels ):
 
@@ -286,10 +276,17 @@ def update_stats(attr, old, new):
 
     sum_avg_deaths   = int( np.array( raw_data_avg_deaths[idx1:idx2+1] ).sum())
 
-    stats_str = make_stats (sum_new, sum_cv19_deaths, sum_total_deaths, sum_avg_deaths)
-    stats.text = stats_str
+    excess_deaths     = sum_total_deaths - sum_avg_deaths
+    excess_deaths_pct = round( (excess_deaths / sum_avg_deaths)*100, 1)
 
-    #print(stats_str)
+    # this is what is necessary to update an existing table
+
+    # local vars
+    l_stats_data = pd.DataFrame( { 'sum_new': [sum_new], 'sum_cv19_deaths': [sum_cv19_deaths], 'sum_total_deaths': [sum_total_deaths], 'sum_avg_deaths': [sum_avg_deaths], 'excess_deaths': [excess_deaths], 'excess_deaths_pct': [excess_deaths_pct] } )
+    l_stats_source = ColumnDataSource(l_stats_data)
+
+    # pre-existing global var
+    stats_table.source = l_stats_source
 
 # makes the legends appear / disappear as necessary
 def update_legends(attr, old, new):
@@ -481,15 +478,9 @@ def make_layouts( ):
 
     fake_slider.visible = False
 
-    # stats spacers, can't use the same multiple times
-    ssp1 = Spacer(width=10, height=10, width_policy='auto', height_policy='fixed')
-    ssp2 = Spacer(width=10, height=10, width_policy='auto', height_policy='fixed')
-    ssp3 = Spacer(width=10, height=10, width_policy='auto', height_policy='fixed')
-
     # first
 
     grid_h = gridplot([
-                      [ ssp1,  ssp2, ssp3,   stats ],
                       [ plot1, plot3, plot5, plot8 ],
                       [ plot2, plot4, plot6, plot7 ] ],
                       plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT, toolbar_location=None, sizing_mode='scale_width')
@@ -536,7 +527,7 @@ def make_layouts( ):
 
     slider_spacer = Spacer(width=30, height=50, width_policy='auto', height_policy='fixed')
 
-    layout1_h = layout(grid_h,  name='section1', sizing_mode='scale_width')
+    layout1_h = layout(column(stats_table,grid_h), name='section1', sizing_mode='scale_width')
     layout2_h = layout(grid2_h, name='section2', sizing_mode='scale_width')
 
     column_section3_map    = column(plot_map)
@@ -621,13 +612,6 @@ plot_data_s1 = []
 plot_data_s2 = []
 
 #### First page ####
-
-# the statistical summary
-
-# this will be updated from the date slider callback
-stats = Div(text='', width=STATS_WIDTH)
-
-# and then the plots
 
 # one
 
@@ -760,6 +744,23 @@ date_slider1 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, v
 date_slider1.on_change('value', partial(update_plot_range, section="1"))
 date_slider1.on_change('value', partial(update_legends))
 date_slider1.on_change('value_throttled', partial(update_stats))
+
+# the statistical summary
+
+# we initialize this with dummy values
+stats_data = pd.DataFrame( { 'sum_new': [0], 'sum_cv19_deaths': [0], 'sum_total_deaths': [0], 'sum_avg_deaths': [0], 'excess_deaths': [0], 'excess_deaths_pct': [0] } )
+stats_source = ColumnDataSource(stats_data)
+
+stats_columns = [
+        TableColumn(field="sum_new",          title="Cases" ),
+        TableColumn(field="sum_cv19_deaths",  title="Covid19 deaths"),
+        TableColumn(field="sum_total_deaths", title="Overall deaths"),
+        TableColumn(field="sum_avg_deaths",   title="Overal deaths 2015-2019"),
+        TableColumn(field="excess_deaths",    title="Excess deaths"),
+        TableColumn(field="excess_deaths_pct",title="Excess deaths %"),
+]
+
+stats_table = DataTable(source=stats_source, columns=stats_columns, index_position=None, width=STATS_WIDTH, height=STATS_HEIGHT, align='end')
 
 # the parameters are dummy as we take the values directly from the slider
 update_stats(0,0,0)

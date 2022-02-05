@@ -8,7 +8,8 @@ PLOT_HEIGHT   = 250 # first section, but the actual height is constrained by the
 PLOT_WIDTH    = 400
 PLOT_HEIGHT2  = 145 # for the second section
 TEXT_WIDTH    = 500
-STATS_WIDTH   = 500
+STATS_WIDTH   = 800
+STATS_HEIGHT  = 80
 LMARGIN_WIDTH = 20
 
 PLOT_LINE_WIDTH          = 3
