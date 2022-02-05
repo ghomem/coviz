@@ -9,7 +9,7 @@ from functools import partial
 from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, TableColumn, DataTable, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, TableColumn, DataTable, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band, HTMLTemplateFormatter, StringFormatter
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256, OrRd
 from bokeh.plotting import figure
 from bokeh.events import DocumentReady
@@ -751,16 +751,28 @@ date_slider1.on_change('value_throttled', partial(update_stats))
 stats_data = pd.DataFrame( { 'sum_new': [0], 'sum_cv19_deaths': [0], 'sum_total_deaths': [0], 'sum_avg_deaths': [0], 'excess_deaths': [0], 'excess_deaths_pct': [0] } )
 stats_source = ColumnDataSource(stats_data)
 
+template="<b><%= value %></b>"
+
+#my_formatter=StringFormatter(font_style="bold", text_color="#4d4d4d")
+
+formatter_template = """
+<div style="font-size: 200%; padding-top: 5px; color: #4d4d4d" >
+<%= value %>
+</div>
+"""
+
+my_formatter=HTMLTemplateFormatter(template=formatter_template)
+
 stats_columns = [
-        TableColumn(field="sum_new",          title="Cases" ),
-        TableColumn(field="sum_cv19_deaths",  title="Covid19 deaths"),
-        TableColumn(field="sum_total_deaths", title="Overall deaths"),
-        TableColumn(field="sum_avg_deaths",   title="Overal deaths 2015-2019"),
-        TableColumn(field="excess_deaths",    title="Excess deaths"),
-        TableColumn(field="excess_deaths_pct",title="Excess deaths %"),
+        TableColumn(field="sum_new",           title="Cases" ,                  formatter=my_formatter, sortable=False ),
+        TableColumn(field="sum_cv19_deaths",   title="Covid19 deaths",          formatter=my_formatter, sortable=False ),
+        TableColumn(field="sum_total_deaths",  title="Overall deaths",          formatter=my_formatter, sortable=False ),
+        TableColumn(field="sum_avg_deaths",    title="Overal deaths 2015-2019", formatter=my_formatter, sortable=False ),
+        TableColumn(field="excess_deaths",     title="Excess deaths",           formatter=my_formatter, sortable=False ),
+        TableColumn(field="excess_deaths_pct", title="Excess deaths %",         formatter=my_formatter, sortable=False ),
 ]
 
-stats_table = DataTable(source=stats_source, columns=stats_columns, index_position=None, width=STATS_WIDTH, height=STATS_HEIGHT, align='end')
+stats_table = DataTable(source=stats_source, columns=stats_columns, index_position=None, selectable=False, width=STATS_WIDTH, height=STATS_HEIGHT, align='end')
 
 # the parameters are dummy as we take the values directly from the slider
 update_stats(0,0,0)
