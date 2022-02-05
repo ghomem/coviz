@@ -9,7 +9,7 @@ from functools import partial
 from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, TableColumn, DataTable, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band, HTMLTemplateFormatter, StringFormatter
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256, OrRd
 from bokeh.plotting import figure
 from bokeh.events import DocumentReady
@@ -260,6 +260,54 @@ def update_state(new):
     cline3.visible = clines_switch.active
     cline4.visible = clines_switch.active
 
+# for the visible stats
+def update_stats(attr, old, new):
+
+    date_i_cmp = date_slider1.value_as_date[0]
+    date_f_cmp = date_slider1.value_as_date[1]
+
+    # we need to know the list positions to sum the numbers
+    idx1 = (date_i_cmp-data_dates[0]).days
+    idx2 = (date_f_cmp-data_dates[0]).days
+
+    sum_new          = np.array( raw_data_new         [idx1:idx2+1] ).sum()
+    sum_cv19_deaths  = np.array( raw_data_cv19_deaths [idx1:idx2+1] ).sum()
+    sum_total_deaths = np.array( raw_data_total_deaths[idx1:idx2+1] ).sum()
+
+    sum_avg_deaths   = int( np.array( raw_data_avg_deaths[idx1:idx2+1] ).sum())
+
+    excess_deaths     = sum_total_deaths - sum_avg_deaths
+    excess_deaths_pct = round( (excess_deaths / sum_avg_deaths)*100, 1)
+
+    # this is what is necessary to update an existing table
+
+    # local vars
+    l_stats_data = pd.DataFrame( { 'sum_new': [sum_new], 'sum_cv19_deaths': [sum_cv19_deaths], 'sum_total_deaths': [sum_total_deaths], 'sum_avg_deaths': [sum_avg_deaths], 'excess_deaths': [excess_deaths], 'excess_deaths_pct': [excess_deaths_pct] } )
+    l_stats_source = ColumnDataSource(l_stats_data)
+
+    # pre-existing global var
+    stats_table.source = l_stats_source
+
+# makes the legends appear / disappear as necessary
+def update_legends(attr, old, new):
+
+    date_i_cmp = date_slider1.value_as_date[0]
+    date_f_cmp = date_slider1.value_as_date[1]
+
+    # we need to know the list positions to sum the numbers
+    idx1 = (date_i_cmp-data_dates[0]).days
+    idx2 = (date_f_cmp-data_dates[0]).days
+
+    # the -7 is because we start 7 days later on the dates, due to the moving average :-)
+    if idx2-idx1 < days - 7:
+        my_visibility = False
+    else:
+        my_visibility = True
+
+    # plots that have dynamic legend
+    plot3.legend.visible = my_visibility
+    plot7.legend.visible = my_visibility
+
 # for the data range
 def update_plot_range (attr, old, new, section):
 
@@ -479,7 +527,7 @@ def make_layouts( ):
 
     slider_spacer = Spacer(width=30, height=50, width_policy='auto', height_policy='fixed')
 
-    layout1_h = layout(grid_h,  name='section1', sizing_mode='scale_width')
+    layout1_h = layout(column(stats_table,grid_h), name='section1', sizing_mode='scale_width')
     layout2_h = layout(grid2_h, name='section2', sizing_mode='scale_width')
 
     column_section3_map    = column(plot_map)
@@ -537,7 +585,12 @@ curdoc().title = PAGE_TITLE
 # fetch data from files
 
 # regular plots data
-data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pos, data_total_deaths, data_avg_deaths, data_avg_deaths_inf, data_avg_deaths_sup, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full, data_vacc_boost = process_data()
+data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pos, data_total_deaths, data_avg_deaths, data_avg_deaths_inf, data_avg_deaths_sup, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full, data_vacc_boost, raw_data = process_data()
+
+raw_data_new          = raw_data[0]
+raw_data_cv19_deaths  = raw_data[1]
+raw_data_total_deaths = raw_data[2]
+raw_data_avg_deaths   = raw_data[3]
 
 # map data
 data_incidence_counties, map_date_i, map_date_f  = process_data_counties()
@@ -687,7 +740,42 @@ date_f = data_dates[days-1]
 
 date_slider1 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1)
 
+# we want the plots to change in real time but the stats only to be updated after the user stopped moving the mouse
 date_slider1.on_change('value', partial(update_plot_range, section="1"))
+date_slider1.on_change('value', partial(update_legends))
+date_slider1.on_change('value_throttled', partial(update_stats))
+
+# the statistical summary
+
+# we initialize this with dummy values
+stats_data = pd.DataFrame( { 'sum_new': [0], 'sum_cv19_deaths': [0], 'sum_total_deaths': [0], 'sum_avg_deaths': [0], 'excess_deaths': [0], 'excess_deaths_pct': [0] } )
+stats_source = ColumnDataSource(stats_data)
+
+template="<b><%= value %></b>"
+
+#my_formatter=StringFormatter(font_style="bold", text_color="#4d4d4d")
+
+formatter_template = """
+<div style="font-size: 200%; padding-top: 5px; color: #4d4d4d" >
+<%= value %>
+</div>
+"""
+
+my_formatter=HTMLTemplateFormatter(template=formatter_template)
+
+stats_columns = [
+        TableColumn(field="sum_new",           title="Cases" ,                  formatter=my_formatter, sortable=False ),
+        TableColumn(field="sum_cv19_deaths",   title="Covid19 deaths",          formatter=my_formatter, sortable=False ),
+        TableColumn(field="sum_total_deaths",  title="Overall deaths",          formatter=my_formatter, sortable=False ),
+        TableColumn(field="sum_avg_deaths",    title="Overal deaths 2015-2019", formatter=my_formatter, sortable=False ),
+        TableColumn(field="excess_deaths",     title="Excess deaths",           formatter=my_formatter, sortable=False ),
+        TableColumn(field="excess_deaths_pct", title="Excess deaths %",         formatter=my_formatter, sortable=False ),
+]
+
+stats_table = DataTable(source=stats_source, columns=stats_columns, index_position=None, selectable=False, width=STATS_WIDTH, height=STATS_HEIGHT, align='end')
+
+# the parameters are dummy as we take the values directly from the slider
+update_stats(0,0,0)
 
 #### Second page ####
 

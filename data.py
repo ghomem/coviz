@@ -386,7 +386,10 @@ def process_data():
     # starts at 26th of February of 2020
     print(dates[0], dates[-1])
 
-    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, positivity, s_total_deaths, s_avg_deaths, avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full, vacc_boost
+    # raw data for stats
+    raw_data = [ new, cv19_deaths, total_deaths[-days:], avg_deaths ]
+
+    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, positivity, s_total_deaths, s_avg_deaths, avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full, vacc_boost, raw_data
 
 def get_counties_incidence(row, incidence_data, idx):
 
