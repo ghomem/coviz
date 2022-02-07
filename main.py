@@ -270,11 +270,13 @@ def update_stats(attr, old, new):
     idx1 = (date_i_cmp-data_dates[0]).days
     idx2 = (date_f_cmp-data_dates[0]).days
 
-    sum_new          = np.array( raw_data_new         [idx1:idx2+1] ).sum()
-    sum_cv19_deaths  = np.array( raw_data_cv19_deaths [idx1:idx2+1] ).sum()
-    sum_total_deaths = np.array( raw_data_total_deaths[idx1:idx2+1] ).sum()
+    # use nansum because there may be NaNs due to delayed / missing data
 
-    sum_avg_deaths   = int( np.array( raw_data_avg_deaths[idx1:idx2+1] ).sum())
+    sum_new          = np.nansum(np.array( raw_data_new         [idx1:idx2+1] ))
+    sum_cv19_deaths  = np.nansum(np.array( raw_data_cv19_deaths [idx1:idx2+1] ))
+    sum_total_deaths = np.nansum(np.array( raw_data_total_deaths[idx1:idx2+1] ))
+
+    sum_avg_deaths   = int( np.nansum(np.array( raw_data_avg_deaths[idx1:idx2+1] ) ))
 
     excess_deaths     = sum_total_deaths - sum_avg_deaths
     excess_deaths_pct = round( (excess_deaths / sum_avg_deaths)*100, 1)
