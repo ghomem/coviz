@@ -14,10 +14,13 @@ from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256
 from bokeh.plotting import figure
 from bokeh.events import DocumentReady
 
-from .data import process_data, process_data_counties
+from .data import get_data, get_data_counties
 
 # import configuration variables
 from config import *
+
+# import functions
+from util import *
 
 window_size_data_source = ColumnDataSource( data = { 'width' :[0] ,  'height': [0] } )
 
@@ -26,231 +29,9 @@ current_horizontal = True
 
 # functions
 
-def make_age_labels ( nr_labels ):
+# note: callbacks and layout related functions act on global variables
 
-    labels = []
-    for j in range(0, nr_labels):
-        if j == len(data_strat_new) - 1:
-            labels.append('>= ' + str(j*10))
-        else:
-            labels.append(str(j*10) + '-' + str((j+1)*10-1))
-
-    return labels
-
-def make_plot( name, title, range, x_axis_type = 'auto' ):
-    return figure(plot_height=PLOT_HEIGHT, plot_width=PLOT_WIDTH, title=title, tools=PLOT_TOOLS, x_range=[0, range], name=name, x_axis_type = x_axis_type)
-
-# because there are several ways to achieve this, let's encapsulate
-def make_data_source ( datax, datay ):
-    return ColumnDataSource(data=dict(x=datax, y=datay))
-
-def make_data_source2 ( datax, datay, datay2 ):
-    return ColumnDataSource(data=dict(x=datax, y=datay, y2=datay2))
-
-# receives a list of lists on for y0, y1, y2, ....
-def make_data_source_multi ( datax, datay_list ):
-
-    length = len(datay_list)
-    data_dict = {}
-    data_dict['x'] = datax
-    for j in range(0, length):
-        key = 'y' + str(j)
-        data_dict[key] = datay_list[j]
-
-    return data_dict
-
-def make_data_source_dates ( dates, datay, datay2 = None ):
-
-    if datay2:
-        df = pd.DataFrame(data={ 'x': dates, 'y': datay, 'y2': datay2 }, columns=['x', 'y', 'y2'])
-    else:
-        df = pd.DataFrame(data={ 'x': dates, 'y': datay }, columns=['x', 'y'])
-
-    return ColumnDataSource(df)
-
-# receives a list of lists on for y0, y1, y2, ....
-def make_data_source_multi_dates ( datax, datay_list ):
-
-    length = len(datay_list)
-    columns = []
-    data_dict = {}
-    data_dict['x'] = datax
-    columns.append('x')
-    for j in range(0, length):
-        key = 'y' + str(j)
-        data_dict[key] = datay_list[j]
-        columns.append(key)
-
-    df = pd.DataFrame(data=data_dict, columns=columns)
-
-    return ColumnDataSource(df)
-
-# set properties common to all the plots based on linear xaxis
-def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtooltip_format = "@x{0}", ytooltip_format = "@y{0}", tooltip_mode ='vline', show_x_label = True, show_y_label = False, ylabel2 = PLOT_Y_LABEL, ytooltip_format2 = None, tooltip_line = None, show_x_axis = True, ylabel3 = PLOT_Y_LABEL, ytooltip_format3 = None ):
-    aplot.toolbar.active_drag    = None
-    aplot.toolbar.active_scroll  = None
-    aplot.toolbar.active_tap     = None
-
-    # add the hover tool
-    tooltip_attachment = 'left'
-    tooltip_list = [ (xlabel, xtooltip_format), (ylabel, ytooltip_format), ]
-    tooltip_formatters = {'@x': 'datetime'}
-
-    # check if we have a second line for tooltips
-    if ytooltip_format2:
-        tooltip_list.append( (ylabel2, ytooltip_format2) )
-
-    # same for 3rd
-    if ytooltip_format3:
-        tooltip_list.append( (ylabel3, ytooltip_format3) )
-
-    # we pass a single render to anchor the tooltip to a specific line
-    if tooltip_line:
-        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, formatters=tooltip_formatters, renderers = [ tooltip_line ])
-    else:
-        rlist  = aplot.select(dict(type=GlyphRenderer))
-        if len(rlist) > 0:
-            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, formatters=tooltip_formatters, renderers = [ rlist[0] ])
-        else:
-            # this only happens if we have a plot that has not lines yet, but it is here to prevent a crash
-            print('This is probably a plot with no line')
-            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, )
-
-    ahover.point_policy='snap_to_data'
-    ahover.line_policy='nearest'
-    aplot.add_tools(ahover)
-    aplot.toolbar.active_inspect = ahover
-
-    # control placement / visibility of toolbar
-    aplot.toolbar_location = None
-
-    # labels
-    if show_x_label:
-        aplot.xaxis.axis_label = xlabel
-    if show_y_label:
-        aplot.yaxis.axis_label = ylabel
-
-    aplot.xaxis.visible = show_x_axis
-
-# set properties common to all the plots with multiple lines
-def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtooltip_format = "@x{0}", tooltip_mode ='vline', tooltip_line = None, extra_precision = False, show_x_axis = False ):
-    aplot.toolbar.active_drag    = None
-    aplot.toolbar.active_scroll  = None
-    aplot.toolbar.active_tap     = None
-
-    # add the hover tool
-    tooltip_attachment = 'left'
-    tooltip_list = [ (xlabel, xtooltip_format) ]
-    tooltip_formatters = {'@x': 'datetime'}
-
-    nr_series = len(ylabels)
-    j = 0
-    for label in ylabels:
-        if extra_precision:
-            ytooltip_format = "@y"+str(j)+"{0.00}"
-        else:
-            ytooltip_format = "@y"+str(j)+"{0}"
-        j = j + 1
-        tooltip_list.append( (label, ytooltip_format ) )
-
-    # we pass a single render to anchor the tooltip to a specific line
-    if tooltip_line:
-        ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, formatters=tooltip_formatters, renderers = [ tooltip_line ])
-    else:
-        rlist  = aplot.select(dict(type=GlyphRenderer))
-        if len(rlist) > 0:
-            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, formatters=tooltip_formatters, renderers = [ rlist[0] ])
-        else:
-            # this only happens if we have a plot that has not lines yet, but it is here to prevent a crash
-            print('This is probably a plot with no line')
-            ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, )
-
-    ahover.point_policy='snap_to_data'
-    ahover.line_policy='nearest'
-    aplot.add_tools(ahover)
-    aplot.toolbar.active_inspect = ahover
-
-    # control placement / visibility of toolbar
-    aplot.toolbar_location = None
-
-    # labels
-    #aplot.xaxis.axis_label = xlabel
-    aplot.xaxis.visible = show_x_axis
-
-    aplot.legend.location = 'top_left'
-    aplot.legend.click_policy = 'mute'
-
-    aplot.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
-    aplot.legend.spacing = PLOT_LEGEND_SPACING
-
-def set_plot_date_details( aplot, asource = None ):
-
-    aplot.xaxis.formatter = DatetimeTickFormatter( months=["%b %Y"], years =["%b %Y"], )
-
-    aplot.x_range.start = data_dates[0] - datetime(1970, 1, 1).date()
-    aplot.x_range.end   = data_dates[days-1] - datetime(1970, 1, 1).date()
-
-    aplot.xaxis.major_label_orientation = math.pi/4
-
-    if asource:
-        y_min, y_max = get_y_limits (asource, data_dates[0+DATE_IGNORE], data_dates[days-1])
-        range_delta = y_max * PLOT_RANGE_FACTOR
-
-        # this thing alone prevents an interference from toggling the visibility of clines
-        # and the scale of the plots; comment this line and you will see :-)
-        # reference:
-        # https://discourse.bokeh.org/t/autoscaling-of-axis-range-with-streaming-multiline-plot-with-bokeh-server/1284/2?u=comperem
-        aplot.y_range=Range1d(y_min - range_delta , y_max + range_delta)
-
-def make_map_plot( data ):
-
-    hover_string = [ ('County', '@NAME_2'), ('Incidence', '@incidence'), ]
-
-    # According to the docs the colormap parameter of the plot_bokeh function:
-    # "Defines the colors to plot. Can be either a list of colors or the name of a Bokeh color palette"
-
-    # because our original palette has the colors in the wrong direction
-    # and because of this https://github.com/bokeh/bokeh/issues/7297
-    # we can't just invert the colormap_range or we loose the legend on the color bar
-    # so we we are forced to reverse the palette manually
-
-    colormap = reverse_palette(OrRd)[MAP_INCIDENCE_RESOLUTION]
-
-    # we now create a plot based on a geodataframe to which an incidence column has been added
-    # https://patrikhlobil.github.io/Pandas-Bokeh/#geoplots
-    aplot = data.plot_bokeh( name = 'themap', title=MAP_TITLE, category='incidence', hovertool=True, colormap=colormap, colormap_range=(MAP_INCIDENCE_MIN, MAP_INCIDENCE_MAX),
-                             hovertool_string=hover_string, legend=False, figsize=(MAP_WIDTH, MAP_HEIGHT), simplify_shapes=MAP_RESOLUTION, tile_provider=MAP_TILE_PROVIDER)
-
-    # we are selecting the plot by name and then getting the data_source
-    # the name was given in the invocatino of plot_bokeh
-    data_source = aplot.select(name = 'themap').data_source
-
-    # remove the interactions and decorations
-    aplot.toolbar.active_drag   = None
-    aplot.toolbar.active_scroll = None
-    aplot.toolbar.active_tap    = None
-
-    aplot.toolbar_location = None
-
-    aplot.xaxis.visible = False
-    aplot.yaxis.visible = False
-
-    return aplot, data_source
-
-# this function iterates across the several resolutions (color sets) of a bokeh palette
-# and reverses their order
-def reverse_palette ( original_palette ):
-
-    palette = { }
-    base_value = 3
-    for item in original_palette.items():
-        #print(base_value, item)
-        palette[base_value] = item[1][::-1]
-        base_value = base_value + 1
-
-    return palette
-
-#### callbacks ####
+### callbacks ####
 
 # for the toggle button action
 def update_state(new):
@@ -362,7 +143,7 @@ def update_map(attr, old, new):
 
     print('process data counties - START')
 
-    new_data_incidence_counties, xxx, yyy = process_data_counties( date )
+    new_data_incidence_counties, xxx, yyy = get_data_counties( date )
 
     print('process data counties - DONE')
 
@@ -450,26 +231,9 @@ ds.change.emit();
 
 """)
 
-#### end of call backs ####
+#### end of callbacks ####
 
-def get_y_limits ( source, date_i, date_f ):
-
-    # calculate indexes in the y data
-    y_i = np.where( source.data['x'] == date_i )[0][0]
-    y_f = np.where( source.data['x'] == date_f )[0][0]
-
-    # get min and max iterating over the plot series
-    y_max_list = []
-    y_min_list = []
-    for s in source.data:
-        # x and index are also sries in the data source, let's ignore them
-        if s == 'x' or s == 'index':
-            continue
-        y_max_list.append( np.nanmax(source.data[s][y_i:y_f]) )
-        y_min_list.append( np.nanmin(source.data[s][y_i:y_f]) )
-
-    # return the minimum of the minimuns for the interval, same for maximum
-    return min(y_min_list), max(y_max_list)
+### layouts ####
 
 def make_layouts( ):
 
@@ -516,7 +280,7 @@ def make_layouts( ):
     plot1_copy = make_plot ('incidence', PLOT1_TITLE, days, 'datetime')
     plot1_copy.line('x','y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
     set_plot_details(plot1_copy, 'Date', 'Count', '@x{%F}', '@y{0.00}', 'vline', False, False)
-    set_plot_date_details(plot1_copy, source_plot1)
+    set_plot_date_details(plot1_copy, data_dates, days, source_plot1)
 
     # but we change the range
     # we can't do this on a directy copy of plot1, because it is shallow
@@ -580,14 +344,35 @@ def adjust_widgets_to_layout( horizontal ):
         plot1_map.height      = PLOT_HEIGHT
         date_slider_map.width = plot1_map.width-40
 
-# main
+### end of layouts ####
+
+### main ###
 
 curdoc().title = PAGE_TITLE
 
 # fetch data from files
 
-# regular plots data
-data_dates, data_new, data_hosp, data_hosp_uci, data_cv19_deaths, data_incidence, data_cfr, data_rt, data_pos, data_total_deaths, data_avg_deaths, data_avg_deaths_inf, data_avg_deaths_sup, data_strat_new, data_strat_cv19_deaths, data_strat_cfr, data_vacc_part, data_vacc_full, data_vacc_boost, raw_data = process_data()
+# data for regular plots
+data_dates, processed_data, raw_data = get_data()
+
+data_new               = processed_data[0]
+data_hosp              = processed_data[1]
+data_hosp_uci          = processed_data[2]
+data_cv19_deaths       = processed_data[3]
+data_incidence         = processed_data[4]
+data_cfr               = processed_data[5]
+data_rt                = processed_data[6]
+data_pos               = processed_data[7]
+data_total_deaths      = processed_data[8]
+data_avg_deaths        = processed_data[9]
+data_avg_deaths_inf    = processed_data[10]
+data_avg_deaths_sup    = processed_data[11]
+data_strat_new         = processed_data[12]
+data_strat_cv19_deaths = processed_data[13]
+data_strat_cfr         = processed_data[14]
+data_vacc_part         = processed_data[15]
+data_vacc_full         = processed_data[16]
+data_vacc_boost        = processed_data[17]
 
 raw_data_new          = raw_data[0]
 raw_data_cv19_deaths  = raw_data[1]
@@ -595,7 +380,7 @@ raw_data_total_deaths = raw_data[2]
 raw_data_avg_deaths   = raw_data[3]
 
 # map data
-data_incidence_counties, map_date_i, map_date_f  = process_data_counties()
+data_incidence_counties, map_date_i, map_date_f  = get_data_counties()
 
 # our original data has one line per county, and each line contains a set of polygons
 # for a performant map update on update_map we need to keep a converted version
@@ -621,7 +406,7 @@ source_plot1 = make_data_source_dates(data_dates, data_incidence)
 plot1 = make_plot ('incidence', PLOT1_TITLE, days, 'datetime')
 l11 = plot1.line('x','y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot1, 'Date', 'Count', '@x{%F}', '@y{0.00}', 'vline', False, False)
-set_plot_date_details(plot1, source_plot1)
+set_plot_date_details(plot1, data_dates, days, source_plot1)
 
 plot_data_s1.append( (plot1, source_plot1) )
 
@@ -631,7 +416,7 @@ source_plot2 = make_data_source_dates(data_dates, data_pos)
 plot2 = make_plot ('positivity', PLOT2_TITLE, days, 'datetime')
 l21 = plot2.line('x', 'y', source=source_plot2, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot2, 'Date', '%', '@x{%F}', '@y{0.00}', 'vline', False, False)
-set_plot_date_details(plot2, source_plot2)
+set_plot_date_details(plot2, data_dates, days, source_plot2)
 
 plot_data_s1.append( (plot2, source_plot2) )
 
@@ -647,7 +432,7 @@ l32 = plot3.line('x', 'y2', source=source_plot3, line_width=PLOT_LINE_WIDTH, lin
 
 plot3.legend.location = 'top_left'
 set_plot_details(plot3, 'Date', 'Total', '@x{%F}', '@y{0}', 'vline', False, False,'UCI', "@y3{0}", l31)
-set_plot_date_details(plot3, source_plot3)
+set_plot_date_details(plot3, data_dates, days, source_plot3)
 
 plot3.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
 
@@ -659,7 +444,7 @@ source_plot4 = make_data_source_dates(data_dates, data_cfr)
 plot4 = make_plot ('cfr', PLOT4_TITLE, days, 'datetime')
 plot4.line('x', 'y', source=source_plot4, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot4, 'Date', '%', '@x{%F}', '@y{0.00}', 'vline', False, False)
-set_plot_date_details(plot4)
+set_plot_date_details(plot4, data_dates, days)
 
 plot_data_s1.append( (plot4, source_plot4) )
 
@@ -669,7 +454,7 @@ source_plot5 = make_data_source_dates(data_dates, data_new)
 plot5 = make_plot ('new', PLOT5_TITLE, days, 'datetime')
 plot5.line('x', 'y', source=source_plot5, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot5, 'Date', 'Count', '@x{%F}', '@y{0}', 'vline', False, False)
-set_plot_date_details(plot5, source_plot5)
+set_plot_date_details(plot5, data_dates, days, source_plot5)
 
 plot_data_s1.append( (plot5, source_plot5) )
 
@@ -679,7 +464,7 @@ source_plot6 = make_data_source_dates(data_dates, data_rt)
 plot6 = make_plot ('rt', PLOT8_TITLE, days, 'datetime')
 plot6.line('x', 'y', source=source_plot6, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
 set_plot_details(plot6, 'Date', 'Value', '@x{%F}', '@y{0.00}', 'vline', False, False)
-set_plot_date_details(plot6, source_plot6)
+set_plot_date_details(plot6, data_dates, days, source_plot6)
 
 plot_data_s1.append( (plot6, source_plot6) )
 
@@ -697,7 +482,7 @@ plot7.add_layout(band)
 
 plot7.legend.location = 'top_left'
 set_plot_details(plot7, 'Date', 'Current', '@x{%F}', '@y{0}', 'vline', False, False,'2015-2019', "@y2{0} (@y3{0}-@y4{0})", l71)
-set_plot_date_details(plot7, source_plot7)
+set_plot_date_details(plot7, data_dates, days, source_plot7)
 
 plot7.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
 
@@ -709,7 +494,7 @@ source_plot8 = make_data_source_dates(data_dates, data_cv19_deaths)
 plot8 = make_plot ('deaths', PLOT6_TITLE, days, 'datetime')
 plot8.line('x', 'y', source=source_plot8, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
 set_plot_details(plot8, 'Date', 'Count', '@x{%F}', '@y{0}', 'vline', False, False)
-set_plot_date_details(plot8, source_plot8)
+set_plot_date_details(plot8, data_dates, days, source_plot8)
 
 plot_data_s1.append( (plot8, source_plot8) )
 
@@ -782,7 +567,7 @@ update_stats(0,0,0)
 #### Second page ####
 
 nr_series = len(data_strat_new)
-labels = make_age_labels(nr_series)
+labels = make_age_labels(nr_series, nr_series)
 palette = PLOT_LINE_COLOR_PALETTE
 
 # spacing the color as much as possible
@@ -799,7 +584,7 @@ for j in range(0, nr_series ):
 
 # we know by inspection that line representing 40-49 is on top
 set_plot_details_multi(plot9, 'Date', labels, '@x{%F}', 'vline', lines[4], False, False)
-set_plot_date_details(plot9, source_plot9)
+set_plot_date_details(plot9, data_dates, days, source_plot9)
 
 plot_data_s2.append( (plot9, source_plot9) )
 
@@ -814,7 +599,7 @@ for j in range(0, nr_series ):
 
 # the line for >= 80 is on top for this case
 set_plot_details_multi(plot10, 'Date', labels, '@x{%F}', 'vline', lines[nr_series -1 ], False, False)
-set_plot_date_details(plot10, source_plot10)
+set_plot_date_details(plot10, data_dates, days, source_plot10)
 
 plot_data_s2.append( (plot10, source_plot10) )
 
@@ -829,7 +614,7 @@ for j in range(0, nr_series ):
 
 # the line for >= 80 is on top for this case
 set_plot_details_multi(plot11, 'Days', labels, '@x{%F}', 'vline', lines[nr_series -1 ], True, False)
-set_plot_date_details(plot11, source_plot11)
+set_plot_date_details(plot11, data_dates, days, source_plot11)
 
 plot_data_s2.append( (plot11, source_plot11) )
 
@@ -845,7 +630,7 @@ l122 = plot12.line('x', 'y3', source=source_plot12, line_width=PLOT_LINE_WIDTH, 
 plot12.legend.location = 'top_left'
 set_plot_details(plot12, 'Date', 'Partial', '@x{%F}', '@y{0}', 'vline', False, False,'Complete', "@y2{0}", l121, False, 'Booster', "@y3{0}")
 
-set_plot_date_details(plot12, source_plot12)
+set_plot_date_details(plot12, data_dates, days, source_plot12)
 
 plot_data_s2.append( (plot12, source_plot12) )
 
