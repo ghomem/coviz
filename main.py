@@ -65,11 +65,11 @@ def update_stats(attr, old, new):
     # this is what is necessary to update an existing table
 
     # local vars
-    l_stats_data = pd.DataFrame( { 'sum_new': [sum_new], 'sum_cv19_deaths': [sum_cv19_deaths], 'sum_total_deaths': [sum_total_deaths], 'sum_avg_deaths': [sum_avg_deaths], 'excess_deaths': [excess_deaths], 'excess_deaths_pct': [excess_deaths_pct] } )
-    l_stats_source = ColumnDataSource(l_stats_data)
+    stats_data = pd.DataFrame( { 'updated': str(data_dates[-1]), 'sum_new': [sum_new], 'sum_cv19_deaths': [sum_cv19_deaths], 'sum_total_deaths': [sum_total_deaths], 'sum_avg_deaths': [sum_avg_deaths], 'excess_deaths': [excess_deaths], 'excess_deaths_pct': [excess_deaths_pct] } )
+    stats_source = ColumnDataSource( stats_data )
 
     # pre-existing global var
-    stats_table.source = l_stats_source
+    stats_table.source = stats_source
 
 # makes the legends appear / disappear as necessary
 def update_legends(attr, old, new):
@@ -534,32 +534,7 @@ date_slider1.on_change('value_throttled', partial(update_stats))
 
 # the statistical summary
 
-# we initialize this with dummy values
-stats_data = pd.DataFrame( { 'sum_new': [0], 'sum_cv19_deaths': [0], 'sum_total_deaths': [0], 'sum_avg_deaths': [0], 'excess_deaths': [0], 'excess_deaths_pct': [0] } )
-stats_source = ColumnDataSource(stats_data)
-
-template="<b><%= value %></b>"
-
-#my_formatter=StringFormatter(font_style="bold", text_color="#4d4d4d")
-
-formatter_template = """
-<div style="font-size: 200%; padding-top: 5px; color: #4d4d4d" >
-<%= value %>
-</div>
-"""
-
-my_formatter=HTMLTemplateFormatter(template=formatter_template)
-
-stats_columns = [
-        TableColumn(field="sum_new",           title="Cases" ,                  formatter=my_formatter, sortable=False ),
-        TableColumn(field="sum_cv19_deaths",   title="Covid19 deaths",          formatter=my_formatter, sortable=False ),
-        TableColumn(field="sum_total_deaths",  title="Overall deaths",          formatter=my_formatter, sortable=False ),
-        TableColumn(field="sum_avg_deaths",    title="Overal deaths 2015-2019", formatter=my_formatter, sortable=False ),
-        TableColumn(field="excess_deaths",     title="Excess deaths",           formatter=my_formatter, sortable=False ),
-        TableColumn(field="excess_deaths_pct", title="Excess deaths %",         formatter=my_formatter, sortable=False ),
-]
-
-stats_table = DataTable(source=stats_source, columns=stats_columns, index_position=None, selectable=False, width=STATS_WIDTH, height=STATS_HEIGHT, align='end')
+stats_table = make_stats_table (STATS_WIDTH, STATS_HEIGHT, 'end')
 
 # the parameters are dummy as we take the values directly from the slider
 update_stats(0,0,0)
