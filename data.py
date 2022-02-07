@@ -295,7 +295,7 @@ def pad_data ( data, target_size, element, left = True ):
     # in case we had more data than wanted we trim it
     return data[:target_size]
 
-def process_data():
+def get_data():
 
     # get the latest of each file type
     files1 = glob.glob(DATA_DIR + 'data-*.csv')
@@ -386,10 +386,13 @@ def process_data():
     # starts at 26th of February of 2020
     print(dates[0], dates[-1])
 
+    # processed data
+    processed_data = [ s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, positivity, s_total_deaths, s_avg_deaths, avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full, vacc_boost ]
+
     # raw data for stats
     raw_data = [ new, cv19_deaths, total_deaths[-days:], avg_deaths ]
 
-    return dates, s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, positivity, s_total_deaths, s_avg_deaths, avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full, vacc_boost, raw_data
+    return dates, processed_data, raw_data
 
 def get_counties_incidence(row, incidence_data, idx):
 
@@ -432,7 +435,7 @@ def get_incidence_index ( incidence_data, requested_date ):
     return idx
 
 # get county incidence list at a certain date
-def process_data_counties ( requested_date = None ):
+def get_data_counties ( requested_date = None ):
 
     files1 = glob.glob(DATA_DIR + 'data_concelhos_incidencia-*.csv')
 
@@ -484,5 +487,3 @@ def process_data_counties ( requested_date = None ):
     # we also return the first and last dates available from the incidence time series
     return poly_data, map_date_i, map_date_f
 
-#process_data()
-#process_data_counties()
