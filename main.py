@@ -302,7 +302,7 @@ def make_layouts( ):
     row_section3 = row ( column_section3_map , column_section3_others )
     layout3_h = layout( row_section3, name='section3')
 
-    layout1_v = layout(grid_v,  name='section1', sizing_mode='scale_width')
+    layout1_v = layout(column(stats_table,grid_v),  name='section1', sizing_mode='scale_width')
     layout2_v = layout(grid2_v, name='section2', sizing_mode='scale_width')
 
     # we don't need the notes text on the vertical layout

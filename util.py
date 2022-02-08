@@ -124,8 +124,8 @@ def make_stats_table ( width, height, alignment ):
     stats_source = ColumnDataSource(stats_data)
 
     # the colors match the plot titles and the main plot lines, respectively
-    formatter_template =  """<div style="font-size: 200%; font-weight: bold; padding-top: 7px; color: #4d4d4d" ><%= value %></div>"""
-    formatter_template2 = """<div style="font-size: 200%; font-weight: bold; padding-top: 7px; color: #b3b3b3" ><%= value %></div>"""
+    formatter_template =  """<div style="font-size: 188%; font-weight: bold; padding-top: 7px; color: #4d4d4d" ><%= value %></div>"""
+    formatter_template2 = """<div style="font-size: 188%; font-weight: bold; padding-top: 7px; color: #b3b3b3" ><%= value %></div>"""
 
     my_formatter  = HTMLTemplateFormatter(template=formatter_template )
     my_formatter2 = HTMLTemplateFormatter(template=formatter_template2)
@@ -136,16 +136,16 @@ def make_stats_table ( width, height, alignment ):
     # reference: http://docs.bokeh.org/en/latest/docs/reference/models/widgets.tables.html#bokeh.models.widgets.tables.TableColumn
 
     stats_columns = [
-        TableColumn(field="sum_new",           title="Cases" ,                  formatter=my_formatter,  sortable=False, width=base_colum_width ),
-        TableColumn(field="sum_cv19_deaths",   title="Covid19 deaths",          formatter=my_formatter,  sortable=False, width=base_colum_width ),
-        TableColumn(field="sum_total_deaths",  title="Overall deaths",          formatter=my_formatter,  sortable=False, width=base_colum_width ),
+        TableColumn(field="sum_new",           title="Cases" ,                  formatter=my_formatter,  sortable=False, width=base_colum_width      ),
+        TableColumn(field="sum_cv19_deaths",   title="Covid19 deaths",          formatter=my_formatter,  sortable=False, width=base_colum_width      ),
+        TableColumn(field="sum_total_deaths",  title="Overall deaths",          formatter=my_formatter,  sortable=False, width=base_colum_width      ),
         TableColumn(field="sum_avg_deaths",    title="Overal deaths 2015-2019", formatter=my_formatter,  sortable=False, width=base_colum_width + 30 ),
-        TableColumn(field="excess_deaths",     title="Excess deaths",           formatter=my_formatter,  sortable=False, width=base_colum_width ),
-        TableColumn(field="excess_deaths_pct", title="Excess deaths %",         formatter=my_formatter,  sortable=False, width=base_colum_width ),
+        TableColumn(field="excess_deaths",     title="Excess deaths",           formatter=my_formatter,  sortable=False, width=base_colum_width      ),
+        TableColumn(field="excess_deaths_pct", title="Excess deaths %",         formatter=my_formatter,  sortable=False, width=base_colum_width      ),
         TableColumn(field="updated",           title="Updated at",              formatter=my_formatter2, sortable=False, width=base_colum_width + 15 ),
     ]
 
-    # the autosize_mode is not useful here because different columns need different widths
+    # the autosize_mode is not useful here because different columns need different widths, the alignement is in relation to the parent widget
     # http://docs.bokeh.org/en/latest/docs/reference/models/widgets.tables.html#bokeh.models.widgets.tables.DataTable
     stats_table = DataTable(source=stats_source, columns=stats_columns, index_position=None, selectable=False, autosize_mode = 'none', width=width, height=height, align=alignment)
 
