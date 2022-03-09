@@ -373,6 +373,7 @@ data_strat_cfr         = processed_data[14]
 data_vacc_part         = processed_data[15]
 data_vacc_full         = processed_data[16]
 data_vacc_boost        = processed_data[17]
+data_strat_mort        = processed_data[18]
 
 raw_data_new          = raw_data[0]
 raw_data_cv19_deaths  = raw_data[1]
