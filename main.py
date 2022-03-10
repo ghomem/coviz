@@ -209,9 +209,11 @@ def on_dimensions_change(attr, old, new):
         if horizontal:
             curdoc().add_root(layout2_h)
             curdoc().add_root(layout3_h)
+            curdoc().add_root(layout4_h)
         else:
             curdoc().add_root(layout2_v)
             curdoc().add_root(layout3_v)
+            curdoc().add_root(layout4_v)
 
         # store the horizontalness state
         current_horizontal = horizontal
@@ -311,7 +313,13 @@ def make_layouts( ):
 
     layout3_v = layout( column_section3_map, name='section3')
 
-    return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy
+    # fourth
+
+    # for now page 4 has a fixed layout
+    layout4_h = layout( column(mort_explorer_tabset), name='section4', sizing_mode='scale_width')
+    layout4_v = layout4_h
+
+    return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy, layout4_h, layout4_v
 
 def adjust_widgets_to_layout( horizontal ):
 
@@ -681,10 +689,7 @@ window_size_data_source.on_change('data', on_dimensions_change)
 # the layout name is added here then invoked from the HTML template
 # all roots added here must be invoked on the HTML
 
-layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_map = make_layouts()
-
-# for now page 4 has a fixed layout
-layout4_h = layout( mort_explorer_tabset, name='section4')
+layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_map, layout4_h, layout4_v = make_layouts()
 
 # by default layouts are created assuming we have enough width for the ideal visualization mode
 # that is, we start with horizontal layouts

@@ -307,7 +307,7 @@ def make_mortality_plot ( data_dates, data_total_deaths, data_avg_deaths, data_a
     df = pd.DataFrame(data={ 'x': data_dates, 'y': data_total_deaths, 'y2': data_avg_deaths, 'y3': data_avg_deaths_inf, 'y4': data_avg_deaths_sup }, columns=['x', 'y', 'y2', 'y3', 'y4'])
     data_source = ColumnDataSource(df)
 
-    aplot = figure(plot_height=PLOT_HEIGHT4, plot_width=PLOT_WIDTH4, title='Overall deaths by age group', tools=PLOT_TOOLS, x_range=[0, days], name=name, x_axis_type = 'auto')
+    aplot = figure(plot_height=PLOT_HEIGHT4, plot_width=PLOT_WIDTH4, title='Overall deaths by age group', tools=PLOT_TOOLS, x_range=[0, days], name=name, x_axis_type = 'auto', sizing_mode='scale_width', max_width=PLOT_WIDTH4 )
 
     aplot_line1 = aplot.line('x', 'y',  source=data_source, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Current' )
     aplot_line2 = aplot.line('x', 'y2', source=data_source, line_width=1, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='2015-2019 ± SD' )
@@ -315,7 +315,7 @@ def make_mortality_plot ( data_dates, data_total_deaths, data_avg_deaths, data_a
     my_band = Band(base='x', lower='y3', upper='y4', source=data_source, level='underlay', line_width=1, line_color=PLOT_LINE_COLOR_HIGHLIGHT, fill_color=PLOT_LINE_COLOR_HIGHLIGHT, line_alpha=PLOT_LINE_ALPHA, fill_alpha=PLOT_LINE_ALPHA)
     aplot.add_layout(my_band)
 
-    #aplot.legend.location = 'top_left'
+    aplot.legend.location = 'top_left'
 
     set_plot_details(aplot, 'Date', 'Current', '@x{%F}', '@y{0}', 'vline', False, False,'2015-2019', "@y2{0} (@y3{0}-@y4{0})", aplot_line1)
     set_plot_date_details(aplot, data_dates, days, data_source)
