@@ -9,6 +9,7 @@ from functools import partial
 from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
+from bokeh.models.widgets import Tabs, Panel
 from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, TableColumn, DataTable, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band, HTMLTemplateFormatter, StringFormatter
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256, OrRd
 from bokeh.plotting import figure
@@ -208,9 +209,11 @@ def on_dimensions_change(attr, old, new):
         if horizontal:
             curdoc().add_root(layout2_h)
             curdoc().add_root(layout3_h)
+            curdoc().add_root(layout4_h)
         else:
             curdoc().add_root(layout2_v)
             curdoc().add_root(layout3_v)
+            curdoc().add_root(layout4_v)
 
         # store the horizontalness state
         current_horizontal = horizontal
@@ -310,7 +313,13 @@ def make_layouts( ):
 
     layout3_v = layout( column_section3_map, name='section3')
 
-    return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy
+    # fourth
+
+    # for now page 4 has a fixed layout
+    layout4_h = layout( column(mort_explorer_tabset), name='section4', sizing_mode='scale_width')
+    layout4_v = layout4_h
+
+    return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy, layout4_h, layout4_v
 
 def adjust_widgets_to_layout( horizontal ):
 
@@ -373,6 +382,7 @@ data_strat_cfr         = processed_data[14]
 data_vacc_part         = processed_data[15]
 data_vacc_full         = processed_data[16]
 data_vacc_boost        = processed_data[17]
+data_strat_mort        = processed_data[18]
 
 raw_data_new          = raw_data[0]
 raw_data_cv19_deaths  = raw_data[1]
@@ -628,6 +638,41 @@ date_slider_map = DateSlider(title='Selected date', start=map_date_i, end=map_da
 
 date_slider_map.on_change('value_throttled', partial(update_map))
 
+#### Fourth page ####
+
+total_deaths_strat   = data_strat_mort[0]
+avg_deaths_strat     = data_strat_mort[1]
+avg_deaths_strat_inf = data_strat_mort[2]
+avg_deaths_strat_sup = data_strat_mort[3]
+
+p4_plot1  = make_mortality_plot ( data_dates, total_deaths_strat[0],  avg_deaths_strat[0],  avg_deaths_strat_inf[0],  avg_deaths_strat_sup[0],  days, '<1'      )
+p4_plot2  = make_mortality_plot ( data_dates, total_deaths_strat[1],  avg_deaths_strat[1],  avg_deaths_strat_inf[1],  avg_deaths_strat_sup[1],  days, '1-4'     )
+p4_plot3  = make_mortality_plot ( data_dates, total_deaths_strat[2],  avg_deaths_strat[2],  avg_deaths_strat_inf[2],  avg_deaths_strat_sup[2],  days, '5-14'    )
+p4_plot4  = make_mortality_plot ( data_dates, total_deaths_strat[3],  avg_deaths_strat[3],  avg_deaths_strat_inf[3],  avg_deaths_strat_sup[3],  days, '15-24'   )
+p4_plot5  = make_mortality_plot ( data_dates, total_deaths_strat[4],  avg_deaths_strat[4],  avg_deaths_strat_inf[4],  avg_deaths_strat_sup[4],  days, '25-34'   )
+p4_plot6  = make_mortality_plot ( data_dates, total_deaths_strat[5],  avg_deaths_strat[5],  avg_deaths_strat_inf[5],  avg_deaths_strat_sup[5],  days, '35-44'   )
+p4_plot7  = make_mortality_plot ( data_dates, total_deaths_strat[6],  avg_deaths_strat[6],  avg_deaths_strat_inf[6],  avg_deaths_strat_sup[6],  days, '45-54'   )
+p4_plot8  = make_mortality_plot ( data_dates, total_deaths_strat[7],  avg_deaths_strat[7],  avg_deaths_strat_inf[7],  avg_deaths_strat_sup[7],  days, '55-64'   )
+p4_plot9  = make_mortality_plot ( data_dates, total_deaths_strat[8],  avg_deaths_strat[8],  avg_deaths_strat_inf[8],  avg_deaths_strat_sup[8],  days, '65-74'   )
+p4_plot10 = make_mortality_plot ( data_dates, total_deaths_strat[9],  avg_deaths_strat[9],  avg_deaths_strat_inf[9],  avg_deaths_strat_sup[9],  days, '75-84'   )
+p4_plot11 = make_mortality_plot ( data_dates, total_deaths_strat[10], avg_deaths_strat[10], avg_deaths_strat_inf[10], avg_deaths_strat_sup[10], days, '>85'     )
+p4_plot12 = make_mortality_plot ( data_dates, total_deaths_strat[11], avg_deaths_strat[11], avg_deaths_strat_inf[11], avg_deaths_strat_sup[11], days, 'all ages')
+
+tab1  = Panel(child=p4_plot1, title='<1'       )
+tab2  = Panel(child=p4_plot2, title='1-4'      )
+tab3  = Panel(child=p4_plot3, title='5-14'     )
+tab4  = Panel(child=p4_plot4, title='15-24'    )
+tab5  = Panel(child=p4_plot5, title='25-34'    )
+tab6  = Panel(child=p4_plot6, title='35-44'    )
+tab7  = Panel(child=p4_plot7, title='45-54'    )
+tab8  = Panel(child=p4_plot8, title='55-64'    )
+tab9  = Panel(child=p4_plot9, title='65-74'    )
+tab10 = Panel(child=p4_plot10,title='75-84'    )
+tab11 = Panel(child=p4_plot11,title='>85'      )
+tab12 = Panel(child=p4_plot12,title='all ages' )
+
+mort_explorer_tabset = Tabs(tabs=[ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12 ])
+
 #### Plot layout section ###
 
 ## handling different layout orientations
@@ -644,7 +689,7 @@ window_size_data_source.on_change('data', on_dimensions_change)
 # the layout name is added here then invoked from the HTML template
 # all roots added here must be invoked on the HTML
 
-layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_map = make_layouts()
+layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_map, layout4_h, layout4_v = make_layouts()
 
 # by default layouts are created assuming we have enough width for the ideal visualization mode
 # that is, we start with horizontal layouts
@@ -659,3 +704,6 @@ curdoc().add_root(layout2_h)
 
 # section 3
 curdoc().add_root(layout3_h)
+
+# section 4
+curdoc().add_root(layout4_h)
