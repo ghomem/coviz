@@ -169,6 +169,10 @@ def update_mortality_plot_range (attr, old, new):
     pre_box.right = date_slider4.value[0]
     post_box.left = date_slider4.value[1]
 
+def update_mortality_stats (attr, old, new):
+
+    print('to be done')
+
 # after document load
 def on_document_ready(evt):
     # here we change some property on the fake_toggle widget
@@ -326,7 +330,15 @@ def make_layouts( ):
     # adds left side spacing for handles lining up with the annotation box
     slider_spacer4 = Spacer(width=40, height=100, width_policy='auto', height_policy='fixed')
 
-    layout4_h = layout(column(mort_explorer_tabset, row(slider_spacer4, date_slider4)), name='section4', sizing_mode='scale_width')
+    # forces vertical alignement on the table stats column
+    table_spacer4_top  = Spacer(width=40, height=50, width_policy='auto', height_policy='fixed')
+
+    mortality_plots_column = column(mort_explorer_tabset, row(slider_spacer4, date_slider4))
+    mortality_stats_column = column(table_spacer4_top, mortality_stats_table)
+
+    in_between_spacer = Spacer(width=20, height=50, width_policy='auto', height_policy='fixed')
+
+    layout4_h = layout(row(mortality_plots_column, in_between_spacer, mortality_stats_column), name='section4', sizing_mode='scale_width')
     layout4_v = layout4_h
 
     return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy, layout4_h, layout4_v
@@ -688,6 +700,7 @@ mort_explorer_tabset = Tabs(tabs=[ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab
 date_slider4 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1, width=PLOT_WIDTH4-50)
 
 date_slider4.on_change('value', partial(update_mortality_plot_range))
+date_slider4.on_change('value_throttled', partial(update_mortality_stats))
 
 # annotations to visually mask the non-affected date range
 # in the initial moment they are invisible because the left and right parameters are the same
@@ -697,6 +710,13 @@ post_box = BoxAnnotation(left=date_f, right=date_f, fill_alpha=PLOT_AREAS_ALPHA4
 for p in p4_plots:
     p.add_layout(pre_box)
     p.add_layout(post_box)
+
+# the statistics table
+
+mortality_stats_table = make_mortality_stats_table (400, PLOT_HEIGHT4, 'end')
+
+# the parameters are dummy as we take the values directly from the slider
+update_mortality_stats(0,0,0)
 
 #### Plot layout section ###
 
