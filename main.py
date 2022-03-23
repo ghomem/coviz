@@ -171,7 +171,46 @@ def update_mortality_plot_range (attr, old, new):
 
 def update_mortality_stats (attr, old, new):
 
-    print('to be done')
+    date_i_cmp = date_slider4.value_as_date[0]
+    date_f_cmp = date_slider4.value_as_date[1]
+
+     # we need to know the list positions to sum the numbers
+    idx1 = (date_i_cmp-data_dates[0]).days
+    idx2 = (date_f_cmp-data_dates[0]).days
+
+    column_total = []
+    column_avg   = []
+    column_exc   = []
+    column_pct   = []
+
+    for total_strat_group, avg_strat_group in zip(total_deaths_strat, avg_deaths_strat):
+
+        # use nansum because there may be NaNs due to delayed / missing data
+
+        sum_total_deaths = round(np.nansum(np.array( total_strat_group[idx1:idx2+1] )),0)
+        column_total.append(sum_total_deaths)
+
+        sum_avg_deaths = round(np.nansum(np.array( avg_strat_group[idx1:idx2+1] )),0)
+        column_avg.append(sum_avg_deaths)
+
+        excess_deaths = sum_total_deaths - sum_avg_deaths
+
+        column_exc.append( excess_deaths )
+        column_pct.append( round( (excess_deaths / sum_avg_deaths)*100, 1) )
+
+    # this is what is necessary to update an existing table
+
+    # local vars
+    dummy_column = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ]
+    index_column = [ '<1', '1-4', '5-14', '15-24','25-34', '35-44', '45-54', '55-64', '65-74', '75-84', '>85', 'all ages' ]
+
+    stats_data = pd.DataFrame( { 'age_group': index_column, 'sum_total_deaths': column_total, 'sum_avg_deaths': column_avg, 'excess_deaths': column_exc, 'excess_deaths_pct': column_pct } )
+    stats_source = ColumnDataSource( stats_data )
+
+    # pre-existing global var
+    mortality_stats_table.source = stats_source
+
+
 
 # after document load
 def on_document_ready(evt):

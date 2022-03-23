@@ -169,7 +169,7 @@ def make_mortality_stats_table ( width, height, alignment ):
     my_formatter_index = HTMLTemplateFormatter(template=formatter_template_index )
     my_formatter       = HTMLTemplateFormatter(template=formatter_template )
 
-    base_colum_width = 80
+    base_colum_width = 75
 
     # we will define a per column width
     # reference: http://docs.bokeh.org/en/latest/docs/reference/models/widgets.tables.html#bokeh.models.widgets.tables.TableColumn
