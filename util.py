@@ -19,6 +19,12 @@ from config import *
 
 # utility functions
 
+def make_interval_str ( title, value, value_l, value_r ):
+
+    str_interval = title + str(value) + ' (' +  str(value_l) + '  -  ' + str(value_r) + ')'
+
+    return str_interval
+
 def make_plot( name, title, range, x_axis_type = 'auto' ):
     return figure(plot_height=PLOT_HEIGHT, plot_width=PLOT_WIDTH, title=title, tools=PLOT_TOOLS, x_range=[0, range], name=name, x_axis_type = x_axis_type)
 
@@ -143,6 +149,43 @@ def make_stats_table ( width, height, alignment ):
         TableColumn(field="excess_deaths",     title="Excess deaths",           formatter=my_formatter,  sortable=False, width=base_colum_width      ),
         TableColumn(field="excess_deaths_pct", title="Excess deaths %",         formatter=my_formatter,  sortable=False, width=base_colum_width      ),
         TableColumn(field="updated",           title="Updated at",              formatter=my_formatter2, sortable=False, width=base_colum_width + 15 ),
+    ]
+
+    # the autosize_mode is not useful here because different columns need different widths, the alignement is in relation to the parent widget
+    # http://docs.bokeh.org/en/latest/docs/reference/models/widgets.tables.html#bokeh.models.widgets.tables.DataTable
+    stats_table = DataTable(source=stats_source, columns=stats_columns, index_position=None, selectable=False, autosize_mode = 'none', width=width, height=height, align=alignment)
+
+    return stats_table
+
+# create table for overall mortality statistics
+def make_mortality_stats_table ( width, height, alignment ):
+
+    # we initialize this with dummy values
+    dummy_column = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    index_column = [ '<1', '1-4', '5-14', '15-24','25-34', '35-44', '45-54', '55-64', '65-74', '75-84', '>85', 'all ages' ]
+
+    stats_data   = pd.DataFrame( { 'age_group': index_column, 'sum_total_deaths': dummy_column, 'sum_avg_deaths': dummy_column, 'excess_deaths': dummy_column, 'excess_deaths_pct': dummy_column } )
+
+    stats_source = ColumnDataSource(stats_data)
+
+    # the colors match the plot titles and the main plot lines, respectively
+    formatter_template_index =  """<div style="font-size: 120%; font-weight: bold;   padding-top: 3px; height: 15px; color: #4d4d4d" ><%= value %></div>"""
+    formatter_template       =  """<div style="font-size: 120%; font-weight: normal; padding-top: 3px; height: 15px; color: #4d4d4d" ><%= value %></div>"""
+
+    my_formatter_index = HTMLTemplateFormatter(template=formatter_template_index )
+    my_formatter       = HTMLTemplateFormatter(template=formatter_template )
+
+    base_colum_width = 65
+
+    # we will define a per column width
+    # reference: http://docs.bokeh.org/en/latest/docs/reference/models/widgets.tables.html#bokeh.models.widgets.tables.TableColumn
+
+    stats_columns = [
+        TableColumn(field="age_group",         title="Age Group", formatter=my_formatter_index,  sortable=False, width=base_colum_width       ),
+        TableColumn(field="sum_total_deaths",  title="Overall",   formatter=my_formatter,        sortable=False, width=base_colum_width       ),
+        TableColumn(field="sum_avg_deaths",    title="2015-2019", formatter=my_formatter,        sortable=False, width=base_colum_width + 10  ),
+        TableColumn(field="excess_deaths",     title="Excess",    formatter=my_formatter,        sortable=False, width=base_colum_width       ),
+        TableColumn(field="excess_deaths_pct", title="Excess %",  formatter=my_formatter,        sortable=False, width=base_colum_width       ),
     ]
 
     # the autosize_mode is not useful here because different columns need different widths, the alignement is in relation to the parent widget

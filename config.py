@@ -88,5 +88,7 @@ TEXT_NOTES  ='<strong>Important:</strong> use the mouse for the initial selectio
 MIN_HORIZONTAL_WIDTH = 1360
 
 PLOT_WIDTH4  = 1240 # for the 4th section
-PLOT_HEIGHT4 = 630
+PLOT_HEIGHT4 = 530
 
+PLOT_AREAS_COLOR4 = 'gray'
+PLOT_AREAS_ALPHA4 = 0.1

@@ -10,7 +10,7 @@ from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
 from bokeh.models.widgets import Tabs, Panel
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, TableColumn, DataTable, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band, HTMLTemplateFormatter, StringFormatter
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, TableColumn, DataTable, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band, HTMLTemplateFormatter, StringFormatter, BoxAnnotation
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256, OrRd
 from bokeh.plotting import figure
 from bokeh.events import DocumentReady
@@ -163,6 +163,55 @@ def update_map(attr, old, new):
     # we refresh the tooltips using the Colormap column as the list
     plot_map.hover.tooltips = [ ('County', '@NAME_2'), ('Incidence', '@Colormap'), ]
 
+# for the overall mortality plot
+def update_mortality_plot_range (attr, old, new):
+
+    pre_box.right = date_slider4.value[0]
+    post_box.left = date_slider4.value[1]
+
+def update_mortality_stats (attr, old, new):
+
+    date_i_cmp = date_slider4.value_as_date[0]
+    date_f_cmp = date_slider4.value_as_date[1]
+
+     # we need to know the list positions to sum the numbers
+    idx1 = (date_i_cmp-data_dates[0]).days
+    idx2 = (date_f_cmp-data_dates[0]).days
+
+    column_total = []
+    column_avg   = []
+    column_exc   = []
+    column_pct   = []
+
+    for total_strat_group, avg_strat_group in zip(total_deaths_strat, avg_deaths_strat):
+
+        # use nansum because there may be NaNs due to delayed / missing data
+
+        sum_total_deaths = round(np.nansum(np.array( total_strat_group[idx1:idx2+1] )),0)
+        column_total.append(sum_total_deaths)
+
+        sum_avg_deaths = round(np.nansum(np.array( avg_strat_group[idx1:idx2+1] )),0)
+        column_avg.append(sum_avg_deaths)
+
+        excess_deaths = sum_total_deaths - sum_avg_deaths
+
+        column_exc.append( excess_deaths )
+        column_pct.append( round( (excess_deaths / sum_avg_deaths)*100, 1) )
+
+    # this is what is necessary to update an existing table
+
+    # local vars
+    dummy_column = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ]
+    index_column = [ '<1', '1-4', '5-14', '15-24','25-34', '35-44', '45-54', '55-64', '65-74', '75-84', '>85', 'all ages' ]
+
+    stats_data = pd.DataFrame( { 'age_group': index_column, 'sum_total_deaths': column_total, 'sum_avg_deaths': column_avg, 'excess_deaths': column_exc, 'excess_deaths_pct': column_pct } )
+    stats_source = ColumnDataSource( stats_data )
+
+    # pre-existing global var
+    mortality_stats_table.source = stats_source
+
+
+
 # after document load
 def on_document_ready(evt):
     # here we change some property on the fake_toggle widget
@@ -296,7 +345,7 @@ def make_layouts( ):
 
     slider_spacer = Spacer(width=30, height=50, width_policy='auto', height_policy='fixed')
 
-    layout1_h = layout(column(stats_table,grid_h), name='section1', sizing_mode='scale_width')
+    layout1_h = layout( column(stats_table,grid_h), name='section1', sizing_mode='scale_width')
     layout2_h = layout(grid2_h, name='section2', sizing_mode='scale_width')
 
     column_section3_map    = column(plot_map)
@@ -316,7 +365,19 @@ def make_layouts( ):
     # fourth
 
     # for now page 4 has a fixed layout
-    layout4_h = layout( column(mort_explorer_tabset), name='section4', sizing_mode='scale_width')
+
+    # adds left side spacing for handles lining up with the annotation box
+    slider_spacer4 = Spacer(width=40, height=100, width_policy='auto', height_policy='fixed')
+
+    # forces vertical alignement on the table stats column
+    table_spacer4_top  = Spacer(width=40, height=50, width_policy='auto', height_policy='fixed')
+
+    mortality_plots_column = column(mort_explorer_tabset, row(slider_spacer4, date_slider4))
+    mortality_stats_column = column(table_spacer4_top, mortality_stats_table)
+
+    in_between_spacer = Spacer(width=20, height=50, width_policy='auto', height_policy='fixed')
+
+    layout4_h = layout(row(mortality_plots_column, in_between_spacer, mortality_stats_column), name='section4', sizing_mode='scale_width')
     layout4_v = layout4_h
 
     return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy, layout4_h, layout4_v
@@ -658,6 +719,8 @@ p4_plot10 = make_mortality_plot ( data_dates, total_deaths_strat[9],  avg_deaths
 p4_plot11 = make_mortality_plot ( data_dates, total_deaths_strat[10], avg_deaths_strat[10], avg_deaths_strat_inf[10], avg_deaths_strat_sup[10], days, '>85'     )
 p4_plot12 = make_mortality_plot ( data_dates, total_deaths_strat[11], avg_deaths_strat[11], avg_deaths_strat_inf[11], avg_deaths_strat_sup[11], days, 'all ages')
 
+p4_plots = [ p4_plot1, p4_plot2, p4_plot3, p4_plot4, p4_plot5, p4_plot6, p4_plot7, p4_plot8, p4_plot9, p4_plot10, p4_plot11, p4_plot12 ]
+
 tab1  = Panel(child=p4_plot1, title='<1'       )
 tab2  = Panel(child=p4_plot2, title='1-4'      )
 tab3  = Panel(child=p4_plot3, title='5-14'     )
@@ -672,6 +735,30 @@ tab11 = Panel(child=p4_plot11,title='>85'      )
 tab12 = Panel(child=p4_plot12,title='all ages' )
 
 mort_explorer_tabset = Tabs(tabs=[ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12 ])
+
+# make sure the tab for all ages is selected
+mort_explorer_tabset.active = 11
+
+date_slider4 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1, width=PLOT_WIDTH4-50)
+
+date_slider4.on_change('value', partial(update_mortality_plot_range))
+date_slider4.on_change('value_throttled', partial(update_mortality_stats))
+
+# annotations to visually mask the non-affected date range
+# in the initial moment they are invisible because the left and right parameters are the same
+pre_box  = BoxAnnotation(left=date_i, right=date_i, fill_alpha=PLOT_AREAS_ALPHA4, fill_color=PLOT_AREAS_COLOR4)
+post_box = BoxAnnotation(left=date_f, right=date_f, fill_alpha=PLOT_AREAS_ALPHA4, fill_color=PLOT_AREAS_COLOR4)
+
+for p in p4_plots:
+    p.add_layout(pre_box)
+    p.add_layout(post_box)
+
+# the statistics table
+
+mortality_stats_table = make_mortality_stats_table (400, PLOT_HEIGHT4, 'end')
+
+# the parameters are dummy as we take the values directly from the slider
+update_mortality_stats(0,0,0)
 
 #### Plot layout section ###
 
