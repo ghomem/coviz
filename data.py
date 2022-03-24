@@ -118,7 +118,7 @@ def get_positivity ( tests, new, period, ignore_interval ):
     pos_data =  list(np.full( period + ignore_interval, None))
 
     for i, element in enumerate(tests):
-        print(i, element)
+        #print(i, element)
         if i > period + ignore_interval - 1:
             num = new[i]
             den = tests[i-period]
@@ -146,13 +146,13 @@ def get_avg_deaths_2015_2019 (total_deaths, span, smoothen = False):
     deaths_2019 = total_deaths[ 1461:1826   ] # normal year
 
     # should be 365 366 365 365 365 1826
-    print ( len (deaths_2015), len(deaths_2016), len(deaths_2017), len(deaths_2018), len(deaths_2019), len(total_deaths) )
+    #print ( len (deaths_2015), len(deaths_2016), len(deaths_2017), len(deaths_2018), len(deaths_2019), len(total_deaths) )
 
     # should be 407 366 475 414 371
-    print ( deaths_2015[0], deaths_2016[0], deaths_2017[0], deaths_2018[0], deaths_2019[0] )
+    #print ( deaths_2015[0], deaths_2016[0], deaths_2017[0], deaths_2018[0], deaths_2019[0] )
 
     # should be 323 465 390 357 345
-    print ( deaths_2015[364], deaths_2016[364], deaths_2017[364], deaths_2018[364], deaths_2019[364] )
+    #print ( deaths_2015[364], deaths_2016[364], deaths_2017[364], deaths_2018[364], deaths_2019[364] )
 
     first_day_index = 55 # 26th of February
     for d in range(0,span):
@@ -162,7 +162,7 @@ def get_avg_deaths_2015_2019 (total_deaths, span, smoothen = False):
         avg = ( deaths_2015[idx] + deaths_2016[idx] + deaths_2017[idx] + deaths_2018[idx] + deaths_2019[idx] ) / 5
         var = ( (deaths_2015[idx] - avg)**2 + (deaths_2016[idx] - avg)**2 + (deaths_2017[idx] - avg)**2 + (deaths_2018[idx] - avg)**2 + (deaths_2019[idx] - avg)**2 ) / 5
         sd  = math.sqrt(var)
-        print(d, idx, avg, sd)
+        #print(d, idx, avg, sd)
 
         avg_data.append(avg)
         sd_data.append(sd)
@@ -474,7 +474,7 @@ def get_data():
     strat_mortality_info = get_stratified_mortality_info( mort_data, days )
 
     # starts at 26th of February of 2020
-    print(dates[0], dates[-1])
+    #print(dates[0], dates[-1])
 
     # processed data
     processed_data = [ s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, positivity, s_total_deaths, s_avg_deaths, avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full, vacc_boost, strat_mortality_info ]
