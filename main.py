@@ -752,7 +752,7 @@ for p in p4_plots:
 
 # the statistics table
 
-mortality_stats_table = make_mortality_stats_table (400, PLOT_HEIGHT4, 'end')
+mortality_stats_table = make_mortality_stats_table (450, PLOT_HEIGHT4, 'end')
 
 # the parameters are dummy as we take the values directly from the slider
 update_mortality_stats(0,0,0)
