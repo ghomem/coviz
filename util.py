@@ -153,7 +153,7 @@ def make_stats_table ( width, height, alignment ):
 
     # the autosize_mode is not useful here because different columns need different widths, the alignement is in relation to the parent widget
     # http://docs.bokeh.org/en/latest/docs/reference/models/widgets.tables.html#bokeh.models.widgets.tables.DataTable
-    stats_table = DataTable(source=stats_source, columns=stats_columns, index_position=None, selectable=False, autosize_mode = 'none', width=width, height=height, align=alignment)
+    stats_table = DataTable(source=stats_source, columns=stats_columns, index_position=None, selectable=False, autosize_mode = 'none', width=width, height=height, align=alignment, row_height=35)
 
     return stats_table
 
