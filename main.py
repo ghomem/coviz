@@ -364,8 +364,6 @@ def make_layouts( ):
 
     # fourth
 
-    # for now page 4 has a fixed layout
-
     # adds left side spacing for handles lining up with the annotation box
     slider_spacer4 = Spacer(width=40, height=100, width_policy='auto', height_policy='fixed')
 
@@ -375,10 +373,11 @@ def make_layouts( ):
     mortality_plots_column = column(mort_explorer_tabset, row(slider_spacer4, date_slider4))
     mortality_stats_column = column(table_spacer4_top, mortality_stats_table)
 
-    in_between_spacer = Spacer(width=20, height=50, width_policy='auto', height_policy='fixed')
+    in_between_spacer   = Spacer(width=20, height=50, width_policy='auto', height_policy='fixed')
+    in_between_spacer_v = Spacer(width=20, height=10, width_policy='auto', height_policy='fixed')
 
-    layout4_h = layout(row(mortality_plots_column, in_between_spacer, mortality_stats_column), name='section4', sizing_mode='scale_width')
-    layout4_v = layout4_h
+    layout4_h = layout(row   (mortality_plots_column, in_between_spacer,   mortality_stats_column), name='section4', sizing_mode='scale_width')
+    layout4_v = layout(column(mortality_plots_column, mortality_stats_table ), name='section4', sizing_mode='scale_width')
 
     return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy, layout4_h, layout4_v
 
@@ -413,6 +412,7 @@ def adjust_widgets_to_layout( horizontal ):
         plot1_map.width       = int(plot1_map.plot_width*factor2)
         plot1_map.height      = PLOT_HEIGHT
         date_slider_map.width = plot1_map.width-40
+
 
 ### end of layouts ####
 
@@ -755,7 +755,7 @@ for p in p4_plots:
 
 # the statistics table
 
-mortality_stats_table = make_mortality_stats_table (400, PLOT_HEIGHT4, 'end')
+mortality_stats_table = make_mortality_stats_table (MORT_STATS_TABLE_WIDTH, PLOT_HEIGHT4, 'end')
 
 # the parameters are dummy as we take the values directly from the slider
 update_mortality_stats(0,0,0)

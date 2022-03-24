@@ -87,8 +87,10 @@ TEXT_NOTES  ='<strong>Important:</strong> use the mouse for the initial selectio
 # layout related variables
 MIN_HORIZONTAL_WIDTH = 1360
 
-PLOT_WIDTH4  = 1240 # for the 4th section
+PLOT_WIDTH4  = 900 # for the 4th section
 PLOT_HEIGHT4 = 530
 
 PLOT_AREAS_COLOR4 = 'gray'
 PLOT_AREAS_ALPHA4 = 0.1
+
+MORT_STATS_TABLE_WIDTH = 400

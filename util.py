@@ -169,13 +169,13 @@ def make_mortality_stats_table ( width, height, alignment ):
     stats_source = ColumnDataSource(stats_data)
 
     # the colors match the plot titles and the main plot lines, respectively
-    formatter_template_index =  """<div style="font-size: 120%; font-weight: bold;   padding-top: 3px; height: 15px; color: #4d4d4d" ><%= value %></div>"""
-    formatter_template       =  """<div style="font-size: 120%; font-weight: normal; padding-top: 3px; height: 15px; color: #4d4d4d" ><%= value %></div>"""
+    formatter_template_index =  """<div style="font-size: 130%; font-weight: bold;   padding-top: 3px; height: 15px; color: #4d4d4d" ><%= value %></div>"""
+    formatter_template       =  """<div style="font-size: 130%; font-weight: normal; padding-top: 3px; height: 15px; color: #4d4d4d" ><%= value %></div>"""
 
     my_formatter_index = HTMLTemplateFormatter(template=formatter_template_index )
     my_formatter       = HTMLTemplateFormatter(template=formatter_template )
 
-    base_colum_width = 65
+    base_colum_width = 70
 
     # we will define a per column width
     # reference: http://docs.bokeh.org/en/latest/docs/reference/models/widgets.tables.html#bokeh.models.widgets.tables.TableColumn
