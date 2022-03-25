@@ -220,7 +220,7 @@ def update_mortality_stats (attr, old, new):
         if excess_deaths > 0:
             str_pad = '&nbsp;'
 
-        column_exc.append( str_pad + str(excess_deaths) )
+        column_exc.append( str_pad + str(int(excess_deaths)) )
 
         column_pct.append( str_pad + str(round( (excess_deaths / sum_avg_deaths)*100, 1)) + '%' )
 
