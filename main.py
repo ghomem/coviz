@@ -183,20 +183,46 @@ def update_mortality_stats (attr, old, new):
     column_exc   = []
     column_pct   = []
 
-    for total_strat_group, avg_strat_group in zip(total_deaths_strat, avg_deaths_strat):
+    # we use the non smoothed version for the stats
+    for total_strat_group, avg_strat_group, avg_strat_group_inf, avg_strat_group_sup in zip(total_deaths_strat, avg_deaths_strat, avg_deaths_strat_inf, avg_deaths_strat_sup):
 
         # use nansum because there may be NaNs due to delayed / missing data
 
         sum_total_deaths = round(np.nansum(np.array( total_strat_group[idx1:idx2+1] )),0)
         column_total.append(sum_total_deaths)
 
-        sum_avg_deaths = round(np.nansum(np.array( avg_strat_group[idx1:idx2+1] )),0)
-        column_avg.append(sum_avg_deaths)
+        sum_avg_deaths     = round(np.nansum(np.array( avg_strat_group    [idx1:idx2+1] )),0)
+        sum_avg_deaths_inf = round(np.nansum(np.array( avg_strat_group_inf[idx1:idx2+1] )),0)
+        sum_avg_deaths_sup = round(np.nansum(np.array( avg_strat_group_sup[idx1:idx2+1] )),0)
+
+        sum_avg_deaths_inf_pct = round(( ( sum_avg_deaths_inf - sum_avg_deaths ) / sum_avg_deaths ) * 100, 1)
+        sum_avg_deaths_sup_pct = round(( ( sum_avg_deaths_sup - sum_avg_deaths ) / sum_avg_deaths ) * 100, 1)
+
+        # the inf and sup values are symmetrical, so using only one of them simplifies the notation
+        str_avg_deaths = '{:⁢<6} ± {}'.format(int(sum_avg_deaths), sum_avg_deaths_sup_pct)
+
+        # we have to do some funky padding because the normal python format can not insert &nbsp;
+        # and the HTML cells do away with normal spaces
+
+        str_tmp = str(int(sum_avg_deaths))
+        nspaces = 6 - len(str_tmp)
+
+        str_spaces = '&nbsp;' * nspaces
+
+        str_avg_deaths = str_tmp + str_spaces + ' ± ' + str(sum_avg_deaths_sup_pct) + '%'
+
+        column_avg.append(str_avg_deaths)
 
         excess_deaths = sum_total_deaths - sum_avg_deaths
 
-        column_exc.append( excess_deaths )
-        column_pct.append( round( (excess_deaths / sum_avg_deaths)*100, 1) )
+        # to compensate for the minus sign
+        str_pad = ''
+        if excess_deaths > 0:
+            str_pad = '&nbsp;'
+
+        column_exc.append( str_pad + str(excess_deaths) )
+
+        column_pct.append( str_pad + str(round( (excess_deaths / sum_avg_deaths)*100, 1)) + '%' )
 
     # this is what is necessary to update an existing table
 
@@ -701,23 +727,26 @@ date_slider_map.on_change('value_throttled', partial(update_map))
 
 #### Fourth page ####
 
-total_deaths_strat   = data_strat_mort[0]
-avg_deaths_strat     = data_strat_mort[1]
-avg_deaths_strat_inf = data_strat_mort[2]
-avg_deaths_strat_sup = data_strat_mort[3]
+# the first one is raw, the second is smoothed
+total_deaths_strat     = data_strat_mort[0]
+s_total_deaths_strat   = data_strat_mort[1]
 
-p4_plot1  = make_mortality_plot ( data_dates, total_deaths_strat[0],  avg_deaths_strat[0],  avg_deaths_strat_inf[0],  avg_deaths_strat_sup[0],  days, '<1'      )
-p4_plot2  = make_mortality_plot ( data_dates, total_deaths_strat[1],  avg_deaths_strat[1],  avg_deaths_strat_inf[1],  avg_deaths_strat_sup[1],  days, '1-4'     )
-p4_plot3  = make_mortality_plot ( data_dates, total_deaths_strat[2],  avg_deaths_strat[2],  avg_deaths_strat_inf[2],  avg_deaths_strat_sup[2],  days, '5-14'    )
-p4_plot4  = make_mortality_plot ( data_dates, total_deaths_strat[3],  avg_deaths_strat[3],  avg_deaths_strat_inf[3],  avg_deaths_strat_sup[3],  days, '15-24'   )
-p4_plot5  = make_mortality_plot ( data_dates, total_deaths_strat[4],  avg_deaths_strat[4],  avg_deaths_strat_inf[4],  avg_deaths_strat_sup[4],  days, '25-34'   )
-p4_plot6  = make_mortality_plot ( data_dates, total_deaths_strat[5],  avg_deaths_strat[5],  avg_deaths_strat_inf[5],  avg_deaths_strat_sup[5],  days, '35-44'   )
-p4_plot7  = make_mortality_plot ( data_dates, total_deaths_strat[6],  avg_deaths_strat[6],  avg_deaths_strat_inf[6],  avg_deaths_strat_sup[6],  days, '45-54'   )
-p4_plot8  = make_mortality_plot ( data_dates, total_deaths_strat[7],  avg_deaths_strat[7],  avg_deaths_strat_inf[7],  avg_deaths_strat_sup[7],  days, '55-64'   )
-p4_plot9  = make_mortality_plot ( data_dates, total_deaths_strat[8],  avg_deaths_strat[8],  avg_deaths_strat_inf[8],  avg_deaths_strat_sup[8],  days, '65-74'   )
-p4_plot10 = make_mortality_plot ( data_dates, total_deaths_strat[9],  avg_deaths_strat[9],  avg_deaths_strat_inf[9],  avg_deaths_strat_sup[9],  days, '75-84'   )
-p4_plot11 = make_mortality_plot ( data_dates, total_deaths_strat[10], avg_deaths_strat[10], avg_deaths_strat_inf[10], avg_deaths_strat_sup[10], days, '>85'     )
-p4_plot12 = make_mortality_plot ( data_dates, total_deaths_strat[11], avg_deaths_strat[11], avg_deaths_strat_inf[11], avg_deaths_strat_sup[11], days, 'all ages')
+avg_deaths_strat       = data_strat_mort[2]
+avg_deaths_strat_inf   = data_strat_mort[3]
+avg_deaths_strat_sup   = data_strat_mort[4]
+
+p4_plot1  = make_mortality_plot ( data_dates, s_total_deaths_strat[0],  avg_deaths_strat[0],  avg_deaths_strat_inf[0],  avg_deaths_strat_sup[0],  days, '<1'      )
+p4_plot2  = make_mortality_plot ( data_dates, s_total_deaths_strat[1],  avg_deaths_strat[1],  avg_deaths_strat_inf[1],  avg_deaths_strat_sup[1],  days, '1-4'     )
+p4_plot3  = make_mortality_plot ( data_dates, s_total_deaths_strat[2],  avg_deaths_strat[2],  avg_deaths_strat_inf[2],  avg_deaths_strat_sup[2],  days, '5-14'    )
+p4_plot4  = make_mortality_plot ( data_dates, s_total_deaths_strat[3],  avg_deaths_strat[3],  avg_deaths_strat_inf[3],  avg_deaths_strat_sup[3],  days, '15-24'   )
+p4_plot5  = make_mortality_plot ( data_dates, s_total_deaths_strat[4],  avg_deaths_strat[4],  avg_deaths_strat_inf[4],  avg_deaths_strat_sup[4],  days, '25-34'   )
+p4_plot6  = make_mortality_plot ( data_dates, s_total_deaths_strat[5],  avg_deaths_strat[5],  avg_deaths_strat_inf[5],  avg_deaths_strat_sup[5],  days, '35-44'   )
+p4_plot7  = make_mortality_plot ( data_dates, s_total_deaths_strat[6],  avg_deaths_strat[6],  avg_deaths_strat_inf[6],  avg_deaths_strat_sup[6],  days, '45-54'   )
+p4_plot8  = make_mortality_plot ( data_dates, s_total_deaths_strat[7],  avg_deaths_strat[7],  avg_deaths_strat_inf[7],  avg_deaths_strat_sup[7],  days, '55-64'   )
+p4_plot9  = make_mortality_plot ( data_dates, s_total_deaths_strat[8],  avg_deaths_strat[8],  avg_deaths_strat_inf[8],  avg_deaths_strat_sup[8],  days, '65-74'   )
+p4_plot10 = make_mortality_plot ( data_dates, s_total_deaths_strat[9],  avg_deaths_strat[9],  avg_deaths_strat_inf[9],  avg_deaths_strat_sup[9],  days, '75-84'   )
+p4_plot11 = make_mortality_plot ( data_dates, s_total_deaths_strat[10], avg_deaths_strat[10], avg_deaths_strat_inf[10], avg_deaths_strat_sup[10], days, '>85'     )
+p4_plot12 = make_mortality_plot ( data_dates, s_total_deaths_strat[11], avg_deaths_strat[11], avg_deaths_strat_inf[11], avg_deaths_strat_sup[11], days, 'all ages')
 
 p4_plots = [ p4_plot1, p4_plot2, p4_plot3, p4_plot4, p4_plot5, p4_plot6, p4_plot7, p4_plot8, p4_plot9, p4_plot10, p4_plot11, p4_plot12 ]
 

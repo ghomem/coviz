@@ -277,20 +277,34 @@ def get_stratified_mortality_info ( mort_data, days ):
     # find the current stratified overall deaths
 
     # this is a multi year series starting in 01/01/2009
-    # we need to get the lastest -days and smoothen
+    # we need to get the lastest -days and smoothen for the plots
+    # the non-smoothed version will be used for the statistics
 
-    s_total_deaths_0_1      = get_smooth_list ( mort_data [ 'grupoetario_1ano'      ].tolist()[-days:], MAV_PERIOD )
-    s_total_deaths_1_4      = get_smooth_list ( mort_data [ 'grupoetario_1a4anos'   ].tolist()[-days:], MAV_PERIOD )
-    s_total_deaths_5_14     = get_smooth_list ( mort_data [ 'grupoetario_5a14anos'  ].tolist()[-days:], MAV_PERIOD )
-    s_total_deaths_15_24    = get_smooth_list ( mort_data [ 'grupoetario_15a24anos' ].tolist()[-days:], MAV_PERIOD )
-    s_total_deaths_25_34    = get_smooth_list ( mort_data [ 'grupoetario_25a34anos' ].tolist()[-days:], MAV_PERIOD )
-    s_total_deaths_35_44    = get_smooth_list ( mort_data [ 'grupoetario_35a44anos' ].tolist()[-days:], MAV_PERIOD )
-    s_total_deaths_45_56    = get_smooth_list ( mort_data [ 'grupoetario_45a54anos' ].tolist()[-days:], MAV_PERIOD )
-    s_total_deaths_55_64    = get_smooth_list ( mort_data [ 'grupoetario_55a64anos' ].tolist()[-days:], MAV_PERIOD )
-    s_total_deaths_65_74    = get_smooth_list ( mort_data [ 'grupoetario_65a74anos' ].tolist()[-days:], MAV_PERIOD )
-    s_total_deaths_75_84    = get_smooth_list ( mort_data [ 'grupoetario_75a84anos' ].tolist()[-days:], MAV_PERIOD )
-    s_total_deaths_85_plus  = get_smooth_list ( mort_data [ 'grupoetario_85+anos'   ].tolist()[-days:], MAV_PERIOD )
-    s_total_deaths_all_ages = get_smooth_list ( mort_data [ 'geral_pais'            ].tolist()[-days:], MAV_PERIOD )
+    total_deaths_0_1      = mort_data [ 'grupoetario_1ano'      ].tolist()[-days:]
+    total_deaths_1_4      = mort_data [ 'grupoetario_1a4anos'   ].tolist()[-days:]
+    total_deaths_5_14     = mort_data [ 'grupoetario_5a14anos'  ].tolist()[-days:]
+    total_deaths_15_24    = mort_data [ 'grupoetario_15a24anos' ].tolist()[-days:]
+    total_deaths_25_34    = mort_data [ 'grupoetario_25a34anos' ].tolist()[-days:]
+    total_deaths_35_44    = mort_data [ 'grupoetario_35a44anos' ].tolist()[-days:]
+    total_deaths_45_56    = mort_data [ 'grupoetario_45a54anos' ].tolist()[-days:]
+    total_deaths_55_64    = mort_data [ 'grupoetario_55a64anos' ].tolist()[-days:]
+    total_deaths_65_74    = mort_data [ 'grupoetario_65a74anos' ].tolist()[-days:]
+    total_deaths_75_84    = mort_data [ 'grupoetario_75a84anos' ].tolist()[-days:]
+    total_deaths_85_plus  = mort_data [ 'grupoetario_85+anos'   ].tolist()[-days:]
+    total_deaths_all_ages = mort_data [ 'geral_pais'            ].tolist()[-days:]
+
+    s_total_deaths_0_1      = get_smooth_list ( total_deaths_0_1,      MAV_PERIOD )
+    s_total_deaths_1_4      = get_smooth_list ( total_deaths_1_4,      MAV_PERIOD )
+    s_total_deaths_5_14     = get_smooth_list ( total_deaths_5_14,     MAV_PERIOD )
+    s_total_deaths_15_24    = get_smooth_list ( total_deaths_15_24,    MAV_PERIOD )
+    s_total_deaths_25_34    = get_smooth_list ( total_deaths_25_34,    MAV_PERIOD )
+    s_total_deaths_35_44    = get_smooth_list ( total_deaths_35_44,    MAV_PERIOD )
+    s_total_deaths_45_56    = get_smooth_list ( total_deaths_45_56,    MAV_PERIOD )
+    s_total_deaths_55_64    = get_smooth_list ( total_deaths_55_64,    MAV_PERIOD )
+    s_total_deaths_65_74    = get_smooth_list ( total_deaths_65_74,    MAV_PERIOD )
+    s_total_deaths_75_84    = get_smooth_list ( total_deaths_75_84,    MAV_PERIOD )
+    s_total_deaths_85_plus  = get_smooth_list ( total_deaths_85_plus,  MAV_PERIOD )
+    s_total_deaths_all_ages = get_smooth_list ( total_deaths_all_ages, MAV_PERIOD )
 
     # now let's find the precovid overal deaths
     # note: 2016 is a leap year
@@ -338,6 +352,9 @@ def get_stratified_mortality_info ( mort_data, days ):
 
     # create the arrays
 
+    total_deaths    = [ total_deaths_0_1,   total_deaths_1_4,   total_deaths_5_14,  total_deaths_15_24, total_deaths_25_34, total_deaths_35_44,
+                        total_deaths_45_56, total_deaths_55_64, total_deaths_65_74, total_deaths_75_84, total_deaths_85_plus, total_deaths_all_ages ]
+
     s_total_deaths  = [ s_total_deaths_0_1,   s_total_deaths_1_4,   s_total_deaths_5_14,  s_total_deaths_15_24, s_total_deaths_25_34, s_total_deaths_35_44,
                         s_total_deaths_45_56, s_total_deaths_55_64, s_total_deaths_65_74, s_total_deaths_75_84, s_total_deaths_85_plus, s_total_deaths_all_ages ]
 
@@ -350,7 +367,7 @@ def get_stratified_mortality_info ( mort_data, days ):
     avg_deaths_sup = [ avg_deaths_sup_0_1,   avg_deaths_sup_1_4,   avg_deaths_sup_5_14,  avg_deaths_sup_15_24, avg_deaths_sup_25_34,   avg_deaths_sup_35_44,
                        avg_deaths_sup_45_54, avg_deaths_sup_55_64, avg_deaths_sup_65_74, avg_deaths_sup_75_84, avg_deaths_sup_85_plus, avg_deaths_sup_all_ages ]
 
-    strat_mort_info = [ s_total_deaths, avg_deaths, avg_deaths_inf, avg_deaths_sup ]
+    strat_mort_info = [ total_deaths, s_total_deaths, avg_deaths, avg_deaths_inf, avg_deaths_sup ]
 
     return strat_mort_info
 

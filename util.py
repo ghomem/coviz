@@ -169,8 +169,8 @@ def make_mortality_stats_table ( width, height, alignment ):
     stats_source = ColumnDataSource(stats_data)
 
     # the colors match the plot titles and the main plot lines, respectively
-    formatter_template_index =  """<div style="font-size: 130%; font-weight: bold;   padding-top: 3px; height: 15px; color: #4d4d4d" ><%= value %></div>"""
-    formatter_template       =  """<div style="font-size: 130%; font-weight: normal; padding-top: 3px; height: 15px; color: #4d4d4d" ><%= value %></div>"""
+    formatter_template_index =  """<div style="font-size: 130%; font-family: 'Courier New', monospace; font-weight: bold;   padding-top: 3px; height: 15px; color: #4d4d4d" ><%= value %></div>"""
+    formatter_template       =  """<div style="font-size: 130%; font-family: 'Courier New', monospace; font-weight: normal; padding-top: 3px; height: 15px; color: #4d4d4d" ><%= value %></div>"""
 
     my_formatter_index = HTMLTemplateFormatter(template=formatter_template_index )
     my_formatter       = HTMLTemplateFormatter(template=formatter_template )
@@ -181,9 +181,9 @@ def make_mortality_stats_table ( width, height, alignment ):
     # reference: http://docs.bokeh.org/en/latest/docs/reference/models/widgets.tables.html#bokeh.models.widgets.tables.TableColumn
 
     stats_columns = [
-        TableColumn(field="age_group",         title="Age Group", formatter=my_formatter_index,  sortable=False, width=base_colum_width       ),
+        TableColumn(field="age_group",         title="Age Group", formatter=my_formatter_index,  sortable=False, width=base_colum_width + 10  ),
         TableColumn(field="sum_total_deaths",  title="Overall",   formatter=my_formatter,        sortable=False, width=base_colum_width       ),
-        TableColumn(field="sum_avg_deaths",    title="2015-2019", formatter=my_formatter,        sortable=False, width=base_colum_width + 10  ),
+        TableColumn(field="sum_avg_deaths",    title="2015-2019", formatter=my_formatter,        sortable=False, width=base_colum_width + 70  ),
         TableColumn(field="excess_deaths",     title="Excess",    formatter=my_formatter,        sortable=False, width=base_colum_width       ),
         TableColumn(field="excess_deaths_pct", title="Excess %",  formatter=my_formatter,        sortable=False, width=base_colum_width       ),
     ]
