@@ -184,20 +184,45 @@ def update_mortality_stats (attr, old, new):
     column_pct   = []
 
     # we use the non smoothed version for the stats
-    for total_strat_group, avg_strat_group in zip(total_deaths_strat, avg_deaths_strat):
+    for total_strat_group, avg_strat_group, avg_strat_group_inf, avg_strat_group_sup in zip(total_deaths_strat, avg_deaths_strat, avg_deaths_strat_inf, avg_deaths_strat_sup):
 
         # use nansum because there may be NaNs due to delayed / missing data
 
         sum_total_deaths = round(np.nansum(np.array( total_strat_group[idx1:idx2+1] )),0)
         column_total.append(sum_total_deaths)
 
-        sum_avg_deaths = round(np.nansum(np.array( avg_strat_group[idx1:idx2+1] )),0)
-        column_avg.append(sum_avg_deaths)
+        sum_avg_deaths     = round(np.nansum(np.array( avg_strat_group    [idx1:idx2+1] )),0)
+        sum_avg_deaths_inf = round(np.nansum(np.array( avg_strat_group_inf[idx1:idx2+1] )),0)
+        sum_avg_deaths_sup = round(np.nansum(np.array( avg_strat_group_sup[idx1:idx2+1] )),0)
+
+        sum_avg_deaths_inf_pct = round(( ( sum_avg_deaths_inf - sum_avg_deaths ) / sum_avg_deaths ) * 100, 1)
+        sum_avg_deaths_sup_pct = round(( ( sum_avg_deaths_sup - sum_avg_deaths ) / sum_avg_deaths ) * 100, 1)
+
+        # the inf and sup values are symmetrical, so using only one of them simplifies the notation
+        str_avg_deaths = '{:⁢<6} ± {}'.format(int(sum_avg_deaths), sum_avg_deaths_sup_pct)
+
+        # we have to do some funky padding because the normal python format can not insert &nbsp;
+        # and the HTML cells do away with normal spaces
+
+        str_tmp = str(int(sum_avg_deaths))
+        nspaces = 6 - len(str_tmp)
+
+        str_spaces = '&nbsp;' * nspaces
+
+        str_avg_deaths = str_tmp + str_spaces + ' ± ' + str(sum_avg_deaths_sup_pct) + '%'
+
+        column_avg.append(str_avg_deaths)
 
         excess_deaths = sum_total_deaths - sum_avg_deaths
 
-        column_exc.append( excess_deaths )
-        column_pct.append( round( (excess_deaths / sum_avg_deaths)*100, 1) )
+        # to compensate for the minus sign
+        str_pad = ''
+        if excess_deaths > 0:
+            str_pad = '&nbsp;'
+
+        column_exc.append( str_pad + str(excess_deaths) )
+
+        column_pct.append( str_pad + str(round( (excess_deaths / sum_avg_deaths)*100, 1)) + '%' )
 
     # this is what is necessary to update an existing table
 
