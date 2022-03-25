@@ -236,6 +236,8 @@ def update_mortality_stats (attr, old, new):
     # pre-existing global var
     mortality_stats_table.source = stats_source
 
+    # update table caption
+    mortality_notes.text = 'Statistics for period of ' + str(date_i_cmp) + ' to ' + str(date_f_cmp)
 
 
 # after document load
@@ -394,10 +396,10 @@ def make_layouts( ):
     slider_spacer4 = Spacer(width=40, height=100, width_policy='auto', height_policy='fixed')
 
     # forces vertical alignement on the table stats column
-    table_spacer4_top  = Spacer(width=40, height=50, width_policy='auto', height_policy='fixed')
+    table_spacer4_top  = Spacer(width=40, height=10, width_policy='auto', height_policy='fixed')
 
     mortality_plots_column = column(mort_explorer_tabset, row(slider_spacer4, date_slider4))
-    mortality_stats_column = column(table_spacer4_top, mortality_stats_table)
+    mortality_stats_column = column(table_spacer4_top, mortality_stats_table, mortality_notes)
 
     in_between_spacer   = Spacer(width=20, height=50, width_policy='auto', height_policy='fixed')
     in_between_spacer_v = Spacer(width=20, height=10, width_policy='auto', height_policy='fixed')
@@ -784,7 +786,11 @@ for p in p4_plots:
 
 # the statistics table
 
-mortality_stats_table = make_mortality_stats_table (MORT_STATS_TABLE_WIDTH, PLOT_HEIGHT4, 'end')
+mortality_stats_table = make_mortality_stats_table (MORT_STATS_TABLE_WIDTH, MORT_STATS_TABLE_HEIGHT, 'end')
+
+# and its caption
+
+mortality_notes = Div(text='dummy', width=MORT_TEXT_WIDTH, align='center')
 
 # the parameters are dummy as we take the values directly from the slider
 update_mortality_stats(0,0,0)
