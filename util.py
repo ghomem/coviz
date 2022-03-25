@@ -181,11 +181,11 @@ def make_mortality_stats_table ( width, height, alignment ):
     # reference: http://docs.bokeh.org/en/latest/docs/reference/models/widgets.tables.html#bokeh.models.widgets.tables.TableColumn
 
     stats_columns = [
-        TableColumn(field="age_group",         title="Age Group", formatter=my_formatter_index,  sortable=False, width=base_colum_width + 10  ),
-        TableColumn(field="sum_total_deaths",  title="Overall",   formatter=my_formatter,        sortable=False, width=base_colum_width       ),
-        TableColumn(field="sum_avg_deaths",    title="2015-2019", formatter=my_formatter,        sortable=False, width=base_colum_width + 70  ),
-        TableColumn(field="excess_deaths",     title="Excess",    formatter=my_formatter,        sortable=False, width=base_colum_width       ),
-        TableColumn(field="excess_deaths_pct", title="Excess %",  formatter=my_formatter,        sortable=False, width=base_colum_width       ),
+        TableColumn(field="age_group",         title="Age Group",                formatter=my_formatter_index,  sortable=False, width=base_colum_width + 10 ),
+        TableColumn(field="sum_total_deaths",  title="Overall deaths",           formatter=my_formatter,        sortable=False, width=base_colum_width + 10 ),
+        TableColumn(field="sum_avg_deaths",    title="Overall deaths 2015-2019", formatter=my_formatter,        sortable=False, width=base_colum_width + 70 ),
+        TableColumn(field="excess_deaths",     title="Excess deaths",            formatter=my_formatter,        sortable=False, width=base_colum_width + 10 ),
+        TableColumn(field="excess_deaths_pct", title="Excess deaths %",          formatter=my_formatter,        sortable=False, width=base_colum_width + 20 ),
     ]
 
     # the autosize_mode is not useful here because different columns need different widths, the alignement is in relation to the parent widget
