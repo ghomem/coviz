@@ -54,14 +54,17 @@ def update_stats(attr, old, new):
 
     # use nansum because there may be NaNs due to delayed / missing data
 
-    sum_new          = np.nansum(np.array( raw_data_new         [idx1:idx2+1] ))
-    sum_cv19_deaths  = np.nansum(np.array( raw_data_cv19_deaths [idx1:idx2+1] ))
-    sum_total_deaths = np.nansum(np.array( raw_data_total_deaths[idx1:idx2+1] ))
+    sum_new              = make_html_integer(np.nansum(np.array( raw_data_new         [idx1:idx2+1] )))
+    sum_cv19_deaths      = make_html_integer(np.nansum(np.array( raw_data_cv19_deaths [idx1:idx2+1] )))
+    sum_total_deaths_pre = np.nansum(np.array( raw_data_total_deaths[idx1:idx2+1] ))
 
-    sum_avg_deaths   = int( np.nansum(np.array( raw_data_avg_deaths[idx1:idx2+1] ) ))
+    sum_avg_deaths_pre   = int( np.nansum(np.array( raw_data_avg_deaths[idx1:idx2+1] ) ))
 
-    excess_deaths     = sum_total_deaths - sum_avg_deaths
-    excess_deaths_pct = round( (excess_deaths / sum_avg_deaths)*100, 1)
+    excess_deaths     = sum_total_deaths_pre - sum_avg_deaths_pre
+    excess_deaths_pct = round( (excess_deaths / sum_avg_deaths_pre)*100, 1)
+
+    sum_avg_deaths   = make_html_integer( sum_avg_deaths_pre   )
+    sum_total_deaths = make_html_integer( sum_total_deaths_pre )
 
     # this is what is necessary to update an existing table
 

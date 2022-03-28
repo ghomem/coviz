@@ -19,6 +19,14 @@ from config import *
 
 # utility functions
 
+# because spaces are gone once a string is inserted into HTML
+def make_html_integer ( value ):
+
+    value_with_commas = format(value, ',d')
+    value_html = value_with_commas.replace(',', '&nbsp;')
+
+    return value_html
+
 def make_interval_str ( title, value, value_l, value_r ):
 
     str_interval = title + str(value) + ' (' +  str(value_l) + '  -  ' + str(value_r) + ')'
