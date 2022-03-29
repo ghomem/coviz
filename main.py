@@ -775,7 +775,7 @@ tab13 = Panel(child=p4_plot13,title='all ages *' )
 mort_explorer_tabset = Tabs(tabs=[ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12, tab13 ])
 
 # make sure the tab for all ages is selected
-mort_explorer_tabset.active = 11
+mort_explorer_tabset.active = 12
 
 date_slider4 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1, width=PLOT_WIDTH4-50)
 
@@ -798,7 +798,7 @@ mortality_stats_table = make_mortality_stats_table (MORT_STATS_TABLE_WIDTH, MORT
 mortality_notes  = Div(text='dummy', width=MORT_TEXT_WIDTH, align='center')
 
 # plus the note for the special row
-mortality_notes2 = Div(text='</br>* contains a correction for population aging that converts deaths from 2015-2019 into equivalent 2020 deaths', align='start')
+mortality_notes2 = Div(text='</br>* contains a correction for population aging that converts deaths from 2015-2019 into equivalent current year deaths', align='start')
 
 # the parameters are dummy as we take the values directly from the slider
 update_mortality_stats(0,0,0)

@@ -133,7 +133,6 @@ def get_positivity ( tests, new, period, ignore_interval ):
     return result
 
 # corrects old overall deaths with the trend due to ageing population
-
 def get_normalized_2020_deaths ( death_array, daily_extra ):
 
     normalized_death_array = []
@@ -157,6 +156,7 @@ def get_avg_deaths_2015_2019 (total_deaths, span, smoothen = False, correct = Fa
     deaths_2018_in = total_deaths[ 1096:1461   ] # normal year
     deaths_2019_in = total_deaths[ 1461:1826   ] # normal year
 
+    # when correct is True we are normalizing historical deaths to that equivalent 2020 deaths
     if correct:
 
         # Fit for overall yearly mortality by Carlos Antunes (x=1 for 2009)
@@ -191,8 +191,16 @@ def get_avg_deaths_2015_2019 (total_deaths, span, smoothen = False, correct = Fa
         # idx varies between 0 and 364 (365 values)
         # there could be some long term drift resulting from this code, but only over many years
         idx = d + first_day_index - 365*int( (d + first_day_index) / 365 )
-        avg = ( deaths_2015[idx] + deaths_2016[idx] + deaths_2017[idx] + deaths_2018[idx] + deaths_2019[idx] ) / 5
-        var = ( (deaths_2015[idx] - avg)**2 + (deaths_2016[idx] - avg)**2 + (deaths_2017[idx] - avg)**2 + (deaths_2018[idx] - avg)**2 + (deaths_2019[idx] - avg)**2 ) / 5
+
+        # because the period spans more than one year we need additional correction converting 2020 to present year
+        if correct:
+            delta = daily_extra * int(d/365)
+            #print('delta is', delta)
+        else:
+            delta = 0
+
+        avg = ( deaths_2015[idx] + deaths_2016[idx] + deaths_2017[idx] + deaths_2018[idx] + deaths_2019[idx] + 5*delta ) / 5
+        var = ( (deaths_2015[idx] + delta - avg)**2 + (deaths_2016[idx] + delta - avg)**2 + (deaths_2017[idx] + delta - avg)**2 + (deaths_2018[idx] + delta - avg)**2 + (deaths_2019[idx] + delta - avg)**2 ) / 5
         sd  = math.sqrt(var)
         #print(d, idx, avg, sd)
 
