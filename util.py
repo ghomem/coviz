@@ -169,8 +169,8 @@ def make_stats_table ( width, height, alignment ):
 def make_mortality_stats_table ( width, height, alignment ):
 
     # we initialize this with dummy values
-    dummy_column = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-    index_column = [ '<1', '1-4', '5-14', '15-24','25-34', '35-44', '45-54', '55-64', '65-74', '75-84', '>85', 'all ages' ]
+    dummy_column = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    index_column = [ '<1', '1-4', '5-14', '15-24','25-34', '35-44', '45-54', '55-64', '65-74', '75-84', '>85', 'all ages', 'all ages *' ]
 
     stats_data   = pd.DataFrame( { 'age_group': index_column, 'sum_total_deaths': dummy_column, 'sum_avg_deaths': dummy_column, 'excess_deaths': dummy_column, 'excess_deaths_pct': dummy_column } )
 
@@ -189,7 +189,7 @@ def make_mortality_stats_table ( width, height, alignment ):
     # reference: http://docs.bokeh.org/en/latest/docs/reference/models/widgets.tables.html#bokeh.models.widgets.tables.TableColumn
 
     stats_columns = [
-        TableColumn(field="age_group",         title="Age Group",                formatter=my_formatter_index,  sortable=False, width=base_colum_width + 10 ),
+        TableColumn(field="age_group",         title="Age Group",                formatter=my_formatter_index,  sortable=False, width=base_colum_width + 25 ),
         TableColumn(field="sum_total_deaths",  title="Overall deaths",           formatter=my_formatter,        sortable=False, width=base_colum_width + 10 ),
         TableColumn(field="sum_avg_deaths",    title="Overall deaths 2015-2019", formatter=my_formatter,        sortable=False, width=base_colum_width + 70 ),
         TableColumn(field="excess_deaths",     title="Excess deaths",            formatter=my_formatter,        sortable=False, width=base_colum_width + 10 ),

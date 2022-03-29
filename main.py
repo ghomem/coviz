@@ -230,8 +230,8 @@ def update_mortality_stats (attr, old, new):
     # this is what is necessary to update an existing table
 
     # local vars
-    dummy_column = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ]
-    index_column = [ '<1', '1-4', '5-14', '15-24','25-34', '35-44', '45-54', '55-64', '65-74', '75-84', '>85', 'all ages' ]
+    dummy_column = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 , 1]
+    index_column = [ '<1', '1-4', '5-14', '15-24','25-34', '35-44', '45-54', '55-64', '65-74', '75-84', '>85', 'all ages', 'all ages*' ]
 
     stats_data = pd.DataFrame( { 'age_group': index_column, 'sum_total_deaths': column_total, 'sum_avg_deaths': column_avg, 'excess_deaths': column_exc, 'excess_deaths_pct': column_pct } )
     stats_source = ColumnDataSource( stats_data )
@@ -402,7 +402,7 @@ def make_layouts( ):
     table_spacer4_top  = Spacer(width=40, height=10, width_policy='auto', height_policy='fixed')
 
     mortality_plots_column = column(mort_explorer_tabset, row(slider_spacer4, date_slider4))
-    mortality_stats_column = column(table_spacer4_top, mortality_stats_table, mortality_notes)
+    mortality_stats_column = column(table_spacer4_top, mortality_stats_table, mortality_notes, mortality_notes2)
 
     in_between_spacer   = Spacer(width=20, height=50, width_policy='auto', height_policy='fixed')
     in_between_spacer_v = Spacer(width=20, height=10, width_policy='auto', height_policy='fixed')
@@ -740,38 +740,42 @@ avg_deaths_strat       = data_strat_mort[2]
 avg_deaths_strat_inf   = data_strat_mort[3]
 avg_deaths_strat_sup   = data_strat_mort[4]
 
-p4_plot1  = make_mortality_plot ( data_dates, s_total_deaths_strat[0],  avg_deaths_strat[0],  avg_deaths_strat_inf[0],  avg_deaths_strat_sup[0],  days, '<1'      )
-p4_plot2  = make_mortality_plot ( data_dates, s_total_deaths_strat[1],  avg_deaths_strat[1],  avg_deaths_strat_inf[1],  avg_deaths_strat_sup[1],  days, '1-4'     )
-p4_plot3  = make_mortality_plot ( data_dates, s_total_deaths_strat[2],  avg_deaths_strat[2],  avg_deaths_strat_inf[2],  avg_deaths_strat_sup[2],  days, '5-14'    )
-p4_plot4  = make_mortality_plot ( data_dates, s_total_deaths_strat[3],  avg_deaths_strat[3],  avg_deaths_strat_inf[3],  avg_deaths_strat_sup[3],  days, '15-24'   )
-p4_plot5  = make_mortality_plot ( data_dates, s_total_deaths_strat[4],  avg_deaths_strat[4],  avg_deaths_strat_inf[4],  avg_deaths_strat_sup[4],  days, '25-34'   )
-p4_plot6  = make_mortality_plot ( data_dates, s_total_deaths_strat[5],  avg_deaths_strat[5],  avg_deaths_strat_inf[5],  avg_deaths_strat_sup[5],  days, '35-44'   )
-p4_plot7  = make_mortality_plot ( data_dates, s_total_deaths_strat[6],  avg_deaths_strat[6],  avg_deaths_strat_inf[6],  avg_deaths_strat_sup[6],  days, '45-54'   )
-p4_plot8  = make_mortality_plot ( data_dates, s_total_deaths_strat[7],  avg_deaths_strat[7],  avg_deaths_strat_inf[7],  avg_deaths_strat_sup[7],  days, '55-64'   )
-p4_plot9  = make_mortality_plot ( data_dates, s_total_deaths_strat[8],  avg_deaths_strat[8],  avg_deaths_strat_inf[8],  avg_deaths_strat_sup[8],  days, '65-74'   )
-p4_plot10 = make_mortality_plot ( data_dates, s_total_deaths_strat[9],  avg_deaths_strat[9],  avg_deaths_strat_inf[9],  avg_deaths_strat_sup[9],  days, '75-84'   )
-p4_plot11 = make_mortality_plot ( data_dates, s_total_deaths_strat[10], avg_deaths_strat[10], avg_deaths_strat_inf[10], avg_deaths_strat_sup[10], days, '>85'     )
-p4_plot12 = make_mortality_plot ( data_dates, s_total_deaths_strat[11], avg_deaths_strat[11], avg_deaths_strat_inf[11], avg_deaths_strat_sup[11], days, 'all ages')
+p4_plot1  = make_mortality_plot ( data_dates, s_total_deaths_strat[0],  avg_deaths_strat[0],  avg_deaths_strat_inf[0],  avg_deaths_strat_sup[0],  days, '<1'        )
+p4_plot2  = make_mortality_plot ( data_dates, s_total_deaths_strat[1],  avg_deaths_strat[1],  avg_deaths_strat_inf[1],  avg_deaths_strat_sup[1],  days, '1-4'       )
+p4_plot3  = make_mortality_plot ( data_dates, s_total_deaths_strat[2],  avg_deaths_strat[2],  avg_deaths_strat_inf[2],  avg_deaths_strat_sup[2],  days, '5-14'      )
+p4_plot4  = make_mortality_plot ( data_dates, s_total_deaths_strat[3],  avg_deaths_strat[3],  avg_deaths_strat_inf[3],  avg_deaths_strat_sup[3],  days, '15-24'     )
+p4_plot5  = make_mortality_plot ( data_dates, s_total_deaths_strat[4],  avg_deaths_strat[4],  avg_deaths_strat_inf[4],  avg_deaths_strat_sup[4],  days, '25-34'     )
+p4_plot6  = make_mortality_plot ( data_dates, s_total_deaths_strat[5],  avg_deaths_strat[5],  avg_deaths_strat_inf[5],  avg_deaths_strat_sup[5],  days, '35-44'     )
+p4_plot7  = make_mortality_plot ( data_dates, s_total_deaths_strat[6],  avg_deaths_strat[6],  avg_deaths_strat_inf[6],  avg_deaths_strat_sup[6],  days, '45-54'     )
+p4_plot8  = make_mortality_plot ( data_dates, s_total_deaths_strat[7],  avg_deaths_strat[7],  avg_deaths_strat_inf[7],  avg_deaths_strat_sup[7],  days, '55-64'     )
+p4_plot9  = make_mortality_plot ( data_dates, s_total_deaths_strat[8],  avg_deaths_strat[8],  avg_deaths_strat_inf[8],  avg_deaths_strat_sup[8],  days, '65-74'     )
+p4_plot10 = make_mortality_plot ( data_dates, s_total_deaths_strat[9],  avg_deaths_strat[9],  avg_deaths_strat_inf[9],  avg_deaths_strat_sup[9],  days, '75-84'     )
+p4_plot11 = make_mortality_plot ( data_dates, s_total_deaths_strat[10], avg_deaths_strat[10], avg_deaths_strat_inf[10], avg_deaths_strat_sup[10], days, '>85'       )
+p4_plot12 = make_mortality_plot ( data_dates, s_total_deaths_strat[11], avg_deaths_strat[11], avg_deaths_strat_inf[11], avg_deaths_strat_sup[11], days, 'all ages'  )
 
-p4_plots = [ p4_plot1, p4_plot2, p4_plot3, p4_plot4, p4_plot5, p4_plot6, p4_plot7, p4_plot8, p4_plot9, p4_plot10, p4_plot11, p4_plot12 ]
+# for this special tab the overal deaths are the same, but the references (avg, inf and sup) have been corrected
+p4_plot13 = make_mortality_plot ( data_dates, s_total_deaths_strat[12], avg_deaths_strat[12], avg_deaths_strat_inf[12], avg_deaths_strat_sup[12], days, 'all ages *')
 
-tab1  = Panel(child=p4_plot1, title='<1'       )
-tab2  = Panel(child=p4_plot2, title='1-4'      )
-tab3  = Panel(child=p4_plot3, title='5-14'     )
-tab4  = Panel(child=p4_plot4, title='15-24'    )
-tab5  = Panel(child=p4_plot5, title='25-34'    )
-tab6  = Panel(child=p4_plot6, title='35-44'    )
-tab7  = Panel(child=p4_plot7, title='45-54'    )
-tab8  = Panel(child=p4_plot8, title='55-64'    )
-tab9  = Panel(child=p4_plot9, title='65-74'    )
-tab10 = Panel(child=p4_plot10,title='75-84'    )
-tab11 = Panel(child=p4_plot11,title='>85'      )
-tab12 = Panel(child=p4_plot12,title='all ages' )
+p4_plots = [ p4_plot1, p4_plot2, p4_plot3, p4_plot4, p4_plot5, p4_plot6, p4_plot7, p4_plot8, p4_plot9, p4_plot10, p4_plot11, p4_plot12, p4_plot13 ]
 
-mort_explorer_tabset = Tabs(tabs=[ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12 ])
+tab1  = Panel(child=p4_plot1, title='<1'         )
+tab2  = Panel(child=p4_plot2, title='1-4'        )
+tab3  = Panel(child=p4_plot3, title='5-14'       )
+tab4  = Panel(child=p4_plot4, title='15-24'      )
+tab5  = Panel(child=p4_plot5, title='25-34'      )
+tab6  = Panel(child=p4_plot6, title='35-44'      )
+tab7  = Panel(child=p4_plot7, title='45-54'      )
+tab8  = Panel(child=p4_plot8, title='55-64'      )
+tab9  = Panel(child=p4_plot9, title='65-74'      )
+tab10 = Panel(child=p4_plot10,title='75-84'      )
+tab11 = Panel(child=p4_plot11,title='>85'        )
+tab12 = Panel(child=p4_plot12,title='all ages'   )
+tab13 = Panel(child=p4_plot13,title='all ages *' )
+
+mort_explorer_tabset = Tabs(tabs=[ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12, tab13 ])
 
 # make sure the tab for all ages is selected
-mort_explorer_tabset.active = 11
+mort_explorer_tabset.active = 12
 
 date_slider4 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1, width=PLOT_WIDTH4-50)
 
@@ -788,12 +792,13 @@ for p in p4_plots:
     p.add_layout(post_box)
 
 # the statistics table
-
 mortality_stats_table = make_mortality_stats_table (MORT_STATS_TABLE_WIDTH, MORT_STATS_TABLE_HEIGHT, 'end')
 
 # and its caption
+mortality_notes  = Div(text='dummy', width=MORT_TEXT_WIDTH, align='center')
 
-mortality_notes = Div(text='dummy', width=MORT_TEXT_WIDTH, align='center')
+# plus the note for the special row
+mortality_notes2 = Div(text='</br>* contains a correction for population aging that converts deaths from 2015-2019 into equivalent current year deaths', align='start')
 
 # the parameters are dummy as we take the values directly from the slider
 update_mortality_stats(0,0,0)
