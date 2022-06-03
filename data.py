@@ -431,9 +431,8 @@ def get_stratified_cfr ( data, CFR_DELTA, CFR_IGNORE, maxlen ):
         # helper variable to set the last part to None instead of zero
         empty_list = np.full( my_len - maxlen , None)
 
-        print ('before', len(my_cfr),my_len, maxlen, len(empty_list))
+        # important: this assignement conserves the list size
         my_cfr[maxlen:-1] = np.full( my_len - maxlen - 1 , None)
-        print ('after', len(my_cfr),my_len, maxlen, len(empty_list))
 
         strat_cfr.append( my_cfr )
 
