@@ -418,14 +418,23 @@ def get_stratified_mortality_info ( mort_data, days ):
 
     return strat_mort_info
 
-def get_stratified_cfr ( data, CFR_DELTA, CFR_IGNORE ):
+def get_stratified_cfr ( data, CFR_DELTA, CFR_IGNORE, maxlen ):
 
     strat_cv19_new    = get_stratified_data ( data, 'confirmados', False, -1 )
     strat_cv19_deaths = get_stratified_data ( data, 'obitos', False, -1 )
 
     strat_cfr = []
     for j in range(0, len(strat_cv19_new) ):
-        strat_cfr.append( get_cfr(strat_cv19_deaths[j], strat_cv19_new[j], CFR_DELTA, CFR_IGNORE) )
+        my_cfr = get_cfr(strat_cv19_deaths[j], strat_cv19_new[j], CFR_DELTA, CFR_IGNORE)
+        my_len = len(strat_cv19_new[j])
+
+        # helper variable to set the last part to None instead of zero
+        empty_list = np.full( my_len - maxlen , None)
+
+        # important: this assignement conserves the list size
+        my_cfr[maxlen:-1] = np.full( my_len - maxlen - 1 , None)
+
+        strat_cfr.append( my_cfr )
 
     return strat_cfr
 
@@ -444,13 +453,20 @@ def pad_data ( data, target_size, element, left = True ):
     # in case we had more data than wanted we trim it
     return data[:target_size]
 
+def get_days_until_patch ( data ):
+
+    idx = np.where(~np.isnan(data))[-1][-1]
+
+    # the number of days is the index plus 1
+    return idx + 1
+
 def get_data():
 
     # get the latest of each file type
-    files1 = glob.glob(DATA_DIR + 'data-*.csv')
-    files2 = glob.glob(DATA_DIR + 'amostras-*.csv')
-    files3 = glob.glob(DATA_DIR + 'mortalidade-*.csv')
-    files4 = glob.glob(DATA_DIR + 'vacinas-*.csv')
+    files1 = glob.glob(DATA_DIR + 'merged/data-*.csv')
+    files2 = glob.glob(DATA_DIR + 'dssg/amostras-*.csv')
+    files3 = glob.glob(DATA_DIR + 'dssg/mortalidade-*.csv')
+    files4 = glob.glob(DATA_DIR + 'dssg/vacinas-*.csv')
 
     main_file  = max(files1, key=os.path.getctime)
     tests_file = max(files2, key=os.path.getctime)
@@ -530,7 +546,11 @@ def get_data():
     s_strat_cv19_new    = get_stratified_data ( main_data, 'confirmados', True, MAV_PERIOD )
     s_strat_cv19_deaths = get_stratified_data ( main_data, 'obitos', True, MAV_PERIOD )
 
-    strat_cfr = get_stratified_cfr ( main_data, CFR_DELTA, CFR_IGNORE )
+    # unfortunately the stratified data was interrupted
+    # this is a helper variable that prevents CFR artifacts
+    days2 = get_days_until_patch ( s_strat_cv19_new[0] )
+
+    strat_cfr = get_stratified_cfr ( main_data, CFR_DELTA, CFR_IGNORE, days2 )
 
     # get age stratified mortality information
     # average precovid deaths and respective standard deviation bands, plus smoothed current overall deaths
