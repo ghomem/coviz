@@ -58,7 +58,7 @@ def update_stats(attr, old, new):
     sum_cv19_deaths      = make_html_integer(np.nansum(np.array( raw_data_cv19_deaths [idx1:idx2+1] )))
     sum_total_deaths_pre = np.nansum(np.array( raw_data_total_deaths[idx1:idx2+1] ))
 
-    sum_avg_deaths_pre   = int( np.nansum(np.array( raw_data_avg_deaths[idx1:idx2+1] ) ))
+    sum_avg_deaths_pre   = int(round( np.nansum(np.array( raw_data_avg_deaths[idx1:idx2+1] ) ), 0))
 
     excess_deaths     = sum_total_deaths_pre - sum_avg_deaths_pre
     excess_deaths_pct = round( (excess_deaths / sum_avg_deaths_pre)*100, 1)
