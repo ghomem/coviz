@@ -364,21 +364,22 @@ def get_stratified_mortality_info ( mort_data, days ):
     total_deaths_precovid_85_plus  = mort_data.iloc[ idx1:idx2 ]['grupoetario_85+anos'  ].to_list()
     total_deaths_precovid_all_ages = mort_data.iloc[ idx1:idx2 ]['geral_pais'           ].to_list()
 
-    avg_deaths_precovid_0_1,      sd_deaths_precovid_0_1      = get_avg_deaths_2015_2019(total_deaths_precovid_0_1,      days, True)
-    avg_deaths_precovid_1_4,      sd_deaths_precovid_1_4      = get_avg_deaths_2015_2019(total_deaths_precovid_1_4,      days, True)
-    avg_deaths_precovid_5_14,     sd_deaths_precovid_5_14     = get_avg_deaths_2015_2019(total_deaths_precovid_5_14,     days, True)
-    avg_deaths_precovid_15_24,    sd_deaths_precovid_15_24    = get_avg_deaths_2015_2019(total_deaths_precovid_15_24,    days, True)
-    avg_deaths_precovid_25_34,    sd_deaths_precovid_25_34    = get_avg_deaths_2015_2019(total_deaths_precovid_25_34,    days, True)
-    avg_deaths_precovid_35_44,    sd_deaths_precovid_35_44    = get_avg_deaths_2015_2019(total_deaths_precovid_35_44,    days, True)
-    avg_deaths_precovid_45_54,    sd_deaths_precovid_45_54    = get_avg_deaths_2015_2019(total_deaths_precovid_45_54,    days, True)
-    avg_deaths_precovid_55_64,    sd_deaths_precovid_55_64    = get_avg_deaths_2015_2019(total_deaths_precovid_55_64,    days, True)
-    avg_deaths_precovid_65_74,    sd_deaths_precovid_65_74    = get_avg_deaths_2015_2019(total_deaths_precovid_65_74,    days, True)
-    avg_deaths_precovid_75_84,    sd_deaths_precovid_75_84    = get_avg_deaths_2015_2019(total_deaths_precovid_75_84,    days, True)
-    avg_deaths_precovid_85_plus,  sd_deaths_precovid_85_plus  = get_avg_deaths_2015_2019(total_deaths_precovid_85_plus,  days, True)
-    avg_deaths_precovid_all_ages, sd_deaths_precovid_all_ages = get_avg_deaths_2015_2019(total_deaths_precovid_all_ages, days, True)
+    # we are not smoothing the curve here
+    avg_deaths_precovid_0_1,      sd_deaths_precovid_0_1      = get_avg_deaths_2015_2019(total_deaths_precovid_0_1,      days, False)
+    avg_deaths_precovid_1_4,      sd_deaths_precovid_1_4      = get_avg_deaths_2015_2019(total_deaths_precovid_1_4,      days, False)
+    avg_deaths_precovid_5_14,     sd_deaths_precovid_5_14     = get_avg_deaths_2015_2019(total_deaths_precovid_5_14,     days, False)
+    avg_deaths_precovid_15_24,    sd_deaths_precovid_15_24    = get_avg_deaths_2015_2019(total_deaths_precovid_15_24,    days, False)
+    avg_deaths_precovid_25_34,    sd_deaths_precovid_25_34    = get_avg_deaths_2015_2019(total_deaths_precovid_25_34,    days, False)
+    avg_deaths_precovid_35_44,    sd_deaths_precovid_35_44    = get_avg_deaths_2015_2019(total_deaths_precovid_35_44,    days, False)
+    avg_deaths_precovid_45_54,    sd_deaths_precovid_45_54    = get_avg_deaths_2015_2019(total_deaths_precovid_45_54,    days, False)
+    avg_deaths_precovid_55_64,    sd_deaths_precovid_55_64    = get_avg_deaths_2015_2019(total_deaths_precovid_55_64,    days, False)
+    avg_deaths_precovid_65_74,    sd_deaths_precovid_65_74    = get_avg_deaths_2015_2019(total_deaths_precovid_65_74,    days, False)
+    avg_deaths_precovid_75_84,    sd_deaths_precovid_75_84    = get_avg_deaths_2015_2019(total_deaths_precovid_75_84,    days, False)
+    avg_deaths_precovid_85_plus,  sd_deaths_precovid_85_plus  = get_avg_deaths_2015_2019(total_deaths_precovid_85_plus,  days, False)
+    avg_deaths_precovid_all_ages, sd_deaths_precovid_all_ages = get_avg_deaths_2015_2019(total_deaths_precovid_all_ages, days, False)
 
     # population ageing corrected reference values
-    avg_deaths_precovid_all_ages_c, sd_deaths_precovid_all_ages_c = get_avg_deaths_2015_2019(total_deaths_precovid_all_ages, days, True, True)
+    avg_deaths_precovid_all_ages_c, sd_deaths_precovid_all_ages_c = get_avg_deaths_2015_2019(total_deaths_precovid_all_ages, days, False, True)
 
     avg_deaths_inf_0_1,        avg_deaths_sup_0_1        = get_deaths_band ( avg_deaths_precovid_0_1,        sd_deaths_precovid_0_1        )
     avg_deaths_inf_1_4,        avg_deaths_sup_1_4        = get_deaths_band ( avg_deaths_precovid_1_4,        sd_deaths_precovid_1_4        )
@@ -393,6 +394,50 @@ def get_stratified_mortality_info ( mort_data, days ):
     avg_deaths_inf_85_plus,    avg_deaths_sup_85_plus    = get_deaths_band ( avg_deaths_precovid_85_plus,    sd_deaths_precovid_85_plus    )
     avg_deaths_inf_all_ages,   avg_deaths_sup_all_ages   = get_deaths_band ( avg_deaths_precovid_all_ages,   sd_deaths_precovid_all_ages   )
     avg_deaths_inf_all_ages_c, avg_deaths_sup_all_ages_c = get_deaths_band ( avg_deaths_precovid_all_ages_c, sd_deaths_precovid_all_ages_c )
+
+    # now let's create all the smooth versions
+
+    s_avg_deaths_precovid_0_1        = get_smooth_list( avg_deaths_precovid_0_1,        MAV_PERIOD )
+    s_avg_deaths_precovid_1_4        = get_smooth_list( avg_deaths_precovid_1_4,        MAV_PERIOD )
+    s_avg_deaths_precovid_5_14       = get_smooth_list( avg_deaths_precovid_5_14,       MAV_PERIOD )
+    s_avg_deaths_precovid_15_24      = get_smooth_list( avg_deaths_precovid_15_24,      MAV_PERIOD )
+    s_avg_deaths_precovid_25_34      = get_smooth_list( avg_deaths_precovid_25_34,      MAV_PERIOD )
+    s_avg_deaths_precovid_35_44      = get_smooth_list( avg_deaths_precovid_35_44,      MAV_PERIOD )
+    s_avg_deaths_precovid_45_54      = get_smooth_list( avg_deaths_precovid_45_54,      MAV_PERIOD )
+    s_avg_deaths_precovid_55_64      = get_smooth_list( avg_deaths_precovid_55_64,      MAV_PERIOD )
+    s_avg_deaths_precovid_65_74      = get_smooth_list( avg_deaths_precovid_65_74,      MAV_PERIOD )
+    s_avg_deaths_precovid_75_84      = get_smooth_list( avg_deaths_precovid_75_84,      MAV_PERIOD )
+    s_avg_deaths_precovid_85_plus    = get_smooth_list( avg_deaths_precovid_85_plus,    MAV_PERIOD )
+    s_avg_deaths_precovid_all_ages   = get_smooth_list( avg_deaths_precovid_all_ages,   MAV_PERIOD )
+    s_avg_deaths_precovid_all_ages_c = get_smooth_list( avg_deaths_precovid_all_ages_c, MAV_PERIOD )
+
+    s_avg_deaths_inf_0_1        = get_smooth_list( avg_deaths_inf_0_1,        MAV_PERIOD )
+    s_avg_deaths_inf_1_4        = get_smooth_list( avg_deaths_inf_1_4,        MAV_PERIOD )
+    s_avg_deaths_inf_5_14       = get_smooth_list( avg_deaths_inf_5_14,       MAV_PERIOD )
+    s_avg_deaths_inf_15_24      = get_smooth_list( avg_deaths_inf_15_24,      MAV_PERIOD )
+    s_avg_deaths_inf_25_34      = get_smooth_list( avg_deaths_inf_25_34,      MAV_PERIOD )
+    s_avg_deaths_inf_35_44      = get_smooth_list( avg_deaths_inf_35_44,      MAV_PERIOD )
+    s_avg_deaths_inf_45_54      = get_smooth_list( avg_deaths_inf_45_54,      MAV_PERIOD )
+    s_avg_deaths_inf_55_64      = get_smooth_list( avg_deaths_inf_55_64,      MAV_PERIOD )
+    s_avg_deaths_inf_65_74      = get_smooth_list( avg_deaths_inf_65_74,      MAV_PERIOD )
+    s_avg_deaths_inf_75_84      = get_smooth_list( avg_deaths_inf_75_84,      MAV_PERIOD )
+    s_avg_deaths_inf_85_plus    = get_smooth_list( avg_deaths_inf_85_plus,    MAV_PERIOD )
+    s_avg_deaths_inf_all_ages   = get_smooth_list( avg_deaths_inf_all_ages,   MAV_PERIOD )
+    s_avg_deaths_inf_all_ages_c = get_smooth_list( avg_deaths_inf_all_ages_c, MAV_PERIOD )
+
+    s_avg_deaths_sup_0_1        = get_smooth_list( avg_deaths_sup_0_1,        MAV_PERIOD )
+    s_avg_deaths_sup_1_4        = get_smooth_list( avg_deaths_sup_1_4,        MAV_PERIOD )
+    s_avg_deaths_sup_5_14       = get_smooth_list( avg_deaths_sup_5_14,       MAV_PERIOD )
+    s_avg_deaths_sup_15_24      = get_smooth_list( avg_deaths_sup_15_24,      MAV_PERIOD )
+    s_avg_deaths_sup_25_34      = get_smooth_list( avg_deaths_sup_25_34,      MAV_PERIOD )
+    s_avg_deaths_sup_35_44      = get_smooth_list( avg_deaths_sup_35_44,      MAV_PERIOD )
+    s_avg_deaths_sup_45_54      = get_smooth_list( avg_deaths_sup_45_54,      MAV_PERIOD )
+    s_avg_deaths_sup_55_64      = get_smooth_list( avg_deaths_sup_55_64,      MAV_PERIOD )
+    s_avg_deaths_sup_65_74      = get_smooth_list( avg_deaths_sup_65_74,      MAV_PERIOD )
+    s_avg_deaths_sup_75_84      = get_smooth_list( avg_deaths_sup_75_84,      MAV_PERIOD )
+    s_avg_deaths_sup_85_plus    = get_smooth_list( avg_deaths_sup_85_plus,    MAV_PERIOD )
+    s_avg_deaths_sup_all_ages   = get_smooth_list( avg_deaths_sup_all_ages,   MAV_PERIOD )
+    s_avg_deaths_sup_all_ages_c = get_smooth_list( avg_deaths_sup_all_ages_c, MAV_PERIOD )
 
     # create the arrays
 
@@ -414,7 +459,17 @@ def get_stratified_mortality_info ( mort_data, days ):
     avg_deaths_sup = [ avg_deaths_sup_0_1,   avg_deaths_sup_1_4,   avg_deaths_sup_5_14,  avg_deaths_sup_15_24, avg_deaths_sup_25_34,   avg_deaths_sup_35_44,
                        avg_deaths_sup_45_54, avg_deaths_sup_55_64, avg_deaths_sup_65_74, avg_deaths_sup_75_84, avg_deaths_sup_85_plus, avg_deaths_sup_all_ages, avg_deaths_sup_all_ages_c ]
 
-    strat_mort_info = [ total_deaths, s_total_deaths, avg_deaths, avg_deaths_inf, avg_deaths_sup ]
+
+    s_avg_deaths      = [ s_avg_deaths_precovid_0_1,   s_avg_deaths_precovid_1_4,   s_avg_deaths_precovid_5_14,  s_avg_deaths_precovid_15_24, s_avg_deaths_precovid_25_34, s_avg_deaths_precovid_35_44,
+                        s_avg_deaths_precovid_45_54, s_avg_deaths_precovid_55_64, s_avg_deaths_precovid_65_74, s_avg_deaths_precovid_75_84, s_avg_deaths_precovid_85_plus, s_avg_deaths_precovid_all_ages, s_avg_deaths_precovid_all_ages_c ]
+
+    s_avg_deaths_inf = [ s_avg_deaths_inf_0_1,   s_avg_deaths_inf_1_4,   s_avg_deaths_inf_5_14,  s_avg_deaths_inf_15_24, s_avg_deaths_inf_25_34,   s_avg_deaths_inf_35_44,
+                       s_avg_deaths_inf_45_54, s_avg_deaths_inf_55_64, s_avg_deaths_inf_65_74, s_avg_deaths_inf_75_84, s_avg_deaths_inf_85_plus, s_avg_deaths_inf_all_ages, s_avg_deaths_inf_all_ages_c ]
+
+    s_avg_deaths_sup = [ s_avg_deaths_sup_0_1,   s_avg_deaths_sup_1_4,   s_avg_deaths_sup_5_14,  s_avg_deaths_sup_15_24, s_avg_deaths_sup_25_34,   s_avg_deaths_sup_35_44,
+                       s_avg_deaths_sup_45_54, s_avg_deaths_sup_55_64, s_avg_deaths_sup_65_74, s_avg_deaths_sup_75_84, s_avg_deaths_sup_85_plus, s_avg_deaths_sup_all_ages, s_avg_deaths_sup_all_ages_c ]
+
+    strat_mort_info = [ total_deaths, s_total_deaths, avg_deaths, avg_deaths_inf, avg_deaths_sup, s_avg_deaths, s_avg_deaths_inf, s_avg_deaths_sup ]
 
     return strat_mort_info
 
