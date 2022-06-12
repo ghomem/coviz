@@ -251,10 +251,13 @@ def update_mortality_stats (attr, old, new):
 
     # update the global variables
     source_plot_correlation.data = dict(x=data_cv19_deaths_subset, y=data_exc_deaths_subset)
-    correlation_coefficient = r_value
+    correlation_coefficient      = r_value
 
     regression_line.gradient    = slope
     regression_line.y_intercept = intercept
+
+    label_str = make_correlation_str(slope, intercept, r_value)
+    regression_label.text       = label_str
 
 
 # after document load
@@ -848,9 +851,14 @@ mortality_stats_column = column(table_spacer4_top, mortality_stats_table, mortal
 clean_data_cv19_deaths = get_clean_data(corr_data_cv19_deaths)
 clean_data_exc_deaths  = get_clean_data(corr_data_exc_deaths)
 
-plot_correlation, source_plot_correlation, correlation_coefficient, regression_line = make_correlation_plot ( clean_data_cv19_deaths, clean_data_exc_deaths, 'Excess deaths', 'Covid deaths', MORT_STATS_TABLE_HEIGHT, MORT_STATS_TABLE_WIDTH )
+# height and width are the same because we want it to be square for easier reading
+corr_width = MORT_STATS_TABLE_WIDTH
 
-mortality_correlation_column = column(table_spacer4_top, plot_correlation, mortality_notes)
+plot_correlation, source_plot_correlation, correlation_coefficient, regression_line, regression_label = make_correlation_plot ( clean_data_cv19_deaths, clean_data_exc_deaths, 'Covid deaths', 'Excess deaths', corr_width, corr_width)
+
+table_spacer4_top2   = Spacer(width=40, height=1, width_policy='auto', height_policy='fixed')
+table_spacer4_bottom = Spacer(width=40, height=5, width_policy='auto', height_policy='fixed')
+mortality_correlation_column = column(table_spacer4_top2, plot_correlation, table_spacer4_bottom, mortality_notes)
 
 # and a tabset for the table + plot
 
@@ -861,7 +869,7 @@ mort_explorer_tabset2 = Tabs(tabs=[ tab2_1, tab2_2 ])
 
 # with the table selected by default
 
-mort_explorer_tabset2.active = 1
+mort_explorer_tabset2.active = 0
 
 # the parameters are dummy as we take the values directly from the slider
 update_mortality_stats(0,0,0)

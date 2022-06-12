@@ -396,6 +396,18 @@ def get_clean_data ( data ):
 
     return data[index:]
 
+# creates a correlation description string
+def make_correlation_str ( slope, intercept, r_value ):
+
+    m = round(slope, 2)
+    b = round(intercept, 2)
+    R = round(r_value, 2)
+
+    corr_str = 'm=' + str(m) + ' b=' + str(b) + ' R=' + str(R)
+
+    return corr_str
+
+# returns the correlation paramters
 def get_correlation_data ( datax, datay ):
 
     fit_results = np.polyfit(datax, datay, 1, full=True)
@@ -410,7 +422,7 @@ def get_correlation_data ( datax, datay ):
     # https://realpython.com/numpy-scipy-pandas-correlation-python/#example-numpy-correlation-calculation
     r_value   = np.corrcoef( datax, datay )[0,1]
 
-    print('slope', slope, 'intercept', intercept, 'coeff', r_value)
+    #print('slope', slope, 'intercept', intercept, 'coeff', r_value)
 
     return slope, intercept, r_value
 
@@ -421,9 +433,12 @@ def make_correlation_plot ( datax, datay, xlabel, ylabel, height, width ):
 
     aplot = make_plot ('Deaths correlation', PLOT_CORRELATION_TITLE, max(datax), 'auto', height, width)
 
-    # we need to round because excess mortality is a difference from the average
-    y_max = max(datay)
-    aplot.y_range = Range1d (0, y_max)
+    # we want the same limits in both axis
+    max_value = max (max(datay), max(datax) )
+    margin = 10
+
+    aplot.x_range = Range1d (0, max_value + margin)
+    aplot.y_range = Range1d (0, max_value + margin)
 
     glyph = Scatter(x='x', y='y', marker='dot', size=20, line_color=PLOT_LINE_COLOR, line_alpha=PLOT_LINE_ALPHA)
     aplot.add_glyph(source_aplot, glyph)
@@ -438,12 +453,18 @@ def make_correlation_plot ( datax, datay, xlabel, ylabel, height, width ):
 
     slope, intercept, r_value = get_correlation_data (datax, datay)
 
-    regression_line = Slope(gradient=slope, y_intercept=intercept, line_color=PLOT_LINE_COLOR_REFERENCE, line_alpha=PLOT_LINE_ALPHA, line_width=PLOT_LINE_WIDTH)
+    regression_line = Slope(gradient=slope, y_intercept=intercept, line_color=PLOT_LINE_COLOR_REFERENCE, line_alpha=PLOT_LINE_ALPHA, line_width=PLOT_LINE_WIDTH, line_dash='dashed')
 
     # this is the y=x line, for reference
-    comparison_line = Slope(gradient=1, y_intercept=0, line_color=PLOT_LINE_COLOR_HIGHLIGHT, line_alpha=PLOT_LINE_ALPHA, line_width=PLOT_LINE_WIDTH, line_dash='dashed')
+    comparison_line = Slope(gradient=1, y_intercept=0, line_color='gray', line_alpha=0.6, line_width=1 )
 
     aplot.add_layout(regression_line)
     aplot.add_layout(comparison_line)
 
-    return aplot, source_aplot, r_value, regression_line
+    label_str = make_correlation_str(slope, intercept, r_value)
+
+    regression_label = Label(x=190, y=5, text=label_str)
+
+    aplot.add_layout(regression_label)
+
+    return aplot, source_aplot, r_value, regression_line, regression_label
