@@ -9,7 +9,7 @@ from functools import partial
 from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, TableColumn, DataTable, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band, HTMLTemplateFormatter, StringFormatter
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, TableColumn, DataTable, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band, HTMLTemplateFormatter, StringFormatter, Scatter, Slope
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256, OrRd
 from bokeh.plotting import figure
 from bokeh.events import DocumentReady
@@ -33,8 +33,8 @@ def make_interval_str ( title, value, value_l, value_r ):
 
     return str_interval
 
-def make_plot( name, title, range, x_axis_type = 'auto' ):
-    return figure(plot_height=PLOT_HEIGHT, plot_width=PLOT_WIDTH, title=title, tools=PLOT_TOOLS, x_range=[0, range], name=name, x_axis_type = x_axis_type)
+def make_plot( name, title, range, x_axis_type = 'auto', height = PLOT_HEIGHT, width = PLOT_WIDTH ):
+    return figure(plot_height=height, plot_width=width, title=title, tools=PLOT_TOOLS, x_range=[0, range], name=name, x_axis_type = x_axis_type)
 
 # because there are several ways to achieve this, let's encapsulate
 def make_data_source ( datax, datay ):
@@ -375,3 +375,75 @@ def make_mortality_plot ( data_dates, data_total_deaths, data_avg_deaths, data_a
 
     return aplot
 
+# the index of the first non-NaN element
+def get_nn_index ( data ):
+
+    index = 0
+    for element in data:
+        if not math.isnan(element):
+            #print('first non NaN is index', index)
+            return index
+        else:
+            index = index +1
+
+    print('did not found any non-NaN element')
+    return -1
+
+# return lists without leading NaNs
+def get_clean_data ( data ):
+
+    index = get_nn_index(data)
+
+    return data[index:]
+
+def get_correlation_data ( datax, datay ):
+
+    fit_results = np.polyfit(datax, datay, 1, full=True)
+
+    slope     = fit_results[0][0]
+    intercept = fit_results[0][1]
+
+    # this is not necessary, stays here for reference
+    # y_fit = [slope*i + intercept  for i in datax]
+
+    # Pearson correlation coefficient
+    # https://realpython.com/numpy-scipy-pandas-correlation-python/#example-numpy-correlation-calculation
+    r_value   = np.corrcoef( datax, datay )[0,1]
+
+    print('slope', slope, 'intercept', intercept, 'coeff', r_value)
+
+    return slope, intercept, r_value
+
+# make specific correlation plot
+def make_correlation_plot ( datax, datay, xlabel, ylabel, height, width ):
+
+    source_aplot = make_data_source(datax, datay)
+
+    aplot = make_plot ('Deaths correlation', PLOT_CORRELATION_TITLE, max(datax), 'auto', height, width)
+
+    # we need to round because excess mortality is a difference from the average
+    y_max = max(datay)
+    aplot.y_range = Range1d (0, y_max)
+
+    glyph = Scatter(x='x', y='y', marker='dot', size=20, line_color=PLOT_LINE_COLOR, line_alpha=PLOT_LINE_ALPHA)
+    aplot.add_glyph(source_aplot, glyph)
+
+    aplot.xaxis.axis_label = xlabel
+    aplot.yaxis.axis_label = ylabel
+
+    aplot.toolbar.active_drag   = None
+    aplot.toolbar.active_scroll = None
+    aplot.toolbar.active_tap    = None
+    aplot.toolbar_location      = None
+
+    slope, intercept, r_value = get_correlation_data (datax, datay)
+
+    regression_line = Slope(gradient=slope, y_intercept=intercept, line_color=PLOT_LINE_COLOR_REFERENCE, line_alpha=PLOT_LINE_ALPHA, line_width=PLOT_LINE_WIDTH)
+
+    # this is the y=x line, for reference
+    comparison_line = Slope(gradient=1, y_intercept=0, line_color=PLOT_LINE_COLOR_HIGHLIGHT, line_alpha=PLOT_LINE_ALPHA, line_width=PLOT_LINE_WIDTH, line_dash='dashed')
+
+    aplot.add_layout(regression_line)
+    aplot.add_layout(comparison_line)
+
+    return aplot, source_aplot, r_value, regression_line

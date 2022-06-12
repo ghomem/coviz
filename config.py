@@ -53,6 +53,8 @@ PLOT10_TITLE ='Covid deaths by age group (click on the legend to hide/show serie
 PLOT11_TITLE ='CFR by age group (click on the legend to hide/show series)'
 PLOT12_TITLE ='Vaccination'
 
+PLOT_CORRELATION_TITLE = 'Excess deaths vs Covid deaths'
+
 CLINES_LABEL = 'Show limits'
 CLINES_SWITCH_WIDTH = 140
 CLINES_SWITCH_HEIGHT = 30
