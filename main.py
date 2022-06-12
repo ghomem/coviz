@@ -10,7 +10,7 @@ from datetime import datetime
 from bokeh.io import curdoc
 from bokeh.layouts import layout,gridplot, column, row
 from bokeh.models.widgets import Tabs, Panel
-from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, TableColumn, DataTable, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band, HTMLTemplateFormatter, StringFormatter, BoxAnnotation
+from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, TableColumn, DataTable, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band, HTMLTemplateFormatter, StringFormatter, BoxAnnotation, Scatter
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256, OrRd
 from bokeh.plotting import figure
 from bokeh.events import DocumentReady
@@ -240,7 +240,24 @@ def update_mortality_stats (attr, old, new):
     mortality_stats_table.source = stats_source
 
     # update table caption
-    mortality_notes.text = 'Statistics for period of ' + str(date_i_cmp) + ' to ' + str(date_f_cmp)
+    mortality_notes.text = 'Data for period of ' + str(date_i_cmp) + ' to ' + str(date_f_cmp)
+
+    # and for the correlation plot
+
+    data_cv19_deaths_subset = get_clean_data(corr_data_cv19_deaths[idx1:idx2+1])
+    data_exc_deaths_subset  = get_clean_data(corr_data_exc_deaths [idx1:idx2+1])
+
+    slope, intercept, r_value = get_correlation_data (data_cv19_deaths_subset, data_exc_deaths_subset)
+
+    # update the global variables
+    source_plot_correlation.data = dict(x=data_cv19_deaths_subset, y=data_exc_deaths_subset)
+    correlation_coefficient      = r_value
+
+    regression_line.gradient    = slope
+    regression_line.y_intercept = intercept
+
+    label_str = make_correlation_str(slope, intercept, r_value)
+    regression_label.text       = label_str
 
 
 # after document load
@@ -398,17 +415,14 @@ def make_layouts( ):
     # adds left side spacing for handles lining up with the annotation box
     slider_spacer4 = Spacer(width=40, height=100, width_policy='auto', height_policy='fixed')
 
-    # forces vertical alignement on the table stats column
-    table_spacer4_top  = Spacer(width=40, height=10, width_policy='auto', height_policy='fixed')
-
     mortality_plots_column = column(mort_explorer_tabset, row(slider_spacer4, date_slider4))
-    mortality_stats_column = column(table_spacer4_top, mortality_stats_table, mortality_notes, mortality_notes2)
 
     in_between_spacer   = Spacer(width=20, height=50, width_policy='auto', height_policy='fixed')
     in_between_spacer_v = Spacer(width=20, height=10, width_policy='auto', height_policy='fixed')
 
-    layout4_h = layout(row   (mortality_plots_column, in_between_spacer,   mortality_stats_column), name='section4', sizing_mode='scale_width')
-    layout4_v = layout(column(mortality_plots_column, mortality_stats_table ), name='section4', sizing_mode='scale_width')
+    # the mortality columns come from main
+    layout4_h = layout(row   (mortality_plots_column, in_between_spacer, mort_explorer_tabset2), name='section4', sizing_mode='scale_width')
+    layout4_v = layout(column(mortality_plots_column, mort_explorer_tabset2), name='section4', sizing_mode='scale_width')
 
     return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy, layout4_h, layout4_v
 
@@ -480,6 +494,23 @@ raw_data_new          = raw_data[0]
 raw_data_cv19_deaths  = raw_data[1]
 raw_data_total_deaths = raw_data[2]
 raw_data_avg_deaths   = raw_data[3]
+
+data_exc_deaths       = np.array(data_total_deaths) - np.array(data_avg_deaths)
+raw_data_exc_deaths   = np.array(raw_data_total_deaths) - np.array(raw_data_avg_deaths)
+
+# IMPORTANT
+#
+# We use the raw data for the excess mortality calculations
+# but we are using the smoothed data for the correlation between
+# excess mortality and cv mortality because doing otherwise leads
+# to strange results such as week correlation between 26-09-2020 and 22-12-2020
+# where the correlation is more than obvious (return to school, pre vax)
+#
+# It might be that the CV19 reporting dates might not match the dates reported
+# by the eVM database, for the deaths events of the same people
+
+corr_data_exc_deaths  = data_exc_deaths
+corr_data_cv19_deaths = data_cv19_deaths
 
 # map data
 data_incidence_counties, map_date_i, map_date_f  = get_data_counties()
@@ -806,6 +837,39 @@ mortality_notes  = Div(text='dummy', width=MORT_TEXT_WIDTH, align='center')
 
 # plus the note for the special row
 mortality_notes2 = Div(text='</br>* contains a correction for population aging that converts deaths from 2015-2019 into equivalent current year deaths', align='start')
+
+# forces vertical alignement on the table stats column
+table_spacer4_top  = Spacer(width=40, height=10, width_policy='auto', height_policy='fixed')
+
+mortality_stats_column = column(table_spacer4_top, mortality_stats_table, mortality_notes, mortality_notes2)
+
+# now let's create the correlation plot
+
+# fix the data in case it has leading NaNs due to moving averages
+# we assume the leading NaNs are the same for x and y, when they exist
+
+clean_data_cv19_deaths = get_clean_data(corr_data_cv19_deaths)
+clean_data_exc_deaths  = get_clean_data(corr_data_exc_deaths)
+
+# height and width are the same because we want it to be square for easier reading
+corr_width = MORT_STATS_TABLE_WIDTH
+
+plot_correlation, source_plot_correlation, correlation_coefficient, regression_line, regression_label = make_correlation_plot ( clean_data_cv19_deaths, clean_data_exc_deaths, 'Covid deaths', 'Excess deaths', corr_width, corr_width)
+
+table_spacer4_top2   = Spacer(width=40, height=1, width_policy='auto', height_policy='fixed')
+table_spacer4_bottom = Spacer(width=40, height=5, width_policy='auto', height_policy='fixed')
+mortality_correlation_column = column(table_spacer4_top2, plot_correlation, table_spacer4_bottom, mortality_notes)
+
+# and a tabset for the table + plot
+
+tab2_1 = Panel(child=mortality_stats_column,       title='Stats'       )
+tab2_2 = Panel(child=mortality_correlation_column, title='Correlation' )
+
+mort_explorer_tabset2 = Tabs(tabs=[ tab2_1, tab2_2 ])
+
+# with the table selected by default
+
+mort_explorer_tabset2.active = 0
 
 # the parameters are dummy as we take the values directly from the slider
 update_mortality_stats(0,0,0)
