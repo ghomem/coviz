@@ -519,7 +519,7 @@ def get_data():
 
     # get the latest of each file type
     files1 = glob.glob(DATA_DIR + 'merged/data-*.csv')
-    files2 = glob.glob(DATA_DIR + 'dssg/amostras-*.csv')
+    files2 = glob.glob(DATA_DIR + 'merged/amostras-*.csv')
     files3 = glob.glob(DATA_DIR + 'dssg/mortalidade-*.csv')
     files4 = glob.glob(DATA_DIR + 'dssg/vacinas-*.csv')
 
@@ -550,10 +550,7 @@ def get_data():
 
     # padding the pcr_tests series because it has 2 days of delay it seems - checked on 20/05/2021
     # the padding function also trims it in case it has more data then the other series - checked on 08/10/2021
-    pcr_tests    = pad_data( tests_data['amostras_pcr_novas'].tolist(), days, 0, False)
-    ag_tests     = pad_data( tests_data['amostras_antigenio_novas'].tolist(), days, 0, False)
-
-    total_tests  = np.add(pcr_tests, ag_tests)
+    total_tests  = pad_data( tests_data['amostras_novas'].tolist(), days, 0, False)
     positivity   = get_positivity( total_tests, new, 2, 0)
 
     tmp_vacc_part  = vacc_data['pessoas_inoculadas'].interpolate().tolist()
