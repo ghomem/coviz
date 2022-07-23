@@ -19,7 +19,7 @@ INC_DIVIDER = 102.8 # to get incidence per 100k people
 
 MAV_PERIOD = 7 # period for moving average calculations
 
-DATA_DIR = '/home/deployment/data/'
+DATA_DIR = '/home/deployment/coviz-data/'
 
 # we tolerate isolated one-day or two day holes and make an average of adjacent days
 def get_patched_data ( data, delta, fill_initial = False ):
@@ -518,15 +518,10 @@ def get_days_until_patch ( data ):
 def get_data():
 
     # get the latest of each file type
-    files1 = glob.glob(DATA_DIR + 'merged/data-*.csv')
-    files2 = glob.glob(DATA_DIR + 'merged/amostras-*.csv')
-    files3 = glob.glob(DATA_DIR + 'dssg/mortalidade-*.csv')
-    files4 = glob.glob(DATA_DIR + 'dssg/vacinas-*.csv')
-
-    main_file  = max(files1, key=os.path.getctime)
-    tests_file = max(files2, key=os.path.getctime)
-    mort_file  = max(files3, key=os.path.getctime)
-    vacc_file  = max(files4, key=os.path.getctime)
+    main_file  = DATA_DIR + 'merged/data.csv'
+    tests_file = DATA_DIR + 'merged/amostras.csv'
+    mort_file  = DATA_DIR + 'dssg/mortalidade.csv'
+    vacc_file  = DATA_DIR + 'dssg/vacinas.csv'
 
     main_data  = pd.read_csv(main_file)
     tests_data = pd.read_csv(tests_file)
@@ -663,9 +658,7 @@ def get_incidence_index ( incidence_data, requested_date ):
 # get county incidence list at a certain date
 def get_data_counties ( requested_date = None ):
 
-    files1 = glob.glob(DATA_DIR + 'data_concelhos_incidencia-*.csv')
-
-    incidence_file = max(files1, key=os.path.getctime)
+    incidence_file = DATA_DIR + 'dssg/data_concelhos_incidencia.csv'
     incidence_data = pd.read_csv(incidence_file)
 
     # retrieves strings from the file
