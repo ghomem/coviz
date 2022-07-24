@@ -307,10 +307,12 @@ def on_dimensions_change(attr, old, new):
             curdoc().add_root(layout2_h)
             curdoc().add_root(layout3_h)
             curdoc().add_root(layout4_h)
+            curdoc().add_root(layout5_h)
         else:
             curdoc().add_root(layout2_v)
             curdoc().add_root(layout3_v)
             curdoc().add_root(layout4_v)
+            curdoc().add_root(layout5_v)
 
         # store the horizontalness state
         current_horizontal = horizontal
@@ -426,10 +428,10 @@ def make_layouts( ):
 
     # fifth
 
-    layout5_h = layout(row (plot_prevalence), name='section5', sizing_mode='scale_width')
+    prev_spacer = Spacer(width=20, height=23, width_policy='auto', height_policy='fixed')
+    layout5_h = layout(row (plot_prevalence, prev_spacer, column(prev_spacer,prevalence_notes)), name='section5', sizing_mode='scale_width')
 
-    # FIXME
-    layout5_v = layout(row (plot_prevalence), name='section5', sizing_mode='scale_width')
+    layout5_v = layout(column (plot_prevalence), name='section5', sizing_mode='scale_width')
 
     return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy, layout4_h, layout4_v, layout5_h, layout5_v
 
@@ -899,7 +901,7 @@ set_plot_date_details(plot_prevalence, data_dates, days, source_plot_prevalence)
 
 plot_prevalence.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
 
-# put the plot on a tabset
+prevalence_notes = Div(text=PREV_TEXT, width=PREV_TEXT_WIDTH, align='start')
 
 #### Plot layout section ###
 
