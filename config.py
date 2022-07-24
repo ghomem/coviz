@@ -54,6 +54,7 @@ PLOT11_TITLE ='CFR by age group (click on the legend to hide/show series)'
 PLOT12_TITLE ='Vaccination'
 
 PLOT_CORRELATION_TITLE = 'Excess deaths vs Covid deaths'
+PLOT_PREVALENCE_TITLE  = 'Prevalence envelope'
 
 CLINES_LABEL = 'Show limits'
 CLINES_SWITCH_WIDTH = 140
@@ -99,3 +100,15 @@ MORT_STATS_TABLE_WIDTH  = 490
 MORT_STATS_TABLE_HEIGHT = 355
 
 MORT_TEXT_WIDTH = 480
+
+PLOT_WIDTH5  = 900 # for the 5th section
+PLOT_HEIGHT5 = 505
+
+PREV_TEXT_WIDTH = 410
+PREV_TEXT = '<b>Building a prevalence envelope</b></br>\
+            </br>It is not possible to provide reliable prevalence estimations without a mass testing policy or at least periodic testing of significant population samples.\
+            The testing strategies have varied significantly over time. We present the possible envelope given the existing data.</br></br>\
+            The plot on the left displays very crude best-case (Min prevalence) and worst case (Max prevalence) scenarios, along with an average of those.</br></br>\
+            The best case scenario considers that the prevalence is the sum of cases found in the last 7 days (including the today).\
+            The worst case scenario considers that the prevalance is the entire population that was not tested today, minus those who were\
+            infected in the previous 180 days, multiplied by the positivity.'

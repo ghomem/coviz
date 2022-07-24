@@ -307,10 +307,12 @@ def on_dimensions_change(attr, old, new):
             curdoc().add_root(layout2_h)
             curdoc().add_root(layout3_h)
             curdoc().add_root(layout4_h)
+            curdoc().add_root(layout5_h)
         else:
             curdoc().add_root(layout2_v)
             curdoc().add_root(layout3_v)
             curdoc().add_root(layout4_v)
+            curdoc().add_root(layout5_v)
 
         # store the horizontalness state
         current_horizontal = horizontal
@@ -424,7 +426,14 @@ def make_layouts( ):
     layout4_h = layout(row   (mortality_plots_column, in_between_spacer, mort_explorer_tabset2), name='section4', sizing_mode='scale_width')
     layout4_v = layout(column(mortality_plots_column, mort_explorer_tabset2), name='section4', sizing_mode='scale_width')
 
-    return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy, layout4_h, layout4_v
+    # fifth
+
+    prev_spacer = Spacer(width=20, height=23, width_policy='auto', height_policy='fixed')
+    layout5_h = layout(row (plot_prevalence, prev_spacer, column(prev_spacer,prevalence_notes)), name='section5', sizing_mode='scale_width')
+
+    layout5_v = layout(column (plot_prevalence), name='section5', sizing_mode='scale_width')
+
+    return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy, layout4_h, layout4_v, layout5_h, layout5_v
 
 def adjust_widgets_to_layout( horizontal ):
 
@@ -489,6 +498,9 @@ data_vacc_part         = processed_data[15]
 data_vacc_full         = processed_data[16]
 data_vacc_boost        = processed_data[17]
 data_strat_mort        = processed_data[18]
+data_min_prevalence    = processed_data[19]
+data_max_prevalence    = processed_data[20]
+data_avg_prevalence    = processed_data[21]
 
 raw_data_new          = raw_data[0]
 raw_data_cv19_deaths  = raw_data[1]
@@ -874,6 +886,23 @@ mort_explorer_tabset2.active = 0
 # the parameters are dummy as we take the values directly from the slider
 update_mortality_stats(0,0,0)
 
+#### Fifth page ####
+
+source_plot_prevalence = ColumnDataSource(pd.DataFrame(data={ 'x': data_dates, 'y': data_max_prevalence, 'y2': data_avg_prevalence, 'y3': data_min_prevalence,  }, columns=['x', 'y', 'y2', 'y3' ]))
+
+plot_prevalence = make_plot ('prevalance', PLOT_PREVALENCE_TITLE, days, 'datetime', PLOT_HEIGHT5, PLOT_WIDTH5)
+l_prev1 = plot_prevalence.line('x', 'y', source=source_plot_prevalence, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='Max prevalence' )
+l_prev2 = plot_prevalence.line('x', 'y2',source=source_plot_prevalence, line_width=PLOT_LINE_WIDTH, line_alpha=0.9, line_color=PLOT_LINE_COLOR, legend_label='Avg prevalence' )
+l_prev3 = plot_prevalence.line('x', 'y3',source=source_plot_prevalence, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Min prevalence' )
+
+plot_prevalence.legend.location = 'top_left'
+set_plot_details(plot_prevalence, 'Date', 'Max %', '@x{%F}', '@y{0.00}', 'vline', False, False,'Avg %', "@y2{0.00}", l_prev1, True, 'Min %', "@y3{0.00}")
+set_plot_date_details(plot_prevalence, data_dates, days, source_plot_prevalence)
+
+plot_prevalence.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
+
+prevalence_notes = Div(text=PREV_TEXT, width=PREV_TEXT_WIDTH, align='start')
+
 #### Plot layout section ###
 
 ## handling different layout orientations
@@ -890,7 +919,8 @@ window_size_data_source.on_change('data', on_dimensions_change)
 # the layout name is added here then invoked from the HTML template
 # all roots added here must be invoked on the HTML
 
-layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_map, layout4_h, layout4_v = make_layouts()
+layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_map, \
+layout4_h, layout4_v, layout5_h, layout5_v = make_layouts()
 
 # by default layouts are created assuming we have enough width for the ideal visualization mode
 # that is, we start with horizontal layouts
@@ -908,3 +938,6 @@ curdoc().add_root(layout3_h)
 
 # section 4
 curdoc().add_root(layout4_h)
+
+# section 5
+curdoc().add_root(layout5_h)

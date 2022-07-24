@@ -8,14 +8,21 @@ import csv
 import math
 from datetime import datetime
 
+POPULATION = 10298252
+
 RT_PERIOD = 7   # infections activity period considered for RT
 RT_IGNORE = 3   # ignore early days
+
+PREV_PERIOD = RT_PERIOD # we are using the same infectious period for prevalence estimation
+PREV_IGNORE = RT_IGNORE # ignore early days
+
+PREV_IMMUNITY_DAYS = 180 # assuming 6 months for the prevalence calculation
 
 CFR_DELTA  = 10  # average time to die for CFR calculation
 CFR_IGNORE = 30  # ignore early days
 
-INC_PERIOD  = 14    # period for incidence calculations
-INC_DIVIDER = 102.8 # to get incidence per 100k people
+INC_PERIOD  = 14                 # period for incidence calculations
+INC_DIVIDER = POPULATION / 10000 # to get incidence per 100k people
 
 MAV_PERIOD = 7 # period for moving average calculations
 
@@ -112,6 +119,46 @@ def get_rt ( new, period, ignore_interval ):
     result = get_smooth_list(r_data, MAV_PERIOD)
 
     return result
+
+# obtain the minimun prevalence, using the detected cases
+def get_min_prevalence ( new, period, ignore_interval, population ):
+
+    r_data = list(np.full( period + ignore_interval, None))
+
+    for i, element in enumerate(new):
+        if i > period + ignore_interval - 1:
+            slice = new[i-period:i]
+            total = sum(slice)
+            min_prevalence = ( total / population)*100
+            #print('min', min_prevalence)
+            r_data.append( min_prevalence )
+
+    # let's smooth now
+    result = get_smooth_list(r_data, MAV_PERIOD)
+
+    return result
+
+# get the worst case scenario for prevalence
+def get_max_prevalence (new, min_prevalence, tests, positivity, population):
+
+    r_data = []
+
+    for i, element in enumerate(min_prevalence):
+        left_index = max(0, i-PREV_IMMUNITY_DAYS)
+        previous_positives = sum( new[  left_index:i] )
+        # the population that was tested this day or was previously infected is not part of the potentially infected set
+        available_fraction = ( 1 - tests[i]/population - previous_positives/population )
+         # worst case scenario positivity % of them could be positive
+        extra_prevalence = available_fraction * positivity[i]
+        max_prevalence = min_prevalence[i] + extra_prevalence
+        r_data.append(max_prevalence)
+        #print('max', max_prevalence)
+
+    # let's smooth now
+    result = get_smooth_list(r_data, MAV_PERIOD)
+
+    return result
+
 
 def get_positivity ( tests, new, period, ignore_interval ):
 
@@ -607,8 +654,14 @@ def get_data():
     # starts at 26th of February of 2020
     #print(dates[0], dates[-1])
 
+    s_min_prevalence = get_min_prevalence (new, PREV_PERIOD, PREV_IGNORE, POPULATION)
+    s_max_prevalence = get_max_prevalence (new, s_min_prevalence, total_tests, positivity, POPULATION)
+    s_avg_prevalance = 0.5 * ( np.array(s_min_prevalence) + np.array(s_max_prevalence) )
+
     # processed data
-    processed_data = [ s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, positivity, s_total_deaths, s_avg_deaths, avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full, vacc_boost, strat_mortality_info ]
+    processed_data = [ s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, positivity, s_total_deaths, s_avg_deaths, \
+    avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full, vacc_boost,    \
+    strat_mortality_info, s_min_prevalence, s_max_prevalence, s_avg_prevalance ]
 
     # raw data for stats
     raw_data = [ new, cv19_deaths, total_deaths[-days:], avg_deaths ]
