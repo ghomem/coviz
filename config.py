@@ -115,7 +115,7 @@ PREV_TEXT = '<div class="content" style="padding-top: 10px;">\
                     However, the amount of testing and the testing strategy have changed significantly over time. We present the prevalence envelope that can be derived from the existing data.</br></br>\
                     The plot on the left displays very crude best-case (Min prevalence) and worst case (Max prevalence) scenarios, along with an average of those two.</br></br>\
                     The best case scenario considers that the prevalence is the sum of cases found in the last 7 days (including today).\
-                    The worst case scenario considers adds, as extra prevalance, the part of population that was not tested today, minus those who were\
+                    The worst case scenario adds, as extra prevalance, the part of population that was not tested today, minus those who were\
                     found to be infected in the previous 180 days, multiplied by the positivity.\
                 </p>\
             </div>'
