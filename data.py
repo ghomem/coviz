@@ -565,15 +565,19 @@ def get_days_until_patch ( data ):
 def get_data():
 
     # get the latest of each file type
-    main_file  = DATA_DIR + 'merged/data.csv'
-    tests_file = DATA_DIR + 'merged/amostras.csv'
-    mort_file  = DATA_DIR + 'dssg/mortalidade.csv'
-    vacc_file  = DATA_DIR + 'dssg/vacinas.csv'
+    main_file     = DATA_DIR + 'merged/data.csv'
+    tests_file    = DATA_DIR + 'merged/amostras.csv'
+    mort_file     = DATA_DIR + 'dssg/mortalidade.csv'
+    vacc_file     = DATA_DIR + 'dssg/vacinas.csv'
+    vacc_cfr_file = DATA_DIR + 'custom/CFR-vs-status.csv'
+    vacc_chr_file = DATA_DIR + 'custom/CHR-vs-status.csv'
 
-    main_data  = pd.read_csv(main_file)
-    tests_data = pd.read_csv(tests_file)
-    mort_data  = pd.read_csv(mort_file)
-    vacc_data  = pd.read_csv(vacc_file)
+    main_data     = pd.read_csv(main_file)
+    tests_data    = pd.read_csv(tests_file)
+    mort_data     = pd.read_csv(mort_file)
+    vacc_data     = pd.read_csv(vacc_file)
+    vacc_cfr_data = pd.read_csv(vacc_cfr_file)
+    vacc_chr_data = pd.read_csv(vacc_chr_file)
 
     new          = main_data['confirmados_novos'].tolist()
 
@@ -656,12 +660,12 @@ def get_data():
 
     s_min_prevalence = get_min_prevalence (new, PREV_PERIOD, PREV_IGNORE, POPULATION)
     s_max_prevalence = get_max_prevalence (new, s_min_prevalence, total_tests, positivity, POPULATION)
-    s_avg_prevalance = 0.5 * ( np.array(s_min_prevalence) + np.array(s_max_prevalence) )
+    s_avg_prevalence = 0.5 * ( np.array(s_min_prevalence) + np.array(s_max_prevalence) )
 
     # processed data
-    processed_data = [ s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, positivity, s_total_deaths, s_avg_deaths, \
-    avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full, vacc_boost,    \
-    strat_mortality_info, s_min_prevalence, s_max_prevalence, s_avg_prevalance ]
+    processed_data = [ s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, positivity, s_total_deaths, s_avg_deaths,\
+                    avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full,\
+                    vacc_boost, strat_mortality_info, s_min_prevalence, s_max_prevalence, s_avg_prevalence, vacc_cfr_data, vacc_chr_data ]
 
     # raw data for stats
     raw_data = [ new, cv19_deaths, total_deaths[-days:], avg_deaths ]

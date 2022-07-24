@@ -16,6 +16,7 @@ PLOT_LINE_WIDTH          = 3
 PLOT_LINE_WIDTH_CRITICAL = 2
 
 PLOT_LINE_ALPHA       = 0.6
+PLOT_LINE_ALPHA2      = 0.9
 PLOT_LINE_ALPHA_MUTED = 0.1
 
 TITLE_SIZE_HORIZONTAL_LAYOUT = '13pt' # Bokeh default
@@ -55,6 +56,9 @@ PLOT12_TITLE ='Vaccination'
 
 PLOT_CORRELATION_TITLE = 'Excess deaths vs Covid deaths'
 PLOT_PREVALENCE_TITLE  = 'Prevalence envelope'
+
+VACC_CFR_TITLE = 'Case fatality rate (CFR) by vaccination status'
+VACC_CHR_TITLE = 'Case hospitalization rate (CHR) by vaccination status'
 
 CLINES_LABEL = 'Show limits'
 CLINES_SWITCH_WIDTH = 140
@@ -117,5 +121,24 @@ PREV_TEXT = '<div class="content" style="padding-top: 10px;">\
                     The best case scenario considers that the prevalence is the sum of cases found in the last 7 days (including today).\
                     The worst case scenario adds, as extra prevalance, the part of population that was not tested today, minus those who were\
                     found to be infected in the previous 180 days, multiplied by the positivity.\
+                </p>\
+            </div>'
+
+PLOT_WIDTH6  = 505 # for the 6th section
+PLOT_HEIGHT6 = 505
+
+VACC_RISK_TEXT_WIDTH = 410
+
+VACC_RISK_TEXT = '<div class="content" style="padding-top: 15px;">\
+                   <p style="font-size: 140%; font-weight: bold; padding-top: 7px; padding-bottom: 10px; margin-bottom: 0px; color: #4d4d4d">\
+                    The effect of vaccines\
+                  </p>\
+                  <p style="font-size: 1oo%; font-weight: normal; padding-top: 7px; color: #4d4d4d">\
+                      How does vaccination affect the risk of hospitalization and death?</br></br>\
+                      The answer to this question is rather complex as it depends on vaccinating timing, rythm, immunity waning and\
+                      interaction of vaccines with new virus variants. One pragmatic data driven approach is looking into the Case Fatality Rate (CFR)\
+                      and Case Hospitalization Rate (CHR) broken down by vaccination status.</br></br>\
+                      This information is made available by the health authority on a PDF containing data for a single month. The values\
+                      present on the plots were assembled from all the PDFs that were published so far.\
                 </p>\
             </div>'

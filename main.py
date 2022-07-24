@@ -433,7 +433,16 @@ def make_layouts( ):
 
     layout5_v = layout(column (plot_prevalence), name='section5', sizing_mode='scale_width')
 
-    return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy, layout4_h, layout4_v, layout5_h, layout5_v
+    # sixth
+
+    vacc_risk_spacer = Spacer(width=20, height=5, width_policy='auto', height_policy='fixed')
+    layout6_h = layout(row (vacc_risk_cfr_tabset, vacc_risk_spacer, vacc_risk_chr_tabset, vacc_risk_spacer, vacc_risk_notes), name='section6', sizing_mode='scale_width')
+
+    layout6_v = layout(column (vacc_risk_cfr_tabset, vacc_risk_spacer, vacc_risk_chr_tabset), name='section6', sizing_mode='scale_width')
+
+
+    return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy,\
+    layout4_h, layout4_v, layout5_h, layout5_v, layout6_h, layout6_v
 
 def adjust_widgets_to_layout( horizontal ):
 
@@ -501,6 +510,8 @@ data_strat_mort        = processed_data[18]
 data_min_prevalence    = processed_data[19]
 data_max_prevalence    = processed_data[20]
 data_avg_prevalence    = processed_data[21]
+data_vacc_cfr          = processed_data[22]
+data_vacc_chr          = processed_data[23]
 
 raw_data_new          = raw_data[0]
 raw_data_cv19_deaths  = raw_data[1]
@@ -903,6 +914,38 @@ plot_prevalence.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
 
 prevalence_notes = Div(text=PREV_TEXT, width=PREV_TEXT_WIDTH, align='start')
 
+#### Sixth page ####
+
+# one plot with CFR and CHR per age group
+
+p6_plot_cfr_50_59   = make_vacc_risk_plot(data_vacc_cfr, VACC_CFR_TITLE, '50_59')
+p6_plot_cfr_60_69   = make_vacc_risk_plot(data_vacc_cfr, VACC_CFR_TITLE, '60_69')
+p6_plot_cfr_70_79   = make_vacc_risk_plot(data_vacc_cfr, VACC_CFR_TITLE, '70_79')
+p6_plot_cfr_80_plus = make_vacc_risk_plot(data_vacc_cfr, VACC_CFR_TITLE, '80mais')
+
+tab6_cfr_1 = Panel(child=p6_plot_cfr_50_59,   title='50-59')
+tab6_cfr_2 = Panel(child=p6_plot_cfr_60_69,   title='60-69')
+tab6_cfr_3 = Panel(child=p6_plot_cfr_70_79,   title='70-79')
+tab6_cfr_4 = Panel(child=p6_plot_cfr_80_plus, title='>80')
+
+p6_plot_chr_50_59   = make_vacc_risk_plot(data_vacc_chr, VACC_CHR_TITLE, '50_59')
+p6_plot_chr_60_69   = make_vacc_risk_plot(data_vacc_chr, VACC_CHR_TITLE, '60_69')
+p6_plot_chr_70_79   = make_vacc_risk_plot(data_vacc_chr, VACC_CHR_TITLE, '70_79')
+p6_plot_chr_80_plus = make_vacc_risk_plot(data_vacc_chr, VACC_CHR_TITLE, '80mais')
+
+tab6_chr_1 = Panel(child=p6_plot_chr_50_59,   title='50-59')
+tab6_chr_2 = Panel(child=p6_plot_chr_60_69,   title='60-69')
+tab6_chr_3 = Panel(child=p6_plot_chr_70_79,   title='70-79')
+tab6_chr_4 = Panel(child=p6_plot_chr_80_plus, title='>80')
+
+vacc_risk_cfr_tabset = Tabs(tabs=[ tab6_cfr_1, tab6_cfr_2, tab6_cfr_3, tab6_cfr_4 ])
+vacc_risk_chr_tabset = Tabs(tabs=[ tab6_chr_1, tab6_chr_2, tab6_chr_3, tab6_chr_4 ])
+
+vacc_risk_cfr_tabset.active = 3
+vacc_risk_chr_tabset.active = 3
+
+vacc_risk_notes = Div(text=VACC_RISK_TEXT, width=VACC_RISK_TEXT_WIDTH, align='start')
+
 #### Plot layout section ###
 
 ## handling different layout orientations
@@ -920,7 +963,7 @@ window_size_data_source.on_change('data', on_dimensions_change)
 # all roots added here must be invoked on the HTML
 
 layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_map, \
-layout4_h, layout4_v, layout5_h, layout5_v = make_layouts()
+layout4_h, layout4_v, layout5_h, layout5_v, layout6_h, layout6_v = make_layouts()
 
 # by default layouts are created assuming we have enough width for the ideal visualization mode
 # that is, we start with horizontal layouts
@@ -941,3 +984,6 @@ curdoc().add_root(layout4_h)
 
 # section 5
 curdoc().add_root(layout5_h)
+
+# section 6
+curdoc().add_root(layout6_h)

@@ -468,3 +468,29 @@ def make_correlation_plot ( datax, datay, xlabel, ylabel, height, width ):
     aplot.add_layout(regression_label)
 
     return aplot, source_aplot, r_value, regression_line, regression_label
+
+# make specific CFR/CHR plots
+
+def make_vacc_risk_plot(data_vacc, type_str, group_str):
+
+    # extract sub dataframes by matching group_str and the date column (called 'data')
+    sub_df = data_vacc.loc[:, data_vacc.columns.to_series().str.endswith( (group_str, 'data') )  ]
+
+    date_list = sub_df['data'].values
+    aplot = figure(plot_height=PLOT_HEIGHT6, plot_width=PLOT_WIDTH6, title=type_str, x_range=date_list )
+
+    aplot.toolbar.active_drag    = None
+    aplot.toolbar.active_scroll  = None
+    aplot.toolbar.active_tap     = None
+    aplot.toolbar_location       = None
+
+    aplot.xaxis.major_label_orientation = math.pi/4
+
+    asource = ColumnDataSource(sub_df)
+
+    aplot.line(x='data', y='outros_'       + group_str, source=asource, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA,  line_color=PLOT_LINE_COLOR,           legend_label='Non vacc / incomplete' )
+    aplot.line(x='data', y='vac_completa_' + group_str, source=asource, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA,  line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Complete' )
+    aplot.line(x='data', y='vac_reforco_'  + group_str, source=asource, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA,  line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='Booster' )
+    aplot.line(x='data', y='vac_reforco2_' + group_str, source=asource, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA2, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='Booster2' )
+
+    return aplot
