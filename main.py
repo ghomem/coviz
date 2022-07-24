@@ -428,7 +428,7 @@ def make_layouts( ):
 
     # fifth
 
-    prev_spacer = Spacer(width=20, height=23, width_policy='auto', height_policy='fixed')
+    prev_spacer = Spacer(width=20, height=5, width_policy='auto', height_policy='fixed')
     layout5_h = layout(row (plot_prevalence, prev_spacer, column(prev_spacer,prevalence_notes)), name='section5', sizing_mode='scale_width')
 
     layout5_v = layout(column (plot_prevalence), name='section5', sizing_mode='scale_width')
