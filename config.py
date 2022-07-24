@@ -137,7 +137,7 @@ VACC_RISK_TEXT = '<div class="content" style="padding-top: 15px;">\
                       How does vaccination affect the risk of hospitalization and death?</br></br>\
                       The answer to this question is rather complex as it depends on vaccinating timing, rythm, immunity waning and\
                       interaction of vaccines with new virus variants. One pragmatic data driven approach is looking into the Case Fatality Rate (CFR)\
-                      and Case Hospitalization Rate (CHR) broken down by vaccination status.</br></br>\
+                      and Case Hospitalization Rate (CHR) broken down by vaccination status and age group.</br></br>\
                       This information is made available by the health authority on a PDF containing data for a single month. The values\
                       present on the plots were assembled from all the PDFs that were published so far.\
                 </p>\
