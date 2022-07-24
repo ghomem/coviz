@@ -120,14 +120,14 @@ def get_rt ( new, period, ignore_interval ):
 
     return result
 
-# obtain the minimun prevalence, using the detected cases
+# obtain the minimum prevalence, using the detected cases
 def get_min_prevalence ( new, period, ignore_interval, population ):
 
     r_data = list(np.full( period + ignore_interval, None))
 
     for i, element in enumerate(new):
         if i > period + ignore_interval - 1:
-            slice = new[i-period:i]
+            slice = new[i-period+1:i+1] # period days, including today
             total = sum(slice)
             min_prevalence = ( total / population)*100
             #print('min', min_prevalence)
