@@ -105,10 +105,17 @@ PLOT_WIDTH5  = 900 # for the 5th section
 PLOT_HEIGHT5 = 505
 
 PREV_TEXT_WIDTH = 410
-PREV_TEXT = '<b>Building a prevalence envelope</b></br>\
-            </br>It is not possible to provide reliable prevalence estimations without a mass testing policy or at least periodic testing of significant population samples.\
-            The testing strategies have varied significantly over time. We present the possible envelope given the existing data.</br></br>\
-            The plot on the left displays very crude best-case (Min prevalence) and worst case (Max prevalence) scenarios, along with an average of those.</br></br>\
-            The best case scenario considers that the prevalence is the sum of cases found in the last 7 days (including today).\
-            The worst case scenario considers that the prevalance is the entire population that was not tested today, minus those who were\
-            infected in the previous 180 days, multiplied by the positivity.'
+PREV_TEXT = '<div class="content" style="padding-top: 10px;">\
+                <p style="font-size: 140%; font-weight: bold; padding-top: 7px; padding-bottom: 10px; margin-bottom: 0px; color: #4d4d4d">\
+                    The prevalence envelope\
+                </p>\
+                <p style="font-size: 1oo%; font-weight: normal; padding-top: 7px; color: #4d4d4d">\
+                    How many people are infected with Covid in a given moment in time?</br></br>\
+                    It is not possible to provide reliable prevalence estimations without a mass testing policy or at least periodic testing of significant population samples.\
+                    However, the amount of testing and the testing strategy have changed significantly over time. We present the prevalence envelope that can be derived from the existing data.</br></br>\
+                    The plot on the left displays very crude best-case (Min prevalence) and worst case (Max prevalence) scenarios, along with an average of those two.</br></br>\
+                    The best case scenario considers that the prevalence is the sum of cases found in the last 7 days (including today).\
+                    The worst case scenario adds, as extra prevalance, the part of population that was not tested today, minus those who were\
+                    found to be infected in the previous 180 days, multiplied by the positivity.\
+                </p>\
+            </div>'
