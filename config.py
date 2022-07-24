@@ -54,6 +54,7 @@ PLOT11_TITLE ='CFR by age group (click on the legend to hide/show series)'
 PLOT12_TITLE ='Vaccination'
 
 PLOT_CORRELATION_TITLE = 'Excess deaths vs Covid deaths'
+PLOT_PREVALENCE_TITLE  = 'Prevalence envelope'
 
 CLINES_LABEL = 'Show limits'
 CLINES_SWITCH_WIDTH = 140
@@ -99,3 +100,6 @@ MORT_STATS_TABLE_WIDTH  = 490
 MORT_STATS_TABLE_HEIGHT = 355
 
 MORT_TEXT_WIDTH = 480
+
+PLOT_WIDTH5  = 900 # for the 5th section
+PLOT_HEIGHT5 = 505
