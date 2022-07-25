@@ -430,17 +430,21 @@ def make_layouts( ):
 
     # fifth
 
-    prev_spacer = Spacer(width=20, height=5, width_policy='auto', height_policy='fixed')
-    layout5_h = layout(row (plot_prevalence, prev_spacer, column(prev_spacer,prevalence_notes)), name='section5', sizing_mode='scale_width')
+    prev_spacer  = Spacer(width=20, height=5, width_policy='auto', height_policy='fixed')
+    prev_spacer2 = Spacer(width=20, height=60, width_policy='auto', height_policy='fixed')
+    layout5_h = layout(row (plot_prevalence, prev_spacer, column(prev_spacer,prevalence_notes, prev_spacer2) ), name='section5', sizing_mode='scale_width')
 
     layout5_v = layout(column (plot_prevalence), name='section5', sizing_mode='scale_width')
 
     # sixth
 
-    vacc_risk_spacer = Spacer(width=20, height=5, width_policy='auto', height_policy='fixed')
-    layout6_h = layout(row (vacc_risk_cfr_tabset, vacc_risk_spacer, vacc_risk_chr_tabset, vacc_risk_spacer, vacc_risk_notes), name='section6', sizing_mode='scale_width')
+    vacc_risk_spacer   = Spacer(width=20, height=5, width_policy='auto', height_policy='fixed')
+    vacc_risk_spacer2  = Spacer(width=20, height=5, width_policy='auto', height_policy='fixed')
+    vacc_risk_spacer_v = Spacer(width=20, height=70, width_policy='auto', height_policy='fixed')
 
-    layout6_v = layout(column (vacc_risk_cfr_tabset, vacc_risk_spacer, vacc_risk_chr_tabset), name='section6', sizing_mode='scale_width')
+    layout6_h = layout(column(row (vacc_risk_cfr_tabset, vacc_risk_spacer, vacc_risk_chr_tabset, vacc_risk_spacer2, vacc_risk_notes), vacc_risk_spacer_v ), name='section6', sizing_mode='scale_width')
+
+    layout6_v = layout(column(vacc_risk_cfr_tabset, vacc_risk_spacer, vacc_risk_chr_tabset), name='section6', sizing_mode='scale_width')
 
 
     return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy,\
