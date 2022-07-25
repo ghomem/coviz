@@ -79,8 +79,8 @@ MAP_INCIDENCE_MIN = 0
 MAP_INCIDENCE_MAX = 1600
 MAP_INCIDENCE_RESOLUTION = 9 # min 3, max 9
 
-MAP_WIDTH  = 500
-MAP_HEIGHT = 662
+MAP_WIDTH  = 454
+MAP_HEIGHT = 605
 
 # in meters, eg, 1000 -> 1km
 MAP_RESOLUTION = 1500
@@ -95,7 +95,7 @@ TEXT_NOTES  ='<strong>Important:</strong> use the mouse for the initial selectio
 MIN_HORIZONTAL_WIDTH = 1360
 
 PLOT_WIDTH4  = 900 # for the 4th section
-PLOT_HEIGHT4 = 505
+PLOT_HEIGHT4 = 475
 
 PLOT_AREAS_COLOR4 = 'gray'
 PLOT_AREAS_ALPHA4 = 0.1

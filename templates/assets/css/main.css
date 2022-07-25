@@ -3679,7 +3679,7 @@ input, select, textarea {
 
 		/* with less padding at the bottom */
 		.banner.style2 .content-custom {
-			padding: 2.25rem 2.25rem 0.25rem 3.25rem ;
+			padding: 0.25rem 0.5rem 0.25rem 0.5rem ;
 			position: relative;
 			width: 100% !important;
 			max-width: 100%;

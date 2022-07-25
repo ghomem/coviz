@@ -12,9 +12,9 @@
   <div id="wrapper" class="divided">
 
   	<section class="banner style2 orient-center content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right" id="section1">
-                <div class="content">
+                <div class="content-custom">
 			<header>
-	                        <h2>Coviz</h2>
+	                        <h3 style="margin-bottom: 0;">Coviz</h3>
 				<p>Visualizing Covid19 and Public Health data for Portugal</p>
 			</header>
 			<div class="content2">{{ embed(roots.section1) }}</div>
@@ -29,9 +29,9 @@
         </section>
 
   	<section class="banner style2 orient-center content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right" id="section2">
-                <div class="content">
+                <div class="content-custom">
 			<header>
-	                        <h2>Coviz</h2>
+	                        <h3 style="margin-bottom: 0;">Coviz</h3>
 				<p>Visualizing Covid19 and Public Health data for Portugal</p>
 			</header>
 			<div class="content2">{{ embed(roots.section2) }}</div>
@@ -47,9 +47,9 @@
         </section>
 
 	<section class="banner style2 orient-center content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right" id="section3">
-                <div class="content">
+                <div class="content-custom">
 			<header>
-	                        <h2>Coviz</h2>
+	                        <h3 style="margin-bottom: 0;">Coviz</h3>
 				<p>Visualizing Covid19 and Public Health data for Portugal</p>
 			</header>
 			<div class="content2">{{ embed(roots.section3) }}</div>
@@ -64,9 +64,9 @@
         </section>
 
 	<section class="banner style2 orient-center content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right" id="section4">
-                <div class="content">
+                <div class="content-custom">
 			<header>
-	                        <h2>Coviz</h2>
+	                        <h3 style="margin-bottom: 0;">Coviz</h3>
 				<p>Visualizing Covid19 and Public Health data for Portugal</p>
 			</header>
 			<div class="content2">{{ embed(roots.section4) }}</div>
@@ -81,9 +81,9 @@
         </section>
 
         <section class="banner style2 orient-center content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right" id="section5">
-                <div class="content">
+                <div class="content-custom">
 			<header>
-	                        <h2>Coviz</h2>
+	                        <h3 style="margin-bottom: 0;">Coviz</h3>
 				<p>Visualizing Covid19 and Public Health data for Portugal</p>
 			</header>
 			<div class="content2">{{ embed(roots.section5) }}</div>
@@ -98,9 +98,9 @@
         </section>
 
         <section class="banner style2 orient-center content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right" id="section6">
-                <div class="content">
+                <div class="content-custom">
 			<header>
-	                        <h2>Coviz</h2>
+	                        <h3 style="margin-bottom: 0;">Coviz</h3>
 				<p>Visualizing Covid19 and Public Health data for Portugal</p>
 			</header>
 			<div class="content2">{{ embed(roots.section6) }}</div>
@@ -115,15 +115,25 @@
         </section>
 
 	<section class="banner style2 orient-center content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right" id="section7">
-                <div class="content">
+                <div class="content-custom">
 			<header>
-	                        <h2>Coviz</h2>
+	                        <h3 style="margin-bottom: 0;">Coviz</h3>
 				<p>Visualizing Covid19 and Public Health data for Portugal</p>
 			</header>
 
                         <p class="minor"><br/>
-                            <strong>Disclaimer</strong></br>
-			This website is not an official source of information but rather an exercise of data visualization UX that tries to fill the gaps of the oficial reporting.</br><strong>Note:</strong> as of 13/03/2022 our health authority (DGS) reduced the scope of reporting, preventing the geospatial and age-stratified plots from being updated.
+                            <strong>About Coviz</strong></br>
+                            This website started as an improved version of the public Covid dashboard.
+                            The initial idea was providing better layouts, that allowed for simultaneous inpection of related quantities, and evolved in the direction
+                            of providing data from different public data sources (ex: age stratified overall mortality).
+                            Meanwhile, our health authority (DGS) retired the original dashboard reducing official daily
+                            reporting to "fluid-named" excels files, and making Coviz the only place where a data driven story of the pandemic in Portugal can be found.
+                            As of 13/03/2022 DGS reduced the scope of reporting, preventing the geospatial and age-stratified plots from being updated.
+                            As of 01/06/2022 the information about testing stopped being reported, forcing the retrieval if such data from ECDC's files.
+                            The information from DGS is not downloadable from cloud instances (including pipeline runners) due to enforced geographical restrictions, making it
+                            difficult for interested citizens to transform, study and visualize data that in essence belongs to them.
+                            While this project intends to restore the level of transparency that the portuguese citizens deserve, it is not an official source of information
+                            and we can not garantee that the result is error free. Should any problems be found, they can be reported at the project's <a target="_blank" href="https://github.com/ghomem/coviz/">Github page</a>.
                         </p>
 
                         <p class="minor">
@@ -136,7 +146,7 @@
 			    The web frontend loads in Portable Web App (PWA) mode thanks to the <a target="_blank" href="https://github.com/pmac-dev/coviz-pwa">contribution </a> of <a target="_blank" href="https://github.com/pmac-dev/coviz-pwa">@pmac-dev</a>.</br>
                             The static content was adapted from <a target="_blank" href="https://html5up.net/story">HTML5UP</a>.<br/>
 		            The plots are made with <a target="_blank" href="https://bokeh.org">Bokeh</a>.<br/>
-			    Historical data was obtained from the <a target="_blank" href="https://github.com/dssg-pt/">DSSG-PT</a> repositories and current data is merged from DGS and DSSG-PT data sources.
+			    Historical data was obtained from the <a target="_blank" href="https://github.com/dssg-pt/">DSSG-PT</a> repositories and current data is merged from DGS, DSSG-PT and ECDC data sources.
                         </p>
 
 			<p class="minor"><strong>Resources</strong></br>
