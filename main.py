@@ -308,11 +308,13 @@ def on_dimensions_change(attr, old, new):
             curdoc().add_root(layout3_h)
             curdoc().add_root(layout4_h)
             curdoc().add_root(layout5_h)
+            curdoc().add_root(layout6_h)
         else:
             curdoc().add_root(layout2_v)
             curdoc().add_root(layout3_v)
             curdoc().add_root(layout4_v)
             curdoc().add_root(layout5_v)
+            curdoc().add_root(layout6_v)
 
         # store the horizontalness state
         current_horizontal = horizontal
