@@ -316,7 +316,7 @@ def get_dates( date_strings ):
 
     return dates
 
-def get_stratified_data ( data, base_str, smoothen, period ):
+def get_stratified_data ( data, base_str, smoothen, period, maxlen):
 
     data_0_9_f     = data[ base_str + '_0_9_f'    ]
     data_0_9_m     = data[ base_str + '_0_9_m'    ]
@@ -338,15 +338,15 @@ def get_stratified_data ( data, base_str, smoothen, period ):
     data_80_plus_m = data[ base_str + '_80_plus_m']
 
     # we are patching some report holes in the cumulative series using the average value for adjacent days
-    data_0_9_total     = get_differential_series( get_patched_data ( (data_0_9_f     + data_0_9_m     ).tolist(), 1, True ) )
-    data_10_19_total   = get_differential_series( get_patched_data ( (data_10_19_f   + data_10_19_m   ).tolist(), 1, True ) )
-    data_20_29_total   = get_differential_series( get_patched_data ( (data_20_29_f   + data_20_29_m   ).tolist(), 1, True ) )
-    data_30_39_total   = get_differential_series( get_patched_data ( (data_30_39_f   + data_30_39_m   ).tolist(), 1, True ) )
-    data_40_49_total   = get_differential_series( get_patched_data ( (data_40_49_f   + data_40_49_m   ).tolist(), 1, True ) )
-    data_50_59_total   = get_differential_series( get_patched_data ( (data_50_59_f   + data_50_59_m   ).tolist(), 1, True ) )
-    data_60_69_total   = get_differential_series( get_patched_data ( (data_60_69_f   + data_60_69_m   ).tolist(), 1, True ) )
-    data_70_79_total   = get_differential_series( get_patched_data ( (data_70_79_f   + data_70_79_m   ).tolist(), 1, True ) )
-    data_80_plus_total = get_differential_series( get_patched_data ( (data_80_plus_f + data_80_plus_m ).tolist(), 1, True ) )
+    data_0_9_total     = get_differential_series( get_patched_data ( (data_0_9_f     + data_0_9_m     ).tolist(), 1, True ) )[0:maxlen]
+    data_10_19_total   = get_differential_series( get_patched_data ( (data_10_19_f   + data_10_19_m   ).tolist(), 1, True ) )[0:maxlen]
+    data_20_29_total   = get_differential_series( get_patched_data ( (data_20_29_f   + data_20_29_m   ).tolist(), 1, True ) )[0:maxlen]
+    data_30_39_total   = get_differential_series( get_patched_data ( (data_30_39_f   + data_30_39_m   ).tolist(), 1, True ) )[0:maxlen]
+    data_40_49_total   = get_differential_series( get_patched_data ( (data_40_49_f   + data_40_49_m   ).tolist(), 1, True ) )[0:maxlen]
+    data_50_59_total   = get_differential_series( get_patched_data ( (data_50_59_f   + data_50_59_m   ).tolist(), 1, True ) )[0:maxlen]
+    data_60_69_total   = get_differential_series( get_patched_data ( (data_60_69_f   + data_60_69_m   ).tolist(), 1, True ) )[0:maxlen]
+    data_70_79_total   = get_differential_series( get_patched_data ( (data_70_79_f   + data_70_79_m   ).tolist(), 1, True ) )[0:maxlen]
+    data_80_plus_total = get_differential_series( get_patched_data ( (data_80_plus_f + data_80_plus_m ).tolist(), 1, True ) )[0:maxlen]
 
     tmp_list = [ data_0_9_total, data_10_19_total, data_20_29_total, data_30_39_total, data_40_49_total, data_50_59_total, data_60_69_total, data_70_79_total, data_80_plus_total ]
 
@@ -522,8 +522,8 @@ def get_stratified_mortality_info ( mort_data, days ):
 
 def get_stratified_cfr ( data, CFR_DELTA, CFR_IGNORE, maxlen ):
 
-    strat_cv19_new    = get_stratified_data ( data, 'confirmados', False, -1 )
-    strat_cv19_deaths = get_stratified_data ( data, 'obitos', False, -1 )
+    strat_cv19_new    = get_stratified_data ( data, 'confirmados', False, -1, maxlen )
+    strat_cv19_deaths = get_stratified_data ( data, 'obitos', False, -1, maxlen )
 
     strat_cfr = []
     for j in range(0, len(strat_cv19_new) ):
@@ -533,8 +533,9 @@ def get_stratified_cfr ( data, CFR_DELTA, CFR_IGNORE, maxlen ):
         # helper variable to set the last part to None instead of zero
         empty_list = np.full( my_len - maxlen , None)
 
+        # UPDATE: this line stopped being necessary since we introduced the maxline arg to this function
         # important: this assignement conserves the list size
-        my_cfr[maxlen:-1] = np.full( my_len - maxlen - 1 , None)
+        #my_cfr[maxlen:-1] = np.full( my_len - maxlen - 1 , None)
 
         strat_cfr.append( my_cfr )
 
@@ -582,10 +583,19 @@ def get_data():
     new          = main_data['confirmados_novos'].tolist()
 
     # converting the dd-mm-yyyy strings to date objects
+    # starts at 26th of February of 2020
     dates        = get_dates(main_data['data'].tolist())
+
+    # but for some data series it ends at 13/03/2022
+    diff_days = (datetime.strptime('13-03-2022','%d-%m-%Y').date()-datetime.strptime('26-02-2020','%d-%m-%Y').date()).days
+    dates2 = dates[0:diff_days+1]
 
     # the amount of Covid data days that we have
     days         = len(new)
+    days2       = len(dates2) # for the shorter series
+
+    #print(dates[0],  dates[-1],   days)
+    #print(dates2[0], dates2[-1], days2)
 
     hosp         = main_data['internados'].tolist()
     hosp_uci     = main_data['internados_uci'].tolist()
@@ -599,20 +609,26 @@ def get_data():
     total_tests  = pad_data( tests_data['amostras_novas'].tolist(), days, 0, False)
     positivity   = get_positivity( total_tests, new, 2, 0)
 
-    tmp_vacc_part  = vacc_data['pessoas_inoculadas'].interpolate().tolist()
-    tmp_vacc_full  = vacc_data['pessoas_vacinadas_completamente'].interpolate().tolist()
-    tmp_vacc_boost = vacc_data['pessoas_reforço'].interpolate().tolist()
+    # data starts at 27-12-2020
+    tmp_vacc_part  = vacc_data['pessoas_inoculadas'].interpolate(limit_area='inside').tolist()
+    tmp_vacc_full  = vacc_data['pessoas_vacinadas_completamente'].interpolate(limit_area='inside').tolist()
+    tmp_vacc_boost = vacc_data['pessoas_reforço'].interpolate(limit_area='inside').tolist()
 
-    # right side padding to compensate the 2 week delay on reporting
-    tmp_vacc_part2  = pad_data(tmp_vacc_part,  len(tmp_vacc_part ) +14, None, False)
-    tmp_vacc_full2  = pad_data(tmp_vacc_full,  len(tmp_vacc_full ) +14, None, False)
-    tmp_vacc_boost2 = pad_data(tmp_vacc_boost, len(tmp_vacc_boost) +14, None, False)
+    # diffing from the main data that starts at 26-02-2020
+    diff_days  = (datetime.strptime('27-12-2020','%d-%m-%Y').date()-datetime.strptime('26-02-2020','%d-%m-%Y').date()).days
 
-    # left side padding to compensate for vaccination having started later
-    vacc_part  = pad_data(tmp_vacc_part2,  days, 0, True)
-    vacc_full  = pad_data(tmp_vacc_full2,  days, 0, True)
-    # we pad with nan here to avoid a strange overlap effect from the late starting booster doses
-    vacc_boost = pad_data(tmp_vacc_boost2, days, np.nan, True)
+    # fixed left padding
+    padding    = np.array([np.nan]*diff_days).tolist()
+    tmp_vacc_part  = padding + tmp_vacc_part
+    tmp_vacc_full  = padding + tmp_vacc_full
+    tmp_vacc_boost = padding + tmp_vacc_boost
+
+    # adaptative right side padding
+    vacc_part  = pad_data(tmp_vacc_part,  days2, np.nan, False)
+    vacc_full  = pad_data(tmp_vacc_full,  days2, np.nan, False)
+    vacc_boost = pad_data(tmp_vacc_boost, days2, np.nan, False)
+
+    #print(len(vacc_boost), len(cfr))
 
     # this is a multi year series starting in 01/01/2009
     total_deaths = mort_data['geral_pais'].tolist()
@@ -641,22 +657,16 @@ def get_data():
     s_avg_deaths_sup = get_smooth_list (avg_deaths_sup, MAV_PERIOD)
 
     # these lists are already smoothed
-    s_strat_cv19_new    = get_stratified_data ( main_data, 'confirmados', True, MAV_PERIOD )
-    s_strat_cv19_deaths = get_stratified_data ( main_data, 'obitos', True, MAV_PERIOD )
+    s_strat_cv19_new    = get_stratified_data ( main_data, 'confirmados', True, MAV_PERIOD, days2 )
+    s_strat_cv19_deaths = get_stratified_data ( main_data, 'obitos', True, MAV_PERIOD, days2 )
 
     # unfortunately the stratified data was interrupted
-    # this is a helper variable that prevents CFR artifacts
-    days2 = get_days_until_patch ( s_strat_cv19_new[0] )
-
     strat_cfr = get_stratified_cfr ( main_data, CFR_DELTA, CFR_IGNORE, days2 )
 
     # get age stratified mortality information
     # average precovid deaths and respective standard deviation bands, plus smoothed current overall deaths
     # this is an age stratified generalization of what we have already done with the total for all ages
     strat_mortality_info = get_stratified_mortality_info( mort_data, days )
-
-    # starts at 26th of February of 2020
-    #print(dates[0], dates[-1])
 
     s_min_prevalence = get_min_prevalence (new, PREV_PERIOD, PREV_IGNORE, POPULATION)
     s_max_prevalence = get_max_prevalence (new, s_min_prevalence, total_tests, positivity, POPULATION)
@@ -670,7 +680,7 @@ def get_data():
     # raw data for stats
     raw_data = [ new, cv19_deaths, total_deaths[-days:], avg_deaths ]
 
-    return dates, processed_data, raw_data
+    return dates, dates2, processed_data, raw_data
 
 def get_counties_incidence(row, incidence_data, idx):
 
