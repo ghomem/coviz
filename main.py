@@ -492,7 +492,7 @@ curdoc().title = PAGE_TITLE
 # fetch data from files
 
 # data for regular plots
-data_dates, processed_data, raw_data = get_data()
+data_dates, data_dates2, processed_data, raw_data = get_data()
 
 data_new               = processed_data[0]
 data_hosp              = processed_data[1]
@@ -555,7 +555,8 @@ aux_index = aux_df.index
 
 # calculate the nr of days using the most reliable source
 
-days=len(data_new)
+days = len(data_new)
+days2 = len(data_dates2)
 
 plot_data_s1 = []
 plot_data_s2 = []
@@ -712,8 +713,8 @@ color_multiplier = math.floor(256 / nr_series + 1)
 
 # nine
 
-source_plot9 = make_data_source_multi_dates (data_dates, data_strat_new)
-plot9 = make_plot ('plot9', PLOT9_TITLE, days, 'datetime')
+source_plot9 = make_data_source_multi_dates (data_dates2, data_strat_new)
+plot9 = make_plot ('plot9', PLOT9_TITLE, days2, 'datetime')
 
 lines = []
 for j in range(0, nr_series ):
@@ -721,14 +722,14 @@ for j in range(0, nr_series ):
 
 # we know by inspection that line representing 40-49 is on top
 set_plot_details_multi(plot9, 'Date', labels, '@x{%F}', 'vline', lines[4], False, False)
-set_plot_date_details(plot9, data_dates, days, source_plot9)
+set_plot_date_details(plot9, data_dates2, days2, source_plot9)
 
 plot_data_s2.append( (plot9, source_plot9) )
 
 # ten
 
-source_plot10 = make_data_source_multi_dates (data_dates, data_strat_cv19_deaths)
-plot10 = make_plot ('plot10', PLOT10_TITLE, days, 'datetime')
+source_plot10 = make_data_source_multi_dates (data_dates2, data_strat_cv19_deaths)
+plot10 = make_plot ('plot10', PLOT10_TITLE, days2, 'datetime')
 
 lines = []
 for j in range(0, nr_series ):
@@ -736,14 +737,14 @@ for j in range(0, nr_series ):
 
 # the line for >= 80 is on top for this case
 set_plot_details_multi(plot10, 'Date', labels, '@x{%F}', 'vline', lines[nr_series -1 ], False, False)
-set_plot_date_details(plot10, data_dates, days, source_plot10)
+set_plot_date_details(plot10, data_dates2, days2, source_plot10)
 
 plot_data_s2.append( (plot10, source_plot10) )
 
 # eleven
 
-source_plot11 = make_data_source_multi_dates (data_dates, data_strat_cfr)
-plot11 = make_plot ('plot11', PLOT11_TITLE, days, 'datetime')
+source_plot11 = make_data_source_multi_dates (data_dates2, data_strat_cfr)
+plot11 = make_plot ('plot11', PLOT11_TITLE, days2, 'datetime')
 
 lines = []
 for j in range(0, nr_series ):
@@ -751,13 +752,13 @@ for j in range(0, nr_series ):
 
 # the line for >= 80 is on top for this case
 set_plot_details_multi(plot11, 'Days', labels, '@x{%F}', 'vline', lines[nr_series -1 ], True, False)
-set_plot_date_details(plot11, data_dates, days, source_plot11)
+set_plot_date_details(plot11, data_dates2, days2, source_plot11)
 
 plot_data_s2.append( (plot11, source_plot11) )
 
 # twelve
 
-df12 = pd.DataFrame(data={ 'x': data_dates, 'y': data_vacc_part, 'y2': data_vacc_full, 'y3': data_vacc_boost }, columns=['x', 'y', 'y2', 'y3'])
+df12 = pd.DataFrame(data={ 'x': data_dates2, 'y': data_vacc_part, 'y2': data_vacc_full, 'y3': data_vacc_boost }, columns=['x', 'y', 'y2', 'y3'])
 source_plot12 = ColumnDataSource(df12)
 
 plot12 = make_plot ('vaccination', PLOT12_TITLE, days, 'datetime')
@@ -767,13 +768,16 @@ l122 = plot12.line('x', 'y3', source=source_plot12, line_width=PLOT_LINE_WIDTH, 
 plot12.legend.location = 'top_left'
 set_plot_details(plot12, 'Date', 'Partial', '@x{%F}', '@y{0}', 'vline', False, False,'Complete', "@y2{0}", l121, False, 'Booster', "@y3{0}")
 
-set_plot_date_details(plot12, data_dates, days, source_plot12)
+set_plot_date_details(plot12, data_dates2, days2, source_plot12)
 
 plot_data_s2.append( (plot12, source_plot12) )
 
 # date range widget
 
-date_slider2 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1)
+# we use the earlier end date for this
+date2_f = data_dates2[-1]
+#
+date_slider2 = DateRangeSlider(title="Date Range: ", start=date_i, end=date2_f, value=( date_i, date2_f ), step=1)
 
 date_slider2.on_change('value', partial(update_plot_range, section="2"))
 
