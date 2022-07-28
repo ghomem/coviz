@@ -309,12 +309,14 @@ def on_dimensions_change(attr, old, new):
             curdoc().add_root(layout4_h)
             curdoc().add_root(layout5_h)
             curdoc().add_root(layout6_h)
+            curdoc().add_root(layout7)
         else:
             curdoc().add_root(layout2_v)
             curdoc().add_root(layout3_v)
             curdoc().add_root(layout4_v)
             curdoc().add_root(layout5_v)
             curdoc().add_root(layout6_v)
+            curdoc().add_root(layout7)
 
         # store the horizontalness state
         current_horizontal = horizontal
@@ -446,9 +448,12 @@ def make_layouts( ):
 
     layout6_v = layout(column(vacc_risk_cfr_tabset, vacc_risk_spacer, vacc_risk_chr_tabset), name='section6', sizing_mode='scale_width')
 
+    # seventh
+
+    layout7 = layout(column(final_notes), name='section7', sizing_mode='scale_width')
 
     return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy,\
-    layout4_h, layout4_v, layout5_h, layout5_v, layout6_h, layout6_v
+    layout4_h, layout4_v, layout5_h, layout5_v, layout6_h, layout6_v, layout7
 
 def adjust_widgets_to_layout( horizontal ):
 
@@ -956,6 +961,10 @@ vacc_risk_chr_tabset.active = 3
 
 vacc_risk_notes = Div(text=VACC_RISK_TEXT, width=VACC_RISK_TEXT_WIDTH, align='start')
 
+#### Seventh page ####
+
+final_notes = Div(text=FINAL_TEXT, width=FINAL_TEXT_WIDTH, align='start')
+
 #### Plot layout section ###
 
 ## handling different layout orientations
@@ -973,7 +982,7 @@ window_size_data_source.on_change('data', on_dimensions_change)
 # all roots added here must be invoked on the HTML
 
 layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_map, \
-layout4_h, layout4_v, layout5_h, layout5_v, layout6_h, layout6_v = make_layouts()
+layout4_h, layout4_v, layout5_h, layout5_v, layout6_h, layout6_v, layout7 = make_layouts()
 
 # by default layouts are created assuming we have enough width for the ideal visualization mode
 # that is, we start with horizontal layouts
@@ -997,3 +1006,6 @@ curdoc().add_root(layout5_h)
 
 # section 6
 curdoc().add_root(layout6_h)
+
+# section 7
+curdoc().add_root(layout7)

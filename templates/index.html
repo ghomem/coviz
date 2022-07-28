@@ -120,41 +120,9 @@
 	                        <h3 style="margin-bottom: 0;">Coviz</h3>
 				<p>Visualizing Covid19 and Public Health data for Portugal</p>
 			</header>
-
-                        <p class="minor"><br/>
-                            <strong>About Coviz</strong></br>
-                            This website started as an improved version of the public Covid dashboard.
-                            The initial idea was providing better layouts, that allowed for simultaneous inpection of related quantities, and evolved in the direction
-                            of providing data from different public data sources (ex: age stratified overall mortality).
-                            Meanwhile, our health authority (DGS) retired the original dashboard reducing official daily
-                            reporting to "fluid-named" excels files, and making Coviz the only place where a data driven story of the pandemic in Portugal can be found.
-                            As of 13/03/2022 DGS reduced the scope of reporting, preventing the geospatial and age-stratified plots from being updated.
-                            As of 01/06/2022 the information about testing stopped being reported, forcing the retrieval if such data from ECDC's files.
-                            The information from DGS is not downloadable from cloud instances (including pipeline runners) due to enforced geographical restrictions, making it
-                            difficult for interested citizens to transform, study and visualize data that in essence belongs to them.
-                            While this project intends to restore the level of transparency that the portuguese citizens deserve, it is not an official source of information
-                            and we can not garantee that the result is error free. Should any problems be found, they can be reported at the project's <a target="_blank" href="https://github.com/ghomem/coviz/">Github page</a>.
-                        </p>
-
-                        <p class="minor">
-                            <strong>Notes</strong></br>
-	                    Data is presented as a 7 day moving average to make reading the plots easier. The goal of this dashboard is allowing the visualization of mid term trends rather than the short term noise.
-                        </p>
-
-			<p class="minor"><strong>Credits</strong></br>
-			    The source code for this application can be found <a target="_blank" href="https://github.com/ghomem/coviz/">here</a>.<br/>
-			    The web frontend loads in Portable Web App (PWA) mode thanks to the <a target="_blank" href="https://github.com/pmac-dev/coviz-pwa">contribution </a> of <a target="_blank" href="https://github.com/pmac-dev/coviz-pwa">@pmac-dev</a>.</br>
-                            The static content was adapted from <a target="_blank" href="https://html5up.net/story">HTML5UP</a>.<br/>
-		            The plots are made with <a target="_blank" href="https://bokeh.org">Bokeh</a>.<br/>
-			    Historical data was obtained from the <a target="_blank" href="https://github.com/dssg-pt/">DSSG-PT</a> repositories and current data is merged from DGS, DSSG-PT and ECDC data sources.
-                        </p>
-
-			<p class="minor"><strong>Resources</strong></br>
-                            The parent project of this dashboard can be found <a target="_blank" href="https://github.com/ghomem/pandemic-toolkit/">here</a>.
-                        </p>
-
+                        <div class="content2">{{ embed(roots.section7) }}</div>
 			<ul class="actions small">
-                                <li><a href="#section5" class="button smooth-scroll small primary">Previous &uarr;</a></li>
+                                <li><a href="#section6" class="button smooth-scroll small primary">Previous &uarr;</a></li>
                        </ul>
 		</div>
                 <div class="image">
