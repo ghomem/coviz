@@ -108,37 +108,91 @@ MORT_TEXT_WIDTH = 480
 PLOT_WIDTH5  = 900 # for the 5th section
 PLOT_HEIGHT5 = 505
 
+P_HEADING_STYLE = "font-size: 140%; font-weight: bold; padding-top: 7px; padding-bottom: 5px; margin-bottom: 0px; color: #4d4d4d"
+P_TEXT_STYLE    = "font-size: 100%; font-weight: normal; padding-top: 7px; color: #4d4d4d"
+P_TEXT_STYLE_L  = "font-size: 110%; font-weight: normal; padding-top: 7px; color: #4d4d4d"
+
 PREV_TEXT_WIDTH = 410
-PREV_TEXT = '<div class="content" style="padding-top: 10px;">\
-                <p style="font-size: 140%; font-weight: bold; padding-top: 7px; padding-bottom: 10px; margin-bottom: 0px; color: #4d4d4d">\
-                    The prevalence envelope\
-                </p>\
-                <p style="font-size: 1oo%; font-weight: normal; padding-top: 7px; color: #4d4d4d">\
-                    How many people are infected with Covid in a given moment in time?</br></br>\
+PREV_TEXT = f"""<div class="content" style="padding-top: 10px;">
+                <p style="{P_HEADING_STYLE}">
+                    The prevalence envelope
+                </p>
+                <p style="{P_TEXT_STYLE}">
+                    How many people are infected with Covid in a given moment in time?</br></br>
                     It is not possible to provide reliable prevalence estimations without a mass testing policy or at least periodic testing of significant population samples.\
                     However, the amount of testing and the testing strategy have changed significantly over time. We present the prevalence envelope that can be derived from the existing data.</br></br>\
                     The plot on the left displays very crude best-case (Min prevalence) and worst case (Max prevalence) scenarios, along with an average of those two.</br></br>\
-                    The best case scenario considers that the prevalence is the sum of cases found in the last 7 days (including today).\
-                    The worst case scenario adds, as extra prevalance, the part of population that was not tested today, minus those who were\
-                    found to be infected in the previous 180 days, multiplied by the positivity.\
-                </p>\
-            </div>'
+                    The best case scenario considers that the prevalence is the sum of cases found in the last 7 days (including today).
+                    The worst case scenario adds, as extra prevalance, the part of population that was not tested today, minus those who were
+                    found to be infected in the previous 180 days, multiplied by the positivity.
+                </p>
+            </div>"""
 
 PLOT_WIDTH6  = 505 # for the 6th section
 PLOT_HEIGHT6 = 505
 
 VACC_RISK_TEXT_WIDTH = 410
 
-VACC_RISK_TEXT = '<div class="content" style="padding-top: 15px;">\
-                   <p style="font-size: 140%; font-weight: bold; padding-top: 7px; padding-bottom: 10px; margin-bottom: 0px; color: #4d4d4d">\
-                    The effect of vaccines\
-                  </p>\
-                  <p style="font-size: 1oo%; font-weight: normal; padding-top: 7px; color: #4d4d4d">\
-                      How does vaccination affect the risk of hospitalization and death?</br></br>\
-                      The answer to this question is rather complex as it depends on vaccinating timing, rythm, immunity waning and\
-                      interaction of vaccines with new virus variants. One pragmatic data driven approach is looking into the Case Fatality Rate (CFR)\
-                      and Case Hospitalization Rate (CHR) broken down by vaccination status and age group.</br></br>\
-                      This information is made available by the health authority on a PDF containing data for a single month. The values\
-                      present on the plots were assembled from all the PDFs that were published so far.\
-                </p>\
-            </div>'
+VACC_RISK_TEXT = f"""<div class="content" style="padding-top: 15px;">
+                   <p style="{P_HEADING_STYLE}">
+                    The effect of vaccines
+                  </p>
+                  <p style="{P_TEXT_STYLE}">
+                      How does vaccination affect the risk of hospitalization and death?</br></br>
+                      The answer to this question is rather complex as it depends on vaccinating timing, rythm, immunity waning and
+                      interaction of vaccines with new virus variants. One pragmatic data driven approach is looking into the Case Fatality Rate (CFR)
+                      and Case Hospitalization Rate (CHR) broken down by vaccination status and age group.</br></br>
+                      This information is made available by the health authority on a PDF containing data for a single month. The values
+                      present on the plots were assembled from all the PDFs that were published so far.
+                </p>
+            </div>"""
+
+FINAL_TEXT_WIDTH = 410
+
+FINAL_TEXT = f"""<div class="content" style="padding-top: 15px; margin-bottom: 20px">
+
+                    <p style="{P_HEADING_STYLE}">
+                        About Coviz
+                    </p>
+
+                    <p style="{P_TEXT_STYLE_L}">
+                        This website started as an improved version of the public Covid dashboard. The initial idea
+                        was providing better layouts, that allowed for simultaneous inpection of related quantities. 
+                        It then evolved in the direction of providing data from different public data sources (ex: age stratified overall mortality).
+
+                        Meanwhile, our health authority (DGS) retired the original dashboard reducing official daily reporting to
+                        "fluid-named" excel files, and making Coviz the only place where a data driven story of the pandemic in
+                        Portugal can be found.
+                        </br></br>
+                        As of 13/03/2022 DGS reduced the scope of reporting, preventing the geospatial and
+                        age-stratified plots from being updated. As of 01/06/2022 the information about testing stopped being reported,
+                        forcing the retrieval if such data from ECDC\'s files. The information from DGS is not downloadable from
+                        cloud instances (including pipeline runners) due to enforced geographical restrictions, making it difficult
+                        for interested citizens to transform, study and visualize data that in essence belongs to them. While this project
+                        intends to restore the level of transparency that the portuguese citizens deserve, it is not an official source of
+                        information and we can not garantee that the result is error free. Should any problems be found, they can be reported at the project\'s Github page.
+                        </br></br>
+                        Most data is presented as a 7 day moving average to make reading the plots easier. The goal of this dashboard is allowing the
+                        visualization of mid term trends rather than the short term noise.
+                    </p>
+
+                    <p style="{P_HEADING_STYLE}">
+                        Credits
+                    </p>
+
+                    <p style="{P_TEXT_STYLE_L}">
+                        The source code for this application can be found <a target="_blank" href="https://github.com/ghomem/coviz/">here</a>.<br/>
+                        The web frontend loads in Portable Web App (PWA) mode thanks to the <a target="_blank" href="https://github.com/pmac-dev/coviz-pwa">contribution </a> of <a target="_blank" href="https://github.com/pmac-dev/coviz-pwa">@pmac-dev</a>.</br>
+                        The static content was adapted from <a target="_blank" href="https://html5up.net/story">HTML5UP</a>.<br/>
+                        The plots are made with <a target="_blank" href="https://bokeh.org">Bokeh</a>.<br/>
+                        Historical data was obtained from the <a target="_blank" href="https://github.com/dssg-pt/">DSSG-PT</a> repositories and current data is merged from DGS, DSSG-PT and ECDC data sources.
+                    </p>
+
+                    <p style="{P_HEADING_STYLE}">
+                        Resources
+                    </p>
+
+                    <p style="{P_TEXT_STYLE_L}">
+                        The parent project of this dashboard can be found <a target="_blank" href="https://github.com/ghomem/pandemic-toolkit/">here</a>.
+                    </p>
+                </div>"""
