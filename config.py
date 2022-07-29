@@ -109,7 +109,8 @@ PLOT_WIDTH5  = 900 # for the 5th section
 PLOT_HEIGHT5 = 505
 
 P_HEADING_STYLE = "font-size: 140%; font-weight: bold; padding-top: 7px; padding-bottom: 5px; margin-bottom: 0px; color: #4d4d4d"
-P_TEXT_STYLE    = "font-size: 1oo%; font-weight: normal; padding-top: 7px; color: #4d4d4d"
+P_TEXT_STYLE    = "font-size: 100%; font-weight: normal; padding-top: 7px; color: #4d4d4d"
+P_TEXT_STYLE_L  = "font-size: 110%; font-weight: normal; padding-top: 7px; color: #4d4d4d"
 
 PREV_TEXT_WIDTH = 410
 PREV_TEXT = f"""<div class="content" style="padding-top: 10px;">
@@ -148,19 +149,19 @@ VACC_RISK_TEXT = f"""<div class="content" style="padding-top: 15px;">
 
 FINAL_TEXT_WIDTH = 410
 
-FINAL_TEXT = f"""<div class="content" style="padding-top: 15px;">
+FINAL_TEXT = f"""<div class="content" style="padding-top: 15px; margin-bottom: 20px">
 
                     <p style="{P_HEADING_STYLE}">
                         About Coviz
                     </p>
 
-                    <p style="{P_TEXT_STYLE}">
+                    <p style="{P_TEXT_STYLE_L}">
                         This website started as an improved version of the public Covid dashboard. The initial idea
-                        was providing better layouts, that allowed for simultaneous inpection of related quantities,
-                        and evolved in the direction of providing data from different public data sources (ex: age stratified overall mortality).
+                        was providing better layouts, that allowed for simultaneous inpection of related quantities. 
+                        It then evolved in the direction of providing data from different public data sources (ex: age stratified overall mortality).
 
                         Meanwhile, our health authority (DGS) retired the original dashboard reducing official daily reporting to
-                        "fluid-named" excels files, and making Coviz the only place where a data driven story of the pandemic in
+                        "fluid-named" excel files, and making Coviz the only place where a data driven story of the pandemic in
                         Portugal can be found.
                         </br></br>
                         As of 13/03/2022 DGS reduced the scope of reporting, preventing the geospatial and
@@ -179,7 +180,7 @@ FINAL_TEXT = f"""<div class="content" style="padding-top: 15px;">
                         Credits
                     </p>
 
-                    <p style="{P_TEXT_STYLE}">
+                    <p style="{P_TEXT_STYLE_L}">
                         The source code for this application can be found <a target="_blank" href="https://github.com/ghomem/coviz/">here</a>.<br/>
                         The web frontend loads in Portable Web App (PWA) mode thanks to the <a target="_blank" href="https://github.com/pmac-dev/coviz-pwa">contribution </a> of <a target="_blank" href="https://github.com/pmac-dev/coviz-pwa">@pmac-dev</a>.</br>
                         The static content was adapted from <a target="_blank" href="https://html5up.net/story">HTML5UP</a>.<br/>
@@ -191,7 +192,7 @@ FINAL_TEXT = f"""<div class="content" style="padding-top: 15px;">
                         Resources
                     </p>
 
-                    <p style="{P_TEXT_STYLE}">
+                    <p style="{P_TEXT_STYLE_L}">
                         The parent project of this dashboard can be found <a target="_blank" href="https://github.com/ghomem/pandemic-toolkit/">here</a>.
                     </p>
                 </div>"""
