@@ -143,7 +143,8 @@ VACC_RISK_TEXT = f"""<div class="content" style="padding-top: 15px;">
                       interaction of vaccines with new virus variants. One pragmatic data driven approach is looking into the Case Fatality Rate (CFR)
                       and Case Hospitalization Rate (CHR) broken down by vaccination status and age group.</br></br>
                       This information is made available by the health authority on a PDF containing data for a single month. The values
-                      present on the plots were assembled from all the PDFs that were published so far.
+                      present on the plots were assembled from all the PDFs that were published so far.</br></br>
+                      <b>Note: </b>to our best knowledge, data for September 2021 has not been published.
                 </p>
             </div>"""
 

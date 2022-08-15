@@ -488,9 +488,42 @@ def make_vacc_risk_plot(data_vacc, type_str, group_str):
 
     asource = ColumnDataSource(sub_df)
 
-    aplot.line(x='data', y='outros_'       + group_str, source=asource, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA,  line_color=PLOT_LINE_COLOR,           legend_label='Non vacc / incomplete' )
-    aplot.line(x='data', y='vac_completa_' + group_str, source=asource, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA,  line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Complete' )
-    aplot.line(x='data', y='vac_reforco_'  + group_str, source=asource, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA,  line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='Booster' )
-    aplot.line(x='data', y='vac_reforco2_' + group_str, source=asource, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA2, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='Booster2' )
+    y_line1 = 'outros_'       + group_str
+    y_line2 = 'vac_completa_' + group_str
+    y_line3 = 'vac_reforco_'  + group_str
+    y_line4 = 'vac_reforco2_' + group_str
+
+    y_line1_legend = 'None / incomplete'
+    y_line2_legend = 'Complete'
+    y_line3_legend = 'Booster'
+    y_line4_legend = 'Booster2'
+
+    line1 = aplot.line(x='data', y=y_line1, source=asource, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA,  line_color=PLOT_LINE_COLOR,           legend_label=y_line1_legend )
+    line2 = aplot.line(x='data', y=y_line2, source=asource, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA,  line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label=y_line2_legend )
+    line3 = aplot.line(x='data', y=y_line3, source=asource, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA,  line_color=PLOT_LINE_COLOR_REFERENCE, legend_label=y_line3_legend )
+    line4 = aplot.line(x='data', y=y_line4, source=asource, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA2, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label=y_line4_legend )
+
+    # prepare the tooltips
+    # we need to use the dataframe column names which depend on the group_str parameter
+    tooltip_list = [ ('date', '@data'),
+                     (y_line1_legend, '@' + y_line1 + '{0.0}%'),
+                     (y_line2_legend, '@' + y_line2 + '{0.0}%'),
+                     (y_line3_legend, '@' + y_line3 + '{0.0}%'),
+                     (y_line4_legend, '@' + y_line4 + '{0.0}%'),
+                    ]
+    tooltip_formatters = {}
+
+    # the line to which the tooltip attaches and other details
+    tooltip_line = line1
+    tooltip_attachment = 'right'
+    tooltip_mode = 'vline'
+
+    # add the hover tool
+    ahover = HoverTool(tooltips=tooltip_list, mode=tooltip_mode, attachment=tooltip_attachment, formatters=tooltip_formatters, renderers = [ tooltip_line ])
+
+    ahover.point_policy = 'snap_to_data'
+    ahover.line_policy = 'nearest'
+    aplot.add_tools(ahover)
+    aplot.toolbar.active_inspect = ahover
 
     return aplot
