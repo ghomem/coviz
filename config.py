@@ -2,11 +2,11 @@ from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256
 
 PAGE_TITLE = 'Coviz'
 
-PLOT_TOOLS    ='save,reset,pan,wheel_zoom,box_zoom'
+PLOT_TOOLS    = 'save,reset,pan,wheel_zoom,box_zoom'
 
-PLOT_HEIGHT   = 250 # first section, but the actual height is constrained by the width
+PLOT_HEIGHT   = 250  # first section, but the actual height is constrained by the width
 PLOT_WIDTH    = 400
-PLOT_HEIGHT2  = 145 # for the second section
+PLOT_HEIGHT2  = 145  # for the second section
 TEXT_WIDTH    = 500
 STATS_WIDTH   = 812
 STATS_HEIGHT  = 80
@@ -19,8 +19,8 @@ PLOT_LINE_ALPHA       = 0.6
 PLOT_LINE_ALPHA2      = 0.9
 PLOT_LINE_ALPHA_MUTED = 0.1
 
-TITLE_SIZE_HORIZONTAL_LAYOUT = '13pt' # Bokeh default
-TITLE_SIZE_VERTICAL_LAYOUT   = '15pt' # For mobile
+TITLE_SIZE_HORIZONTAL_LAYOUT = '13pt'  # Bokeh default
+TITLE_SIZE_VERTICAL_LAYOUT   = '15pt'  # For mobile
 
 # for dynamic range adjustments
 PLOT_RANGE_FACTOR = 0.05
@@ -41,18 +41,18 @@ PLOT_LEGEND_FONT_SIZE_VERTICAL_LAYOUT = '15px'
 
 PLOT_LEGEND_SPACING = 0
 
-PLOT1_TITLE  ='14 day Incidence'
-PLOT2_TITLE  ='Positivity'
-PLOT3_TITLE  ='Hospitalized'
-PLOT4_TITLE  ='Case fatality rate'
-PLOT5_TITLE  ='New cases'
-PLOT6_TITLE  ='Covid deaths'
-PLOT7_TITLE  ='Overall deaths'
-PLOT8_TITLE  ='Rt'
-PLOT9_TITLE  ='New cases by age group (click on the legend to hide/show series)'
-PLOT10_TITLE ='Covid deaths by age group (click on the legend to hide/show series)'
-PLOT11_TITLE ='CFR by age group (click on the legend to hide/show series)'
-PLOT12_TITLE ='Vaccination'
+PLOT1_TITLE  = '14 day Incidence'
+PLOT2_TITLE  = 'Positivity'
+PLOT3_TITLE  = 'Hospitalized'
+PLOT4_TITLE  = 'Case fatality rate'
+PLOT5_TITLE  = 'New cases'
+PLOT6_TITLE  = 'Covid deaths'
+PLOT7_TITLE  = 'Overall deaths'
+PLOT8_TITLE  = 'Rt'
+PLOT9_TITLE  = 'New cases by age group (click on the legend to hide/show series)'
+PLOT10_TITLE = 'Covid deaths by age group (click on the legend to hide/show series)'
+PLOT11_TITLE = 'CFR by age group (click on the legend to hide/show series)'
+PLOT12_TITLE = 'Vaccination'
 
 PLOT_CORRELATION_TITLE = 'Excess deaths vs Covid deaths'
 PLOT_PREVALENCE_TITLE  = 'Prevalence envelope'
@@ -69,7 +69,7 @@ CLINES_SWITCH_HEIGHT = 30
 INCIDENCE_LIMIT  = 120
 POSITIVITY_LIMIT = 4
 RT_LIMIT         = 1
-UCI_LIMIT        = 245 * 5 # multiplied by 5 because we are plotting the series x5
+UCI_LIMIT        = 245 * 5  # multiplied by 5 because we are plotting the series x5
 
 DATE_IGNORE = 15
 
@@ -77,7 +77,7 @@ DATE_IGNORE = 15
 
 MAP_INCIDENCE_MIN = 0
 MAP_INCIDENCE_MAX = 1600
-MAP_INCIDENCE_RESOLUTION = 9 # min 3, max 9
+MAP_INCIDENCE_RESOLUTION = 9  # min 3, max 9
 
 MAP_WIDTH  = 454
 MAP_HEIGHT = 605
@@ -85,16 +85,16 @@ MAP_HEIGHT = 605
 # in meters, eg, 1000 -> 1km
 MAP_RESOLUTION = 1500
 
-MAP_TILE_PROVIDER = None #
+MAP_TILE_PROVIDER = None
 
-MAP_TITLE ='14 day Incidence per county'
+MAP_TITLE = '14 day Incidence per county'
 
-TEXT_NOTES  ='<strong>Important:</strong> use the mouse for the initial selection and the cursors for fine tuning.'
+TEXT_NOTES = '<strong>Important:</strong> use the mouse for the initial selection and the cursors for fine tuning.'
 
 # layout related variables
 MIN_HORIZONTAL_WIDTH = 1360
 
-PLOT_WIDTH4  = 900 # for the 4th section
+PLOT_WIDTH4  = 900  # for the 4th section
 PLOT_HEIGHT4 = 475
 
 PLOT_AREAS_COLOR4 = 'gray'
@@ -105,7 +105,7 @@ MORT_STATS_TABLE_HEIGHT = 355
 
 MORT_TEXT_WIDTH = 480
 
-PLOT_WIDTH5  = 900 # for the 5th section
+PLOT_WIDTH5  = 900  # for the 5th section
 PLOT_HEIGHT5 = 505
 
 P_HEADING_STYLE = "font-size: 140%; font-weight: bold; padding-top: 7px; padding-bottom: 5px; margin-bottom: 0px; color: #4d4d4d"
@@ -128,7 +128,7 @@ PREV_TEXT = f"""<div class="content" style="padding-top: 10px;">
                 </p>
             </div>"""
 
-PLOT_WIDTH6  = 505 # for the 6th section
+PLOT_WIDTH6  = 505  # for the 6th section
 PLOT_HEIGHT6 = 505
 
 VACC_RISK_TEXT_WIDTH = 410
@@ -158,7 +158,7 @@ FINAL_TEXT = f"""<div class="content" style="padding-top: 15px; margin-bottom: 2
 
                     <p style="{P_TEXT_STYLE_L}">
                         This website started as an improved version of the public Covid dashboard. The initial idea
-                        was providing better layouts, that allowed for simultaneous inpection of related quantities. 
+                        was providing better layouts, that allowed for simultaneous inpection of related quantities.
                         It then evolved in the direction of providing data from different public data sources (ex: age stratified overall mortality).
 
                         Meanwhile, our health authority (DGS) retired the original dashboard reducing official daily reporting to
