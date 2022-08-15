@@ -8,7 +8,7 @@ from pandas_bokeh.geoplot import convert_geoDataFrame_to_patches
 from functools import partial
 from datetime import datetime
 from bokeh.io import curdoc
-from bokeh.layouts import layout,gridplot, column, row
+from bokeh.layouts import layout, gridplot, column, row
 from bokeh.models.widgets import Tabs, Panel
 from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, TableColumn, DataTable, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band, HTMLTemplateFormatter, StringFormatter, BoxAnnotation, Scatter
 from bokeh.palettes import Inferno256, Magma256, Turbo256, Plasma256, Cividis256, Viridis256, OrRd
@@ -23,7 +23,7 @@ from config import *
 # import functions
 from util import *
 
-window_size_data_source = ColumnDataSource( data = { 'width' :[0] ,  'height': [0] } )
+window_size_data_source = ColumnDataSource( data={ 'width' : [0] ,  'height': [0] } )
 
 # by default we assume the layout is horizontal
 current_horizontal = True
@@ -34,6 +34,7 @@ current_horizontal = True
 
 ### callbacks ####
 
+
 # for the toggle button action
 def update_state(new):
 
@@ -42,6 +43,7 @@ def update_state(new):
     cline3.visible = clines_switch.active
     cline4.visible = clines_switch.active
 
+
 # for the visible stats
 def update_stats(attr, old, new):
 
@@ -49,19 +51,19 @@ def update_stats(attr, old, new):
     date_f_cmp = date_slider1.value_as_date[1]
 
     # we need to know the list positions to sum the numbers
-    idx1 = (date_i_cmp-data_dates[0]).days
-    idx2 = (date_f_cmp-data_dates[0]).days
+    idx1 = (date_i_cmp - data_dates[0]).days
+    idx2 = (date_f_cmp - data_dates[0]).days
 
     # use nansum because there may be NaNs due to delayed / missing data
 
-    sum_new              = make_html_integer(np.nansum(np.array( raw_data_new         [idx1:idx2+1] )))
-    sum_cv19_deaths      = make_html_integer(np.nansum(np.array( raw_data_cv19_deaths [idx1:idx2+1] )))
-    sum_total_deaths_pre = np.nansum(np.array( raw_data_total_deaths[idx1:idx2+1] ))
+    sum_new              = make_html_integer(np.nansum(np.array(         raw_data_new[idx1:idx2 + 1] )))
+    sum_cv19_deaths      = make_html_integer(np.nansum(np.array( raw_data_cv19_deaths[idx1:idx2 + 1] )))
+    sum_total_deaths_pre = np.nansum(np.array( raw_data_total_deaths[idx1:idx2 + 1] ))
 
-    sum_avg_deaths_pre   = int(round( np.nansum(np.array( raw_data_avg_deaths[idx1:idx2+1] ) ), 0))
+    sum_avg_deaths_pre   = int(round( np.nansum(np.array( raw_data_avg_deaths[idx1:idx2 + 1] ) ), 0))
 
     excess_deaths     = sum_total_deaths_pre - sum_avg_deaths_pre
-    excess_deaths_pct = round( (excess_deaths / sum_avg_deaths_pre)*100, 1)
+    excess_deaths_pct = round( (excess_deaths / sum_avg_deaths_pre) * 100, 1)
 
     sum_avg_deaths   = make_html_integer( sum_avg_deaths_pre   )
     sum_total_deaths = make_html_integer( sum_total_deaths_pre )
@@ -74,6 +76,7 @@ def update_stats(attr, old, new):
 
     # pre-existing global var
     stats_table.source = stats_source
+
 
 # makes the legends appear / disappear as necessary
 def update_legends(attr, old, new, section):
@@ -88,18 +91,18 @@ def update_legends(attr, old, new, section):
         nr_days = days2
 
     # we need to know the list positions to sum the numbers
-    idx1 = (date_i_cmp-data_dates[0]).days
-    idx2 = (date_f_cmp-data_dates[0]).days
+    idx1 = (date_i_cmp - data_dates[0]).days
+    idx2 = (date_f_cmp - data_dates[0]).days
 
     # the -7 is because we start 7 days later on the dates, due to the moving average :-)
-    if idx2-idx1 < nr_days - 7:
-        my_visibility = False
+    if idx2 - idx1 < nr_days - 7:
+        my_visibility   = False
         my_click_policy = 'none'
-        my_location = (0,-1000)
+        my_location     = (0, -1000)
     else:
-        my_visibility = True
+        my_visibility   = True
         my_click_policy = 'mute'
-        my_location = 'top_left'
+        my_location     = 'top_left'
 
     # act on plots that have dynamic legend
     if section == "1":
@@ -117,8 +120,9 @@ def update_legends(attr, old, new, section):
         plot10.legend.click_policy = my_click_policy
         plot11.legend.click_policy = my_click_policy
 
+
 # for the data range
-def update_plot_range (attr, old, new, section):
+def update_plot_range(attr, old, new, section):
 
     if section == '1':
         my_slider    = date_slider1
@@ -142,23 +146,24 @@ def update_plot_range (attr, old, new, section):
         p = d[0]
 
         # for some reason we need to pad the range to get an exact day match with the slider
-        p.x_range.start = date_i - pd.Timedelta(days=1).total_seconds()*1000
+        p.x_range.start = date_i - pd.Timedelta(days=1).total_seconds() * 1000
 
         # this one is just for the line not to be attached to the limit of the plot
-        p.x_range.end   = date_f + pd.Timedelta(days=2).total_seconds()*1000
+        p.x_range.end   = date_f + pd.Timedelta(days=2).total_seconds() * 1000
 
         # we pass the data source from the tuple
-        y_min, y_max = get_y_limits (d[1], date_i_cmp, date_f_cmp)
+        y_min, y_max = get_y_limits(d[1], date_i_cmp, date_f_cmp)
         if math.isnan(y_min) or math.isnan(y_max):
             print('not rescaling due to having received nan')
             continue
 
-        #print (y_min, y_max)
+        # print (y_min, y_max)
 
         # adjust range
         range_delta = y_max * PLOT_RANGE_FACTOR
         p.y_range.end    = y_max + range_delta
         p.y_range.start  = y_min - range_delta
+
 
 # for the map
 def update_map(attr, old, new):
@@ -175,9 +180,9 @@ def update_map(attr, old, new):
 
     # index in aux_index has repeated values, as multipoly rows in the original data were converted into several rows
     j = 0
-    inc_list = np.array ( [] )
+    inc_list = np.array( [] )
     for index in aux_index:
-        #print (index, j)
+        # print (index, j)
         inc_list = np.append(inc_list, new_data_incidence_counties['incidence'][index])
         j = j + 1
 
@@ -188,20 +193,22 @@ def update_map(attr, old, new):
     # we refresh the tooltips using the Colormap column as the list
     plot_map.hover.tooltips = [ ('County', '@NAME_2'), ('Incidence', '@Colormap'), ]
 
+
 # for the overall mortality plot
-def update_mortality_plot_range (attr, old, new):
+def update_mortality_plot_range(attr, old, new):
 
     pre_box.right = date_slider4.value[0]
     post_box.left = date_slider4.value[1]
 
-def update_mortality_stats (attr, old, new):
+
+def update_mortality_stats(attr, old, new):
 
     date_i_cmp = date_slider4.value_as_date[0]
     date_f_cmp = date_slider4.value_as_date[1]
 
-     # we need to know the list positions to sum the numbers
-    idx1 = (date_i_cmp-data_dates[0]).days
-    idx2 = (date_f_cmp-data_dates[0]).days
+    # we need to know the list positions to sum the numbers
+    idx1 = (date_i_cmp - data_dates[0]).days
+    idx2 = (date_f_cmp - data_dates[0]).days
 
     column_total = []
     column_avg   = []
@@ -213,12 +220,12 @@ def update_mortality_stats (attr, old, new):
 
         # use nansum because there may be NaNs due to delayed / missing data
 
-        sum_total_deaths = round(np.nansum(np.array( total_strat_group[idx1:idx2+1] )),0)
+        sum_total_deaths = round(np.nansum(np.array( total_strat_group[idx1:idx2 + 1] )), 0)
         column_total.append(sum_total_deaths)
 
-        sum_avg_deaths     = round(np.nansum(np.array( avg_strat_group    [idx1:idx2+1] )),0)
-        sum_avg_deaths_inf = round(np.nansum(np.array( avg_strat_group_inf[idx1:idx2+1] )),0)
-        sum_avg_deaths_sup = round(np.nansum(np.array( avg_strat_group_sup[idx1:idx2+1] )),0)
+        sum_avg_deaths     = round(np.nansum(np.array(     avg_strat_group[idx1:idx2 + 1] )), 0)
+        sum_avg_deaths_inf = round(np.nansum(np.array( avg_strat_group_inf[idx1:idx2 + 1] )), 0)
+        sum_avg_deaths_sup = round(np.nansum(np.array( avg_strat_group_sup[idx1:idx2 + 1] )), 0)
 
         sum_avg_deaths_inf_pct = round(( ( sum_avg_deaths_inf - sum_avg_deaths ) / sum_avg_deaths ) * 100, 1)
         sum_avg_deaths_sup_pct = round(( ( sum_avg_deaths_sup - sum_avg_deaths ) / sum_avg_deaths ) * 100, 1)
@@ -247,13 +254,13 @@ def update_mortality_stats (attr, old, new):
 
         column_exc.append( str_pad + str(int(excess_deaths)) )
 
-        column_pct.append( str_pad + str(round( (excess_deaths / sum_avg_deaths)*100, 1)) + '%' )
+        column_pct.append( str_pad + str(round( (excess_deaths / sum_avg_deaths) * 100, 1)) + '%' )
 
     # this is what is necessary to update an existing table
 
     # local vars
     dummy_column = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 , 1]
-    index_column = [ '<1', '1-4', '5-14', '15-24','25-34', '35-44', '45-54', '55-64', '65-74', '75-84', '>85', 'all ages', 'all ages*' ]
+    index_column = [ '<1', '1-4', '5-14', '15-24', '25-34', '35-44', '45-54', '55-64', '65-74', '75-84', '>85', 'all ages', 'all ages*' ]
 
     stats_data = pd.DataFrame( { 'age_group': index_column, 'sum_total_deaths': column_total, 'sum_avg_deaths': column_avg, 'excess_deaths': column_exc, 'excess_deaths_pct': column_pct } )
     stats_source = ColumnDataSource( stats_data )
@@ -266,10 +273,10 @@ def update_mortality_stats (attr, old, new):
 
     # and for the correlation plot
 
-    data_cv19_deaths_subset = get_clean_data(corr_data_cv19_deaths[idx1:idx2+1])
-    data_exc_deaths_subset  = get_clean_data(corr_data_exc_deaths [idx1:idx2+1])
+    data_cv19_deaths_subset = get_clean_data(corr_data_cv19_deaths[idx1:idx2 + 1])
+    data_exc_deaths_subset  = get_clean_data( corr_data_exc_deaths[idx1:idx2 + 1])
 
-    slope, intercept, r_value = get_correlation_data (data_cv19_deaths_subset, data_exc_deaths_subset)
+    slope, intercept, r_value = get_correlation_data(data_cv19_deaths_subset, data_exc_deaths_subset)
 
     # update the global variables
     source_plot_correlation.data = dict(x=data_cv19_deaths_subset, y=data_exc_deaths_subset)
@@ -291,6 +298,7 @@ def on_document_ready(evt):
     fake_slider.value = ( date_i, date_i )
     fake_slider.value = ( date_i, date_f )
 
+
 # this callbacks takes action on the server side upon dimensions change
 def on_dimensions_change(attr, old, new):
 
@@ -309,7 +317,7 @@ def on_dimensions_change(attr, old, new):
         horizontal = False
 
     if (current_horizontal != horizontal):
-        print ('redoing layouts')
+        print('redoing layouts')
 
         curdoc().clear()
 
@@ -363,12 +371,13 @@ ds.change.emit();
 
 ### layouts ####
 
+
 def make_layouts( ):
 
     control_spacer = Spacer(width=10, height=10, width_policy='auto', height_policy='fixed')
 
     # use this line for debugging with the fake slider
-    controls1 = row (date_slider1, control_spacer, fake_slider, clines_switch, name="section1_controls" )
+    controls1 = row(date_slider1, control_spacer, fake_slider, clines_switch, name="section1_controls" )
 
     fake_slider.visible = False
 
@@ -388,25 +397,25 @@ def make_layouts( ):
 
     # second
 
-    controls2 = row (date_slider2, name="section2_controls" )
+    controls2 = row(date_slider2, name="section2_controls" )
 
-    grid2_h = gridplot ([
-                        [plot9,  plot11],
-                        [plot10, plot12] ],
-                        plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT2, toolbar_location=None, sizing_mode='scale_width')
+    grid2_h = gridplot([
+                       [plot9,  plot11],
+                       [plot10, plot12] ],
+                       plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT2, toolbar_location=None, sizing_mode='scale_width')
 
-    grid2_v = gridplot ([
-                        [plot9 ],
-                        [plot10],
-                        [plot11],
-                        [plot12] ],
-                        plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT2, toolbar_location=None, sizing_mode='scale_width')
+    grid2_v = gridplot([
+                       [plot9 ],
+                       [plot10],
+                       [plot11],
+                       [plot12] ],
+                       plot_width=PLOT_WIDTH, plot_height=PLOT_HEIGHT2, toolbar_location=None, sizing_mode='scale_width')
 
     # third
 
     # we create plot identical to plot1 (incidence), using the existing data source
-    plot1_copy = make_plot ('incidence', PLOT1_TITLE, days, 'datetime')
-    plot1_copy.line('x','y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+    plot1_copy = make_plot('incidence', PLOT1_TITLE, days, 'datetime')
+    plot1_copy.line('x', 'y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
     set_plot_details(plot1_copy, 'Date', 'Count', '@x{%F}', '@y{0.00}', 'vline', False, False)
     set_plot_date_details(plot1_copy, data_dates, days, source_plot1)
 
@@ -421,16 +430,16 @@ def make_layouts( ):
 
     slider_spacer = Spacer(width=30, height=50, width_policy='auto', height_policy='fixed')
 
-    layout1_h = layout( column(stats_table,grid_h), name='section1', sizing_mode='scale_width')
+    layout1_h = layout( column(stats_table, grid_h), name='section1', sizing_mode='scale_width')
     layout2_h = layout(grid2_h, name='section2', sizing_mode='scale_width')
 
     column_section3_map    = column(plot_map)
     column_section3_others = column( [plot1_copy, row( [slider_spacer, date_slider_map] ), row( [ slider_spacer, notes] ) ] )
 
-    row_section3 = row ( column_section3_map , column_section3_others )
+    row_section3 = row( column_section3_map , column_section3_others )
     layout3_h = layout( row_section3, name='section3')
 
-    layout1_v = layout(column(stats_table,grid_v),  name='section1', sizing_mode='scale_width')
+    layout1_v = layout(column(stats_table, grid_v), name='section1', sizing_mode='scale_width')
     layout2_v = layout(grid2_v, name='section2', sizing_mode='scale_width')
 
     # we don't need the notes text on the vertical layout
@@ -449,16 +458,16 @@ def make_layouts( ):
     in_between_spacer_v = Spacer(width=20, height=10, width_policy='auto', height_policy='fixed')
 
     # the mortality columns come from main
-    layout4_h = layout(row   (mortality_plots_column, in_between_spacer, mort_explorer_tabset2), name='section4', sizing_mode='scale_width')
+    layout4_h = layout(row(   mortality_plots_column, in_between_spacer, mort_explorer_tabset2), name='section4', sizing_mode='scale_width')
     layout4_v = layout(column(mortality_plots_column, mort_explorer_tabset2), name='section4', sizing_mode='scale_width')
 
     # fifth
 
     prev_spacer  = Spacer(width=20, height=5, width_policy='auto', height_policy='fixed')
     prev_spacer2 = Spacer(width=20, height=60, width_policy='auto', height_policy='fixed')
-    layout5_h = layout(row (plot_prevalence, prev_spacer, column(prev_spacer,prevalence_notes, prev_spacer2) ), name='section5', sizing_mode='scale_width')
+    layout5_h = layout(row(plot_prevalence, prev_spacer, column(prev_spacer, prevalence_notes, prev_spacer2) ), name='section5', sizing_mode='scale_width')
 
-    layout5_v = layout(column (plot_prevalence), name='section5', sizing_mode='scale_width')
+    layout5_v = layout(column(plot_prevalence), name='section5', sizing_mode='scale_width')
 
     # sixth
 
@@ -466,7 +475,7 @@ def make_layouts( ):
     vacc_risk_spacer2  = Spacer(width=20, height=5, width_policy='auto', height_policy='fixed')
     vacc_risk_spacer_v = Spacer(width=20, height=70, width_policy='auto', height_policy='fixed')
 
-    layout6_h = layout(column(row (vacc_risk_cfr_tabset, vacc_risk_spacer, vacc_risk_chr_tabset, vacc_risk_spacer2, vacc_risk_notes), vacc_risk_spacer_v ), name='section6', sizing_mode='scale_width')
+    layout6_h = layout(column(row(vacc_risk_cfr_tabset, vacc_risk_spacer, vacc_risk_chr_tabset, vacc_risk_spacer2, vacc_risk_notes), vacc_risk_spacer_v ), name='section6', sizing_mode='scale_width')
 
     layout6_v = layout(column(vacc_risk_cfr_tabset, vacc_risk_spacer, vacc_risk_chr_tabset), name='section6', sizing_mode='scale_width')
 
@@ -475,12 +484,13 @@ def make_layouts( ):
     layout7 = layout(column(final_notes), name='section7', sizing_mode='scale_width')
 
     return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy,\
-    layout4_h, layout4_v, layout5_h, layout5_v, layout6_h, layout6_v, layout7
+        layout4_h, layout4_v, layout5_h, layout5_v, layout6_h, layout6_v, layout7
+
 
 def adjust_widgets_to_layout( horizontal ):
 
     plot_list   = [ plot1, plot1_map, plot2, plot3, plot4, plot5, plot6, plot7, plot8, plot9, plot10, plot11, plot12, plot_map ]
-    plot_list_l = [ plot3, plot7, plot9, plot10, plot11, plot12 ] # these ones have legend
+    plot_list_l = [ plot3, plot7, plot9, plot10, plot11, plot12 ]  # these ones have legend
 
     for p in plot_list:
         if horizontal:
@@ -499,15 +509,15 @@ def adjust_widgets_to_layout( horizontal ):
         plot_map.plot_height  = MAP_HEIGHT
         plot1_map.width       = PLOT_WIDTH
         plot1_map.height      = PLOT_HEIGHT
-        date_slider_map.width = PLOT_WIDTH-40
+        date_slider_map.width = PLOT_WIDTH - 40
     else:
         factor = 1.7
         factor2 = 1.91
-        plot_map.plot_width   = int(MAP_WIDTH*factor)
-        plot_map.plot_height  = int(MAP_HEIGHT*factor)
-        plot1_map.width       = int(plot1_map.plot_width*factor2)
+        plot_map.plot_width   = int(MAP_WIDTH * factor)
+        plot_map.plot_height  = int(MAP_HEIGHT * factor)
+        plot1_map.width       = int(plot1_map.plot_width * factor2)
         plot1_map.height      = PLOT_HEIGHT
-        date_slider_map.width = plot1_map.width-40
+        date_slider_map.width = plot1_map.width - 40
 
 
 ### end of layouts ####
@@ -593,8 +603,8 @@ plot_data_s2 = []
 # one
 
 source_plot1 = make_data_source_dates(data_dates, data_incidence)
-plot1 = make_plot ('incidence', PLOT1_TITLE, days, 'datetime')
-l11 = plot1.line('x','y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+plot1 = make_plot('incidence', PLOT1_TITLE, days, 'datetime')
+l11 = plot1.line('x', 'y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot1, 'Date', 'Count', '@x{%F}', '@y{0.00}', 'vline', False, False)
 set_plot_date_details(plot1, data_dates, days, source_plot1)
 
@@ -603,7 +613,7 @@ plot_data_s1.append( (plot1, source_plot1) )
 # two
 
 source_plot2 = make_data_source_dates(data_dates, data_pos)
-plot2 = make_plot ('positivity', PLOT2_TITLE, days, 'datetime')
+plot2 = make_plot('positivity', PLOT2_TITLE, days, 'datetime')
 l21 = plot2.line('x', 'y', source=source_plot2, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot2, 'Date', '%', '@x{%F}', '@y{0.00}', 'vline', False, False)
 set_plot_date_details(plot2, data_dates, days, source_plot2)
@@ -612,16 +622,14 @@ plot_data_s1.append( (plot2, source_plot2) )
 
 # three
 
-#source_plot3 = make_data_source_dates(data_dates, data_hosp, list(np.array(data_hosp_uci)*5))
+source_plot3 = ColumnDataSource(pd.DataFrame(data={ 'x': data_dates, 'y': data_hosp, 'y2': list(np.array(data_hosp_uci) * 5), 'y3': data_hosp_uci }, columns=['x', 'y', 'y2', 'y3']))
 
-source_plot3 = ColumnDataSource(pd.DataFrame(data={ 'x': data_dates, 'y': data_hosp, 'y2': list(np.array(data_hosp_uci)*5), 'y3': data_hosp_uci }, columns=['x', 'y', 'y2', 'y3']))
-
-plot3 = make_plot ('hosp', PLOT3_TITLE, days, 'datetime')
+plot3 = make_plot('hosp', PLOT3_TITLE, days, 'datetime')
 l31 = plot3.line('x', 'y',  source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Total' )
 l32 = plot3.line('x', 'y2', source=source_plot3, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='UCI x5' )
 
 plot3.legend.location = 'top_left'
-set_plot_details(plot3, 'Date', 'Total', '@x{%F}', '@y{0}', 'vline', False, False,'UCI', "@y3{0}", l31)
+set_plot_details(plot3, 'Date', 'Total', '@x{%F}', '@y{0}', 'vline', False, False, 'UCI', "@y3{0}", l31)
 set_plot_date_details(plot3, data_dates, days, source_plot3)
 
 plot3.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
@@ -631,7 +639,7 @@ plot_data_s1.append( (plot3, source_plot3) )
 # four
 
 source_plot4 = make_data_source_dates(data_dates, data_cfr)
-plot4 = make_plot ('cfr', PLOT4_TITLE, days, 'datetime')
+plot4 = make_plot('cfr', PLOT4_TITLE, days, 'datetime')
 plot4.line('x', 'y', source=source_plot4, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot4, 'Date', '%', '@x{%F}', '@y{0.00}', 'vline', False, False)
 set_plot_date_details(plot4, data_dates, days)
@@ -641,7 +649,7 @@ plot_data_s1.append( (plot4, source_plot4) )
 # five
 
 source_plot5 = make_data_source_dates(data_dates, data_new)
-plot5 = make_plot ('new', PLOT5_TITLE, days, 'datetime')
+plot5 = make_plot('new', PLOT5_TITLE, days, 'datetime')
 plot5.line('x', 'y', source=source_plot5, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot5, 'Date', 'Count', '@x{%F}', '@y{0}', 'vline', False, False)
 set_plot_date_details(plot5, data_dates, days, source_plot5)
@@ -651,7 +659,7 @@ plot_data_s1.append( (plot5, source_plot5) )
 # six
 
 source_plot6 = make_data_source_dates(data_dates, data_rt)
-plot6 = make_plot ('rt', PLOT8_TITLE, days, 'datetime')
+plot6 = make_plot('rt', PLOT8_TITLE, days, 'datetime')
 plot6.line('x', 'y', source=source_plot6, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
 set_plot_details(plot6, 'Date', 'Value', '@x{%F}', '@y{0.00}', 'vline', False, False)
 set_plot_date_details(plot6, data_dates, days, source_plot6)
@@ -663,7 +671,7 @@ plot_data_s1.append( (plot6, source_plot6) )
 df = pd.DataFrame(data={ 'x': data_dates, 'y': data_total_deaths, 'y2': data_avg_deaths, 'y3': data_avg_deaths_inf, 'y4': data_avg_deaths_sup }, columns=['x', 'y', 'y2', 'y3', 'y4'])
 source_plot7 = ColumnDataSource(df)
 
-plot7 = make_plot ('total deaths', PLOT7_TITLE, days, 'datetime')
+plot7 = make_plot('total deaths', PLOT7_TITLE, days, 'datetime')
 l71 = plot7.line('x', 'y',  source=source_plot7, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Current' )
 l72 = plot7.line('x', 'y2', source=source_plot7, line_width=1, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='2015-2019 ± SD' )
 
@@ -671,7 +679,7 @@ band = Band(base='x', lower='y3', upper='y4', source=source_plot7, level='underl
 plot7.add_layout(band)
 
 plot7.legend.location = 'top_left'
-set_plot_details(plot7, 'Date', 'Current', '@x{%F}', '@y{0}', 'vline', False, False,'2015-2019', "@y2{0} (@y3{0}-@y4{0})", l71)
+set_plot_details(plot7, 'Date', 'Current', '@x{%F}', '@y{0}', 'vline', False, False, '2015-2019', "@y2{0} (@y3{0}-@y4{0})", l71)
 set_plot_date_details(plot7, data_dates, days, source_plot7)
 
 plot7.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
@@ -681,7 +689,7 @@ plot_data_s1.append( (plot7, source_plot7) )
 # eight
 
 source_plot8 = make_data_source_dates(data_dates, data_cv19_deaths)
-plot8 = make_plot ('deaths', PLOT6_TITLE, days, 'datetime')
+plot8 = make_plot('deaths', PLOT6_TITLE, days, 'datetime')
 plot8.line('x', 'y', source=source_plot8, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR,  )
 set_plot_details(plot8, 'Date', 'Count', '@x{%F}', '@y{0}', 'vline', False, False)
 set_plot_date_details(plot8, data_dates, days, source_plot8)
@@ -690,7 +698,7 @@ plot_data_s1.append( (plot8, source_plot8) )
 
 # Critical lines
 # default, primary, success, warning, danger, light
-clines_switch = Toggle(label=CLINES_LABEL, button_type='default', align='end', width=CLINES_SWITCH_WIDTH, height=CLINES_SWITCH_HEIGHT, name = 'section1_button')
+clines_switch = Toggle(label=CLINES_LABEL, button_type='default', align='end', width=CLINES_SWITCH_WIDTH, height=CLINES_SWITCH_HEIGHT, name='section1_button')
 clines_switch.on_click(update_state)
 
 source_plot1_critical = make_data_source_dates(data_dates, np.full( days, INCIDENCE_LIMIT ))
@@ -712,8 +720,8 @@ cline4.visible = False
 # date range widget
 
 # for scale calculation we start later because of the moving average
-date_i = data_dates[0+6]
-date_f = data_dates[days-1]
+date_i = data_dates[0 + 6]
+date_f = data_dates[days - 1]
 
 date_slider1 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1)
 
@@ -724,10 +732,10 @@ date_slider1.on_change('value_throttled', partial(update_stats))
 
 # the statistical summary
 
-stats_table = make_stats_table (STATS_WIDTH, STATS_HEIGHT, 'end')
+stats_table = make_stats_table(STATS_WIDTH, STATS_HEIGHT, 'end')
 
 # the parameters are dummy as we take the values directly from the slider
-update_stats(0,0,0)
+update_stats(0, 0, 0)
 
 #### Second page ####
 
@@ -740,12 +748,12 @@ color_multiplier = math.floor(256 / nr_series + 1)
 
 # nine
 
-source_plot9 = make_data_source_multi_dates (data_dates2, data_strat_new)
-plot9 = make_plot ('plot9', PLOT9_TITLE, days2, 'datetime')
+source_plot9 = make_data_source_multi_dates(data_dates2, data_strat_new)
+plot9 = make_plot('plot9', PLOT9_TITLE, days2, 'datetime')
 
 lines = []
 for j in range(0, nr_series ):
-    lines.append( plot9.line('x', 'y'+str(j), source=source_plot9, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
+    lines.append( plot9.line('x', 'y' + str(j), source=source_plot9, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
 # we know by inspection that line representing 40-49 is on top
 set_plot_details_multi(plot9, 'Date', labels, '@x{%F}', 'vline', lines[4], False, False)
@@ -755,15 +763,15 @@ plot_data_s2.append( (plot9, source_plot9) )
 
 # ten
 
-source_plot10 = make_data_source_multi_dates (data_dates2, data_strat_cv19_deaths)
-plot10 = make_plot ('plot10', PLOT10_TITLE, days2, 'datetime')
+source_plot10 = make_data_source_multi_dates(data_dates2, data_strat_cv19_deaths)
+plot10 = make_plot('plot10', PLOT10_TITLE, days2, 'datetime')
 
 lines = []
 for j in range(0, nr_series ):
-    lines.append( plot10.line('x', 'y'+str(j), source=source_plot10, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
+    lines.append( plot10.line('x', 'y' + str(j), source=source_plot10, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
 # the line for >= 80 is on top for this case
-set_plot_details_multi(plot10, 'Date', labels, '@x{%F}', 'vline', lines[nr_series -1 ], False, False)
+set_plot_details_multi(plot10, 'Date', labels, '@x{%F}', 'vline', lines[nr_series - 1], False, False)
 set_plot_date_details(plot10, data_dates2, days2, source_plot10)
 
 plot_data_s2.append( (plot10, source_plot10) )
@@ -774,20 +782,20 @@ plot_data_s2.append( (plot10, source_plot10) )
 data_strat_cfr.append(data_cfr[0:days2])
 cfr_nr_series = nr_series + 1
 
-source_plot11 = make_data_source_multi_dates (data_dates2, data_strat_cfr)
-plot11 = make_plot ('plot11', PLOT11_TITLE, days2, 'datetime')
+source_plot11 = make_data_source_multi_dates(data_dates2, data_strat_cfr)
+plot11 = make_plot('plot11', PLOT11_TITLE, days2, 'datetime')
 
 lines = []
 # adding the standard age stratified lines
 for j in range(0, nr_series ):
-    lines.append( plot11.line('x', 'y'+str(j), source=source_plot11, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
+    lines.append( plot11.line('x', 'y' + str(j), source=source_plot11, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
 # adding the average CFR line to the plot
-lines.append ( plot11.line('x', 'y'+str(j+1), source=source_plot11, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label='Average' ) )
-cfr_tooltip = ('Average', '@' + 'y'+str(j+1) + '{0.0}')
+lines.append( plot11.line('x', 'y' + str(j + 1), source=source_plot11, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label='Average' ) )
+cfr_tooltip = ('Average', '@' + 'y' + str(j + 1) + '{0.0}')
 
 # the line for >= 80 is just under the average CFR line, which is on top
-set_plot_details_multi(plot11, 'Days', labels, '@x{%F}', 'vline', lines[cfr_nr_series -2 ], True, False, cfr_tooltip)
+set_plot_details_multi(plot11, 'Days', labels, '@x{%F}', 'vline', lines[cfr_nr_series - 2 ], True, False, cfr_tooltip)
 set_plot_date_details(plot11, data_dates2, days2, source_plot11)
 
 plot_data_s2.append( (plot11, source_plot11) )
@@ -797,12 +805,12 @@ plot_data_s2.append( (plot11, source_plot11) )
 df12 = pd.DataFrame(data={ 'x': data_dates2, 'y': data_vacc_part, 'y2': data_vacc_full, 'y3': data_vacc_boost }, columns=['x', 'y', 'y2', 'y3'])
 source_plot12 = ColumnDataSource(df12)
 
-plot12 = make_plot ('vaccination', PLOT12_TITLE, days, 'datetime')
+plot12 = make_plot('vaccination', PLOT12_TITLE, days, 'datetime')
 l121 = plot12.line('x', 'y',  source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Partial' )
 l122 = plot12.line('x', 'y2', source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_HIGHLIGHT, legend_label='Complete' )
 l122 = plot12.line('x', 'y3', source=source_plot12, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='Booster' )
 plot12.legend.location = 'top_left'
-set_plot_details(plot12, 'Date', 'Partial', '@x{%F}', '@y{0}', 'vline', False, False,'Complete', "@y2{0}", l121, False, 'Booster', "@y3{0}")
+set_plot_details(plot12, 'Date', 'Partial', '@x{%F}', '@y{0}', 'vline', False, False, 'Complete', "@y2{0}", l121, False, 'Booster', "@y3{0}")
 
 set_plot_date_details(plot12, data_dates2, days2, source_plot12)
 
@@ -823,11 +831,11 @@ date_slider2.on_change('value', partial(update_legends,    section="2"))
 # pandas option, necessary for bokeh plots from pandas
 pd.set_option('plotting.backend', 'pandas_bokeh')
 
-plot_map, plot_map_s1 = make_map_plot ( data_incidence_counties )
+plot_map, plot_map_s1 = make_map_plot( data_incidence_counties )
 
 # the step parameter is in miliseconds
 step_days = 7
-date_slider_map = DateSlider(title='Selected date', start=map_date_i, end=map_date_f, value=map_date_f, step = step_days*1000*60*60*24, width_policy='fixed', width=PLOT_WIDTH-40 )
+date_slider_map = DateSlider(title='Selected date', start=map_date_i, end=map_date_f, value=map_date_f, step=step_days * 1000 * 60 * 60 * 24, width_policy='fixed', width=PLOT_WIDTH - 40 )
 
 date_slider_map.on_change('value_throttled', partial(update_map))
 
@@ -848,44 +856,44 @@ s_avg_deaths_strat_inf   = data_strat_mort[6]
 s_avg_deaths_strat_sup   = data_strat_mort[7]
 
 # we are smoothing the average historic mortality on the plot, but not the yellow bands as it does not seem visually necessary
-p4_plot1  = make_mortality_plot ( data_dates, s_total_deaths_strat[0],  s_avg_deaths_strat[0],  avg_deaths_strat_inf[0],  avg_deaths_strat_sup[0],  days, '<1'        )
-p4_plot2  = make_mortality_plot ( data_dates, s_total_deaths_strat[1],  s_avg_deaths_strat[1],  avg_deaths_strat_inf[1],  avg_deaths_strat_sup[1],  days, '1-4'       )
-p4_plot3  = make_mortality_plot ( data_dates, s_total_deaths_strat[2],  s_avg_deaths_strat[2],  avg_deaths_strat_inf[2],  avg_deaths_strat_sup[2],  days, '5-14'      )
-p4_plot4  = make_mortality_plot ( data_dates, s_total_deaths_strat[3],  s_avg_deaths_strat[3],  avg_deaths_strat_inf[3],  avg_deaths_strat_sup[3],  days, '15-24'     )
-p4_plot5  = make_mortality_plot ( data_dates, s_total_deaths_strat[4],  s_avg_deaths_strat[4],  avg_deaths_strat_inf[4],  avg_deaths_strat_sup[4],  days, '25-34'     )
-p4_plot6  = make_mortality_plot ( data_dates, s_total_deaths_strat[5],  s_avg_deaths_strat[5],  avg_deaths_strat_inf[5],  avg_deaths_strat_sup[5],  days, '35-44'     )
-p4_plot7  = make_mortality_plot ( data_dates, s_total_deaths_strat[6],  s_avg_deaths_strat[6],  avg_deaths_strat_inf[6],  avg_deaths_strat_sup[6],  days, '45-54'     )
-p4_plot8  = make_mortality_plot ( data_dates, s_total_deaths_strat[7],  s_avg_deaths_strat[7],  avg_deaths_strat_inf[7],  avg_deaths_strat_sup[7],  days, '55-64'     )
-p4_plot9  = make_mortality_plot ( data_dates, s_total_deaths_strat[8],  s_avg_deaths_strat[8],  avg_deaths_strat_inf[8],  avg_deaths_strat_sup[8],  days, '65-74'     )
-p4_plot10 = make_mortality_plot ( data_dates, s_total_deaths_strat[9],  s_avg_deaths_strat[9],  avg_deaths_strat_inf[9],  avg_deaths_strat_sup[9],  days, '75-84'     )
-p4_plot11 = make_mortality_plot ( data_dates, s_total_deaths_strat[10], s_avg_deaths_strat[10], avg_deaths_strat_inf[10], avg_deaths_strat_sup[10], days, '>85'       )
-p4_plot12 = make_mortality_plot ( data_dates, s_total_deaths_strat[11], s_avg_deaths_strat[11], avg_deaths_strat_inf[11], avg_deaths_strat_sup[11], days, 'all ages'  )
+p4_plot1  = make_mortality_plot( data_dates, s_total_deaths_strat[0],  s_avg_deaths_strat[0],  avg_deaths_strat_inf[0],  avg_deaths_strat_sup[0],  days, '<1'        )
+p4_plot2  = make_mortality_plot( data_dates, s_total_deaths_strat[1],  s_avg_deaths_strat[1],  avg_deaths_strat_inf[1],  avg_deaths_strat_sup[1],  days, '1-4'       )
+p4_plot3  = make_mortality_plot( data_dates, s_total_deaths_strat[2],  s_avg_deaths_strat[2],  avg_deaths_strat_inf[2],  avg_deaths_strat_sup[2],  days, '5-14'      )
+p4_plot4  = make_mortality_plot( data_dates, s_total_deaths_strat[3],  s_avg_deaths_strat[3],  avg_deaths_strat_inf[3],  avg_deaths_strat_sup[3],  days, '15-24'     )
+p4_plot5  = make_mortality_plot( data_dates, s_total_deaths_strat[4],  s_avg_deaths_strat[4],  avg_deaths_strat_inf[4],  avg_deaths_strat_sup[4],  days, '25-34'     )
+p4_plot6  = make_mortality_plot( data_dates, s_total_deaths_strat[5],  s_avg_deaths_strat[5],  avg_deaths_strat_inf[5],  avg_deaths_strat_sup[5],  days, '35-44'     )
+p4_plot7  = make_mortality_plot( data_dates, s_total_deaths_strat[6],  s_avg_deaths_strat[6],  avg_deaths_strat_inf[6],  avg_deaths_strat_sup[6],  days, '45-54'     )
+p4_plot8  = make_mortality_plot( data_dates, s_total_deaths_strat[7],  s_avg_deaths_strat[7],  avg_deaths_strat_inf[7],  avg_deaths_strat_sup[7],  days, '55-64'     )
+p4_plot9  = make_mortality_plot( data_dates, s_total_deaths_strat[8],  s_avg_deaths_strat[8],  avg_deaths_strat_inf[8],  avg_deaths_strat_sup[8],  days, '65-74'     )
+p4_plot10 = make_mortality_plot( data_dates, s_total_deaths_strat[9],  s_avg_deaths_strat[9],  avg_deaths_strat_inf[9],  avg_deaths_strat_sup[9],  days, '75-84'     )
+p4_plot11 = make_mortality_plot( data_dates, s_total_deaths_strat[10], s_avg_deaths_strat[10], avg_deaths_strat_inf[10], avg_deaths_strat_sup[10], days, '>85'       )
+p4_plot12 = make_mortality_plot( data_dates, s_total_deaths_strat[11], s_avg_deaths_strat[11], avg_deaths_strat_inf[11], avg_deaths_strat_sup[11], days, 'all ages'  )
 
 # for this special tab the overal deaths are the same, but the references (avg, inf and sup) have been corrected
-p4_plot13 = make_mortality_plot ( data_dates, s_total_deaths_strat[12], s_avg_deaths_strat[12], avg_deaths_strat_inf[12], avg_deaths_strat_sup[12], days, 'all ages *')
+p4_plot13 = make_mortality_plot( data_dates, s_total_deaths_strat[12], s_avg_deaths_strat[12], avg_deaths_strat_inf[12], avg_deaths_strat_sup[12], days, 'all ages *')
 
 p4_plots = [ p4_plot1, p4_plot2, p4_plot3, p4_plot4, p4_plot5, p4_plot6, p4_plot7, p4_plot8, p4_plot9, p4_plot10, p4_plot11, p4_plot12, p4_plot13 ]
 
-tab1  = Panel(child=p4_plot1, title='<1'         )
-tab2  = Panel(child=p4_plot2, title='1-4'        )
-tab3  = Panel(child=p4_plot3, title='5-14'       )
-tab4  = Panel(child=p4_plot4, title='15-24'      )
-tab5  = Panel(child=p4_plot5, title='25-34'      )
-tab6  = Panel(child=p4_plot6, title='35-44'      )
-tab7  = Panel(child=p4_plot7, title='45-54'      )
-tab8  = Panel(child=p4_plot8, title='55-64'      )
-tab9  = Panel(child=p4_plot9, title='65-74'      )
-tab10 = Panel(child=p4_plot10,title='75-84'      )
-tab11 = Panel(child=p4_plot11,title='>85'        )
-tab12 = Panel(child=p4_plot12,title='all ages'   )
-tab13 = Panel(child=p4_plot13,title='all ages *' )
+tab1  = Panel(child=p4_plot1,  title='<1'         )
+tab2  = Panel(child=p4_plot2,  title='1-4'        )
+tab3  = Panel(child=p4_plot3,  title='5-14'       )
+tab4  = Panel(child=p4_plot4,  title='15-24'      )
+tab5  = Panel(child=p4_plot5,  title='25-34'      )
+tab6  = Panel(child=p4_plot6,  title='35-44'      )
+tab7  = Panel(child=p4_plot7,  title='45-54'      )
+tab8  = Panel(child=p4_plot8,  title='55-64'      )
+tab9  = Panel(child=p4_plot9,  title='65-74'      )
+tab10 = Panel(child=p4_plot10, title='75-84'      )
+tab11 = Panel(child=p4_plot11, title='>85'        )
+tab12 = Panel(child=p4_plot12, title='all ages'   )
+tab13 = Panel(child=p4_plot13, title='all ages *' )
 
 mort_explorer_tabset = Tabs(tabs=[ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12, tab13 ])
 
 # make sure the tab for all ages is selected
 mort_explorer_tabset.active = 12
 
-date_slider4 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1, width=PLOT_WIDTH4-50)
+date_slider4 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, value=( date_i, date_f ), step=1, width=PLOT_WIDTH4 - 50)
 
 date_slider4.on_change('value', partial(update_mortality_plot_range))
 date_slider4.on_change('value_throttled', partial(update_mortality_stats))
@@ -900,7 +908,7 @@ for p in p4_plots:
     p.add_layout(post_box)
 
 # the statistics table
-mortality_stats_table = make_mortality_stats_table (MORT_STATS_TABLE_WIDTH, MORT_STATS_TABLE_HEIGHT, 'end')
+mortality_stats_table = make_mortality_stats_table(MORT_STATS_TABLE_WIDTH, MORT_STATS_TABLE_HEIGHT, 'end')
 
 # and its caption
 mortality_notes  = Div(text='dummy', width=MORT_TEXT_WIDTH, align='center')
@@ -924,7 +932,7 @@ clean_data_exc_deaths  = get_clean_data(corr_data_exc_deaths)
 # height and width are the same because we want it to be square for easier reading
 corr_width = MORT_STATS_TABLE_WIDTH
 
-plot_correlation, source_plot_correlation, correlation_coefficient, regression_line, regression_label = make_correlation_plot ( clean_data_cv19_deaths, clean_data_exc_deaths, 'Covid deaths', 'Excess deaths', corr_width, corr_width)
+plot_correlation, source_plot_correlation, correlation_coefficient, regression_line, regression_label = make_correlation_plot( clean_data_cv19_deaths, clean_data_exc_deaths, 'Covid deaths', 'Excess deaths', corr_width, corr_width)
 
 table_spacer4_top2   = Spacer(width=40, height=1, width_policy='auto', height_policy='fixed')
 table_spacer4_bottom = Spacer(width=40, height=5, width_policy='auto', height_policy='fixed')
@@ -942,19 +950,19 @@ mort_explorer_tabset2 = Tabs(tabs=[ tab2_1, tab2_2 ])
 mort_explorer_tabset2.active = 0
 
 # the parameters are dummy as we take the values directly from the slider
-update_mortality_stats(0,0,0)
+update_mortality_stats(0, 0, 0)
 
 #### Fifth page ####
 
 source_plot_prevalence = ColumnDataSource(pd.DataFrame(data={ 'x': data_dates, 'y': data_max_prevalence, 'y2': data_avg_prevalence, 'y3': data_min_prevalence,  }, columns=['x', 'y', 'y2', 'y3' ]))
 
-plot_prevalence = make_plot ('prevalance', PLOT_PREVALENCE_TITLE, days, 'datetime', PLOT_HEIGHT5, PLOT_WIDTH5)
-l_prev1 = plot_prevalence.line('x', 'y', source=source_plot_prevalence, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='Max prevalence' )
-l_prev2 = plot_prevalence.line('x', 'y2',source=source_plot_prevalence, line_width=PLOT_LINE_WIDTH, line_alpha=0.9, line_color=PLOT_LINE_COLOR, legend_label='Avg prevalence' )
-l_prev3 = plot_prevalence.line('x', 'y3',source=source_plot_prevalence, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Min prevalence' )
+plot_prevalence = make_plot('prevalance', PLOT_PREVALENCE_TITLE, days, 'datetime', PLOT_HEIGHT5, PLOT_WIDTH5)
+l_prev1 = plot_prevalence.line('x', 'y',  source=source_plot_prevalence, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, legend_label='Max prevalence' )
+l_prev2 = plot_prevalence.line('x', 'y2', source=source_plot_prevalence, line_width=PLOT_LINE_WIDTH, line_alpha=0.9, line_color=PLOT_LINE_COLOR, legend_label='Avg prevalence' )
+l_prev3 = plot_prevalence.line('x', 'y3', source=source_plot_prevalence, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, legend_label='Min prevalence' )
 
 plot_prevalence.legend.location = 'top_left'
-set_plot_details(plot_prevalence, 'Date', 'Max %', '@x{%F}', '@y{0.00}', 'vline', False, False,'Avg %', "@y2{0.00}", l_prev1, True, 'Min %', "@y3{0.00}")
+set_plot_details(plot_prevalence, 'Date', 'Max %', '@x{%F}', '@y{0.00}', 'vline', False, False, 'Avg %', "@y2{0.00}", l_prev1, True, 'Min %', "@y3{0.00}")
 set_plot_date_details(plot_prevalence, data_dates, days, source_plot_prevalence)
 
 plot_prevalence.legend.label_text_font_size = PLOT_LEGEND_FONT_SIZE
@@ -1014,7 +1022,7 @@ window_size_data_source.on_change('data', on_dimensions_change)
 # all roots added here must be invoked on the HTML
 
 layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_map, \
-layout4_h, layout4_v, layout5_h, layout5_v, layout6_h, layout6_v, layout7 = make_layouts()
+    layout4_h, layout4_v, layout5_h, layout5_v, layout6_h, layout6_v, layout7 = make_layouts()
 
 # by default layouts are created assuming we have enough width for the ideal visualization mode
 # that is, we start with horizontal layouts
