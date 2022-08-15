@@ -250,7 +250,7 @@ def set_plot_details ( aplot, xlabel = PLOT_X_LABEL, ylabel = PLOT_Y_LABEL, xtoo
     aplot.xaxis.visible = show_x_axis
 
 # set properties common to all the plots with multiple lines
-def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtooltip_format = "@x{0}", tooltip_mode ='vline', tooltip_line = None, extra_precision = False, show_x_axis = False ):
+def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtooltip_format = "@x{0}", tooltip_mode ='vline', tooltip_line = None, extra_precision = False, show_x_axis = False, extra_tooltip = None ):
     aplot.toolbar.active_drag    = None
     aplot.toolbar.active_scroll  = None
     aplot.toolbar.active_tap     = None
@@ -269,6 +269,10 @@ def set_plot_details_multi ( aplot, xlabel = PLOT_X_LABEL, ylabels = [], xtoolti
             ytooltip_format = "@y"+str(j)+"{0}"
         j = j + 1
         tooltip_list.append( (label, ytooltip_format ) )
+
+    # add an extra custom tooltip for a custom line, if passed as an argument
+    if extra_tooltip is not None:
+        tooltip_list.append(extra_tooltip)
 
     # we pass a single render to anchor the tooltip to a specific line
     if tooltip_line:

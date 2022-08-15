@@ -76,24 +76,46 @@ def update_stats(attr, old, new):
     stats_table.source = stats_source
 
 # makes the legends appear / disappear as necessary
-def update_legends(attr, old, new):
+def update_legends(attr, old, new, section):
 
-    date_i_cmp = date_slider1.value_as_date[0]
-    date_f_cmp = date_slider1.value_as_date[1]
+    if section == "1":
+        date_i_cmp = date_slider1.value_as_date[0]
+        date_f_cmp = date_slider1.value_as_date[1]
+        nr_days = days
+    else:
+        date_i_cmp = date_slider2.value_as_date[0]
+        date_f_cmp = date_slider2.value_as_date[1]
+        nr_days = days2
 
     # we need to know the list positions to sum the numbers
     idx1 = (date_i_cmp-data_dates[0]).days
     idx2 = (date_f_cmp-data_dates[0]).days
 
     # the -7 is because we start 7 days later on the dates, due to the moving average :-)
-    if idx2-idx1 < days - 7:
+    if idx2-idx1 < nr_days - 7:
         my_visibility = False
+        my_click_policy = 'none'
+        my_location = (0,-1000)
     else:
         my_visibility = True
+        my_click_policy = 'mute'
+        my_location = 'top_left'
 
-    # plots that have dynamic legend
-    plot3.legend.visible = my_visibility
-    plot7.legend.visible = my_visibility
+    # act on plots that have dynamic legend
+    if section == "1":
+        plot3.legend.visible = my_visibility
+        plot7.legend.visible = my_visibility
+    else:
+        # in this case toggling the visibility is not enough, because the legend,
+        # if invisible but present, prevents hovering the lines
+        plot10.legend.location = my_location
+        plot11.legend.location = my_location
+        # this is because even when the legend is invisible it is clickable
+        # and therefore lines could be muted / unmuted by accident
+        # this shhold not be necessary because we already moved id away above
+        # but it is here for reference
+        plot10.legend.click_policy = my_click_policy
+        plot11.legend.click_policy = my_click_policy
 
 # for the data range
 def update_plot_range (attr, old, new, section):
@@ -697,7 +719,7 @@ date_slider1 = DateRangeSlider(title="Date Range: ", start=date_i, end=date_f, v
 
 # we want the plots to change in real time but the stats only to be updated after the user stopped moving the mouse
 date_slider1.on_change('value', partial(update_plot_range, section="1"))
-date_slider1.on_change('value', partial(update_legends))
+date_slider1.on_change('value', partial(update_legends,    section="1"))
 date_slider1.on_change('value_throttled', partial(update_stats))
 
 # the statistical summary
@@ -748,15 +770,24 @@ plot_data_s2.append( (plot10, source_plot10) )
 
 # eleven
 
+# we append the average CFR line clipped to the number of available days
+data_strat_cfr.append(data_cfr[0:days2])
+cfr_nr_series = nr_series + 1
+
 source_plot11 = make_data_source_multi_dates (data_dates2, data_strat_cfr)
 plot11 = make_plot ('plot11', PLOT11_TITLE, days2, 'datetime')
 
 lines = []
+# adding the standard age stratified lines
 for j in range(0, nr_series ):
     lines.append( plot11.line('x', 'y'+str(j), source=source_plot11, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=palette[color_multiplier * j], muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label=labels[j] ) )
 
-# the line for >= 80 is on top for this case
-set_plot_details_multi(plot11, 'Days', labels, '@x{%F}', 'vline', lines[nr_series -1 ], True, False)
+# adding the average CFR line to the plot
+lines.append ( plot11.line('x', 'y'+str(j+1), source=source_plot11, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_REFERENCE, muted_alpha=PLOT_LINE_ALPHA_MUTED, legend_label='Average' ) )
+cfr_tooltip = ('Average', '@' + 'y'+str(j+1) + '{0.0}')
+
+# the line for >= 80 is just under the average CFR line, which is on top
+set_plot_details_multi(plot11, 'Days', labels, '@x{%F}', 'vline', lines[cfr_nr_series -2 ], True, False, cfr_tooltip)
 set_plot_date_details(plot11, data_dates2, days2, source_plot11)
 
 plot_data_s2.append( (plot11, source_plot11) )
@@ -785,6 +816,7 @@ date2_f = data_dates2[-1]
 date_slider2 = DateRangeSlider(title="Date Range: ", start=date_i, end=date2_f, value=( date_i, date2_f ), step=1)
 
 date_slider2.on_change('value', partial(update_plot_range, section="2"))
+date_slider2.on_change('value', partial(update_legends,    section="2"))
 
 #### Third page ####
 
