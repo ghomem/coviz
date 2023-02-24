@@ -6,7 +6,7 @@ import pandas_bokeh
 from pandas_bokeh.geoplot import convert_geoDataFrame_to_patches
 
 from functools import partial
-from datetime import datetime
+from datetime import datetime, timedelta
 from bokeh.io import curdoc
 from bokeh.layouts import layout, gridplot, column, row
 from bokeh.models import Button, Toggle, CategoricalColorMapper, ColumnDataSource, TableColumn, DataTable, HoverTool, Label, SingleIntervalTicker, Slider, Spacer, GlyphRenderer, DatetimeTickFormatter, DateRangeSlider, DataRange1d, Range1d, DateSlider, LinearColorMapper, Div, CustomJS, Band, HTMLTemplateFormatter, StringFormatter, Scatter, Slope
@@ -18,6 +18,16 @@ from bokeh.events import DocumentReady
 from config import *
 
 # utility functions
+
+
+# log the current time and the difference from a reference time
+def print_time( reference_time, label ):
+
+    current_time = datetime.now()
+    delta = current_time - reference_time
+    delta = delta - timedelta(microseconds=delta.microseconds)
+
+    print(current_time, 'elapsed time at', label, delta)
 
 
 # because spaces are gone once a string is inserted into HTML
