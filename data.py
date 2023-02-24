@@ -694,7 +694,7 @@ def get_data():
     # processed data
     processed_data = [ s_new, hosp, hosp_uci, s_cv19_deaths, incidence, cfr, rt, positivity, s_total_deaths, s_avg_deaths,
                        avg_deaths_inf, avg_deaths_sup, s_strat_cv19_new, s_strat_cv19_deaths, strat_cfr, vacc_part, vacc_full,
-                       vacc_boost, strat_mortality_info, s_min_prevalence, s_max_prevalence, s_avg_prevalence, vacc_cfr_data, 
+                       vacc_boost, strat_mortality_info, s_min_prevalence, s_max_prevalence, s_avg_prevalence, vacc_cfr_data,
                        vacc_chr_data, s_total_tests ]
 
     # raw data for stats

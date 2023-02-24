@@ -54,6 +54,7 @@ PLOT10_TITLE = 'Covid deaths by age group (click on the legend to hide/show seri
 PLOT11_TITLE = 'CFR by age group (click on the legend to hide/show series)'
 PLOT12_TITLE = 'Vaccination'
 
+PLOT_INCIDENCE_TITLE   = '14 day Incidence'
 PLOT_CORRELATION_TITLE = 'Excess deaths vs Covid deaths'
 PLOT_PREVALENCE_TITLE  = 'Prevalence envelope'
 

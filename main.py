@@ -413,17 +413,6 @@ def make_layouts( ):
 
     # third
 
-    # we create plot identical to plot1 (incidence), using the existing data source
-    plot1_copy = make_plot('incidence', PLOT1_TITLE, days, 'datetime')
-    plot1_copy.line('x', 'y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
-    set_plot_details(plot1_copy, 'Date', 'Count', '@x{%F}', '@y{0.00}', 'vline', False, False)
-    set_plot_date_details(plot1_copy, data_dates, days, source_plot1)
-
-    # but we change the range
-    # we can't do this on a directy copy of plot1, because it is shallow
-    plot1_copy.x_range.start = pd.to_datetime(map_date_i)
-    plot1_copy.x_range.end   = pd.to_datetime(map_date_f)
-
     notes = Div(text=TEXT_NOTES, width=TEXT_WIDTH)
 
     # now the layout
@@ -434,7 +423,7 @@ def make_layouts( ):
     layout2_h = layout(grid2_h, name='section2', sizing_mode='scale_width')
 
     column_section3_map    = column(plot_map)
-    column_section3_others = column( [plot1_copy, row( [slider_spacer, date_slider_map] ), row( [ slider_spacer, notes] ) ] )
+    column_section3_others = column( [plot_incidence, row( [slider_spacer, date_slider_map] ), row( [ slider_spacer, notes] ) ] )
 
     row_section3 = row( column_section3_map , column_section3_others )
     layout3_h = layout( row_section3, name='section3')
@@ -443,7 +432,7 @@ def make_layouts( ):
     layout2_v = layout(grid2_v, name='section2', sizing_mode='scale_width')
 
     # we don't need the notes text on the vertical layout
-    column_section3_map = column( [plot_map, row( [slider_spacer, date_slider_map] ), plot1_copy ] )
+    column_section3_map = column( [plot_map, row( [slider_spacer, date_slider_map] ), plot_incidence ] )
 
     layout3_v = layout( column_section3_map, name='section3')
 
@@ -483,7 +472,7 @@ def make_layouts( ):
 
     layout7 = layout(column(final_notes), name='section7', sizing_mode='scale_width')
 
-    return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot1_copy,\
+    return layout1_h, layout2_h, layout3_h, layout1_v, layout2_v, layout3_v, controls1, controls2, plot_incidence,\
         layout4_h, layout4_v, layout5_h, layout5_v, layout6_h, layout6_v, layout7
 
 
@@ -833,6 +822,16 @@ date_slider2.on_change('value', partial(update_legends,    section="2"))
 pd.set_option('plotting.backend', 'pandas_bokeh')
 
 plot_map, plot_map_s1 = make_map_plot( data_incidence_counties )
+
+source_plot_incidence = make_data_source_dates(data_dates, data_incidence)
+plot_incidence = make_plot('incidence', PLOT_INCIDENCE_TITLE, days, 'datetime')
+l_incidence = plot_incidence.line('x', 'y', source=source_plot_incidence, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
+set_plot_details(plot_incidence, 'Date', 'Count', '@x{%F}', '@y{0.00}', 'vline', False, False)
+set_plot_date_details(plot_incidence, data_dates, days, source_plot_incidence)
+
+# here the date range is shorter because the data delivery was interrupted earlier
+plot_incidence.x_range.start = pd.to_datetime(map_date_i)
+plot_incidence.x_range.end   = pd.to_datetime(map_date_f)
 
 # the step parameter is in miliseconds
 step_days = 7
