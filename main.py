@@ -555,6 +555,7 @@ data_max_prevalence    = processed_data[20]
 data_avg_prevalence    = processed_data[21]
 data_vacc_cfr          = processed_data[22]
 data_vacc_chr          = processed_data[23]
+data_tests             = processed_data[24]
 
 raw_data_new          = raw_data[0]
 raw_data_cv19_deaths  = raw_data[1]
@@ -602,8 +603,8 @@ plot_data_s2 = []
 
 # one
 
-source_plot1 = make_data_source_dates(data_dates, data_incidence)
-plot1 = make_plot('incidence', PLOT1_TITLE, days, 'datetime')
+source_plot1 = make_data_source_dates(data_dates, data_tests)
+plot1 = make_plot('tests', PLOT1_TITLE, days, 'datetime')
 l11 = plot1.line('x', 'y', source=source_plot1, line_width=PLOT_LINE_WIDTH, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR, )
 set_plot_details(plot1, 'Date', 'Count', '@x{%F}', '@y{0.00}', 'vline', False, False)
 set_plot_date_details(plot1, data_dates, days, source_plot1)
