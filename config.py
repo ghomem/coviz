@@ -173,6 +173,8 @@ FINAL_TEXT = f"""<div class="content" style="padding-top: 15px; margin-bottom: 2
                         for interested citizens to transform, study and visualize data that in essence belongs to them. While this project
                         intends to restore the level of transparency that the portuguese citizens deserve, it is not an official source of
                         information and we can not garantee that the result is error free. Should any problems be found, they can be reported at the project\'s Github page.
+                        <strong>As of 2023/04/01 this website became read-only. It remains available but the data will not be updated further since the current public health
+                        situation does not justify the significant effort of maintaning continuous data integration from several different data sources.</strong>
                         </br></br>
                         Most data is presented as a 7 day moving average to make reading the plots easier. The goal of this dashboard is allowing the
                         visualization of mid term trends rather than the short term noise.
