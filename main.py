@@ -38,7 +38,6 @@ current_horizontal = True
 # for the toggle button action
 def update_state(new):
 
-    cline1.visible = clines_switch.active
     cline2.visible = clines_switch.active
     cline3.visible = clines_switch.active
     cline4.visible = clines_switch.active
@@ -691,18 +690,15 @@ plot_data_s1.append( (plot8, source_plot8) )
 clines_switch = Toggle(label=CLINES_LABEL, button_type='default', align='end', width=CLINES_SWITCH_WIDTH, height=CLINES_SWITCH_HEIGHT, name='section1_button')
 clines_switch.on_click(update_state)
 
-source_plot1_critical = make_data_source_dates(data_dates, np.full( days, INCIDENCE_LIMIT ))
 source_plot2_critical = make_data_source_dates(data_dates, np.full( days, POSITIVITY_LIMIT ))
 source_plot3_critical = make_data_source_dates(data_dates, np.full( days, UCI_LIMIT ))
 source_plot6_critical = make_data_source_dates(data_dates, np.full( days, RT_LIMIT ))
 
 # critical lines
-cline1 = plot1.line('x', 'y', source=source_plot1_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
 cline2 = plot2.line('x', 'y', source=source_plot2_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
 cline3 = plot3.line('x', 'y', source=source_plot3_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
 cline4 = plot6.line('x', 'y', source=source_plot6_critical, line_width=PLOT_LINE_WIDTH_CRITICAL, line_alpha=PLOT_LINE_ALPHA, line_color=PLOT_LINE_COLOR_CRITICAL)
 
-cline1.visible = False
 cline2.visible = False
 cline3.visible = False
 cline4.visible = False
