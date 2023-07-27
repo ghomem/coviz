@@ -222,9 +222,15 @@ def update_mortality_stats(attr, old, new):
         sum_total_deaths = round(np.nansum(np.array( total_strat_group[idx1:idx2 + 1] )), 0)
         column_total.append(sum_total_deaths)
 
-        sum_avg_deaths     = round(np.nansum(np.array(     avg_strat_group[idx1:idx2 + 1] )), 0)
-        sum_avg_deaths_inf = round(np.nansum(np.array( avg_strat_group_inf[idx1:idx2 + 1] )), 0)
-        sum_avg_deaths_sup = round(np.nansum(np.array( avg_strat_group_sup[idx1:idx2 + 1] )), 0)
+        # the sum of the average daily deaths for this interval and age group
+        sum_avg_deaths = round(np.nansum(np.array( avg_strat_group[idx1:idx2 + 1] )), 0)
+
+        # the standard deviation for this sum
+        sum_deaths_sd = calc_sum_stratified_deaths_sd(total_strat_group, idx1, idx2)
+
+        # the lower and upper limits based on the standard deviation
+        sum_avg_deaths_inf = round( sum_avg_deaths - sum_deaths_sd, 0)
+        sum_avg_deaths_sup = round( sum_avg_deaths + sum_deaths_sd, 0)
 
         sum_avg_deaths_inf_pct = round(( ( sum_avg_deaths_inf - sum_avg_deaths ) / sum_avg_deaths ) * 100, 1)
         sum_avg_deaths_sup_pct = round(( ( sum_avg_deaths_sup - sum_avg_deaths ) / sum_avg_deaths ) * 100, 1)

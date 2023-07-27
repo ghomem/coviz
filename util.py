@@ -20,6 +20,49 @@ from config import *
 # utility functions
 
 
+# calculate the standard deviation of the total deaths of an age group, summed over a custom interval
+def calc_sum_stratified_deaths_sd( total_deaths_strat, idx1, idx2 ):
+
+    # extract each reference year
+    total_deaths_2015 = total_deaths_strat[    0:365    ]  # normal year
+    total_deaths_2016 = total_deaths_strat[  365:730 + 1]  # leap year
+    total_deaths_2017 = total_deaths_strat[  731:1096   ]  # normal year
+    total_deaths_2018 = total_deaths_strat[ 1096:1461   ]  # normal year
+    total_deaths_2019 = total_deaths_strat[ 1461:1826   ]  # normal year
+
+    # determine the corresponding interval from the given indexes
+    total_deaths_2015_interval = total_deaths_2015[idx1:idx2 + 1]
+    total_deaths_2016_interval = total_deaths_2016[idx1:idx2 + 1]
+    total_deaths_2017_interval = total_deaths_2017[idx1:idx2 + 1]
+    total_deaths_2018_interval = total_deaths_2018[idx1:idx2 + 1]
+    total_deaths_2019_interval = total_deaths_2019[idx1:idx2 + 1]
+
+    # sum in the corresponding interval for each year
+    sum_total_deaths_in_interval_2015 = round( np.nansum( np.array(total_deaths_2015_interval) ) )
+    sum_total_deaths_in_interval_2016 = round( np.nansum( np.array(total_deaths_2016_interval) ) )
+    sum_total_deaths_in_interval_2017 = round( np.nansum( np.array(total_deaths_2017_interval) ) )
+    sum_total_deaths_in_interval_2018 = round( np.nansum( np.array(total_deaths_2018_interval) ) )
+    sum_total_deaths_in_interval_2019 = round( np.nansum( np.array(total_deaths_2019_interval) ) )
+
+    # calculate the average of the sum over the interval
+    avg = ( sum_total_deaths_in_interval_2015 +
+            sum_total_deaths_in_interval_2016 +
+            sum_total_deaths_in_interval_2017 +
+            sum_total_deaths_in_interval_2018 +
+            sum_total_deaths_in_interval_2019 ) / 5
+
+    # calculate the variance of the sum over the interval
+    var = ( ( sum_total_deaths_in_interval_2015 - avg ) ** 2 +
+            ( sum_total_deaths_in_interval_2016 - avg ) ** 2 +
+            ( sum_total_deaths_in_interval_2017 - avg ) ** 2 +
+            ( sum_total_deaths_in_interval_2018 - avg ) ** 2 +
+            ( sum_total_deaths_in_interval_2019 - avg ) ** 2 ) / 5
+
+    sd = math.sqrt(var)
+
+    return sd
+
+
 # log the current time and the difference from a reference time
 def print_time( reference_time, label ):
 
